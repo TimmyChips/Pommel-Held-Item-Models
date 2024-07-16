@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "package": "timmychips.pommelheldmodels.mixin.client",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "HeldItemMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

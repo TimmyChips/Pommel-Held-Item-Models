@@ -1,0 +1,40 @@
+{
+	"schemaVersion": 1,
+	"id": "pommel",
+	"version": "${version}",
+	"name": "Pommel - Held Item Models",
+	"description": "Allows resource pack creators to overwrite the models for held items just like the spyglass and trident",
+	"authors": [
+		"TimmyChips"
+	],
+	"contact": {
+		"homepage": "https://modrinth.com/mod/pommel-held-item-models",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "MIT",
+	"icon": "assets/pommel/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+		],
+		"client": [
+			"timmychips.pommelheldmodels.ClientInitializer"
+		]
+	},
+	"mixins": [
+		"pommel.mixins.json",
+		{
+			"config": "pommel.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.15.11",
+		"minecraft": "~1.21",
+		"java": ">=21",
+		"fabric-api": "*"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}
