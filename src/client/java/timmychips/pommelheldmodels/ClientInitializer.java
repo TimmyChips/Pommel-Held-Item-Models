@@ -8,14 +8,10 @@ public class ClientInitializer implements ClientModInitializer {
 	public void onInitializeClient() {
 		// Mod's Client Entrypoint
 
-		// Initializes mod from main class method
-		HeldModelManager.init();
+		// Register model item predicate
+			// Any .json model file with the <"pommel:is_held": 1.0> item predicate will override and render the item
+			// with the specified held model file
+		HeldItemPredicate.registerHeldModelPredicate();
 
-		/* Example for declaring a single model and loading it with the ModelLoadingPlugin interface
-			Identifier specific_model_example = Identifier.of("minecraft", "held_models/diamond_pickaxe");
-				// Will register as "<minecraft:models/held_models/diamond_pickaxe>"
-			ModelLoadingPlugin.register(plugin -> plugin.addModels(specific_model_example));
-				// Registers model
-		*/
 	}
 }
