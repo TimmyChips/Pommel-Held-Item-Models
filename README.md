@@ -1,4 +1,4 @@
-<div align=center><span style="text-align:center"><img src="./README_assets/pommel_modIcon.png" alt="Pommel Icon" width="250"/>
+<div align=center><img src="./README_assets/pommel_modIcon.png" alt="Pommel Icon" width="250"/>
 
 <br>
 
