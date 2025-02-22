@@ -9,7 +9,8 @@
 	],
 	"contact": {
 		"homepage": "https://modrinth.com/mod/pommel-held-item-models",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"issues": "https://github.com/TimmyChips/Pommel-Held-Item-Models",
+		"sources": "https://github.com/TimmyChips/Pommel-Held-Item-Models"
 	},
 	"license": "MIT",
 	"icon": "assets/pommel/icon.png",
