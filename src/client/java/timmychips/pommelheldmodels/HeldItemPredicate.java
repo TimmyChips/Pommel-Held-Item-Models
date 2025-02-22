@@ -15,6 +15,8 @@ public class HeldItemPredicate {
     private static final String render_held = "is_held";
     private static final String render_fixed = "is_fixed";
     private static final String render_ground = "is_ground";
+    private static final String render_head = "is_head";
+
 
     // 
     private static HashMap<Identifier, List<ModelTransformationMode>> renderTypeWhitelist;
@@ -23,7 +25,7 @@ public class HeldItemPredicate {
 
         // Creates association to render type and transformation modes
         // HashMap contains Indentifiers (held, on ground) with several mode types linked to each identifier
-        renderTypeWhitelist = new HashMap() {{
+        renderTypeWhitelist = new HashMap<Identifier, List<ModelTransformationMode>>() {{
             put(Identifier.of(namespace, render_held), Arrays.asList( // Held render modes
                     ModelTransformationMode.FIRST_PERSON_LEFT_HAND,
                     ModelTransformationMode.FIRST_PERSON_RIGHT_HAND,
@@ -35,6 +37,9 @@ public class HeldItemPredicate {
 
             put(Identifier.of(namespace, render_ground), Arrays.asList( // Thrown on ground render mod
                     ModelTransformationMode.GROUND));
+
+            put(Identifier.of(namespace, render_head), Arrays.asList( // When worn on head armor slot
+                    ModelTransformationMode.HEAD));
         }};
 
         for (var entry:renderTypeWhitelist.entrySet()) { // Performs for each key-value pair
