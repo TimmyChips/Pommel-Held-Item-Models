@@ -9,21 +9,14 @@ import java.util.Arrays;
 
 public class HeldItemPredicate {
     public static ModelTransformationMode currentItemRenderMode;
-    public static boolean isInOffhand = false;
 
     // 
     private static final String namespace = "pommel";
     private static final String render_held = "is_held";
-    private static final String render_offhand = "is_offhand";
     private static final String render_fixed = "is_fixed";
     private static final String render_ground = "is_ground";
     private static final String render_head = "is_head";
 
-    private static final List<ModelTransformationMode> rendermodeHand = Arrays.asList(
-        ModelTransformationMode.FIRST_PERSON_LEFT_HAND,
-        ModelTransformationMode.FIRST_PERSON_RIGHT_HAND,
-        ModelTransformationMode.THIRD_PERSON_LEFT_HAND,
-        ModelTransformationMode.THIRD_PERSON_RIGHT_HAND );
 
     // 
     private static HashMap<Identifier, List<ModelTransformationMode>> renderTypeWhitelist;
@@ -33,9 +26,11 @@ public class HeldItemPredicate {
         // Creates association to render type and transformation modes
         // HashMap contains Indentifiers (held, on ground) with several mode types linked to each identifier
         renderTypeWhitelist = new HashMap<Identifier, List<ModelTransformationMode>>() {{
-            put(Identifier.of(namespace, render_held), rendermodeHand ); // Held render modes
-
-            put(Identifier.of(namespace, render_offhand), rendermodeHand ); // Held render modes for offhand
+            put(Identifier.of(namespace, render_held), Arrays.asList( // Held render modes
+                    ModelTransformationMode.FIRST_PERSON_LEFT_HAND,
+                    ModelTransformationMode.FIRST_PERSON_RIGHT_HAND,
+                    ModelTransformationMode.THIRD_PERSON_LEFT_HAND,
+                    ModelTransformationMode.THIRD_PERSON_RIGHT_HAND));
 
             put(Identifier.of(namespace, render_fixed), Arrays.asList( // Item Frame, Fixed render mode
                     ModelTransformationMode.FIXED));
