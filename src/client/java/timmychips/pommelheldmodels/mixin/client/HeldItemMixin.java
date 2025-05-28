@@ -24,8 +24,10 @@ public abstract class HeldItemMixin {
     // Replaces held version of item model if model's item predicate is 1.0 and if renderMode is in hand
     @Inject(method = "renderItem(Lnet/minecraft/entity/LivingEntity;Lnet/minecraft/item/ItemStack;Lnet/minecraft/client/render/model/json/ModelTransformationMode;ZLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;Lnet/minecraft/world/World;III)V", at = @At(value = "HEAD"))
     private void pommel$renderHeldItem(LivingEntity entity, ItemStack item, ModelTransformationMode renderMode, boolean leftHanded, MatrixStack matrices, VertexConsumerProvider vertexConsumers, World world, int light, int overlay, int seed, CallbackInfo ci) {
+
         HeldItemPredicate.currentItemRenderMode = renderMode; // Sets the item model's "is_held" item predicate based on renderMode
                                                               // Will render the specified held model if it's held in hand
+        HeldItemPredicate.isInOffhand = entity.getOffHandStack() == item;
     }
 
     // Resets the item back to the base model when it's in the GUI, on the Ground, or in an Item Frame
