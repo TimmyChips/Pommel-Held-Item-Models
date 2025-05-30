@@ -3,7 +3,8 @@
   "package": "timmychips.pommelheldmodels.mixin.client",
   "compatibilityLevel": "JAVA_21",
   "client": [
-    "HeldItemMixin"
+    "HeldItemMixin",
+    "GroundItemMixin"
   ],
   "injectors": {
     "defaultRequire": 1
