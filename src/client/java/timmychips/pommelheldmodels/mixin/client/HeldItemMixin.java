@@ -27,10 +27,6 @@ public abstract class HeldItemMixin {
     @Inject(method = "renderItem(Lnet/minecraft/entity/LivingEntity;Lnet/minecraft/item/ItemStack;Lnet/minecraft/client/render/model/json/ModelTransformationMode;ZLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;Lnet/minecraft/world/World;III)V", at = @At(value = "HEAD"))
     private void pommel$renderHeldItem(LivingEntity entity, ItemStack item, ModelTransformationMode renderMode, boolean leftHanded, MatrixStack matrices, VertexConsumerProvider vertexConsumers, World world, int light, int overlay, int seed, CallbackInfo ci) {
         if (entity != null) HeldItemPredicate.itemInOffhand = entity.getOffHandStack() == item; // True if current item in entity's offhand
-        ItemStack usedItem = UseKeyTracker.getItemUsed();
-        if (usedItem != null) System.out.println("Got Used Item!");
-        System.out.println(HeldItemPredicate.itemBeingUsed = usedItem == item);
-        if (usedItem != null) HeldItemPredicate.itemBeingUsed = usedItem == item;
 //        HeldItemPredicate.itemBeingUsed = UseKeyTracker.getItemUsed() == item;
 //        System.out.println(HeldItemPredicate.itemBeingUsed);
         HeldItemPredicate.currentItemRenderMode = renderMode; // Sets the item model's "is_held" item predicate based on renderMode

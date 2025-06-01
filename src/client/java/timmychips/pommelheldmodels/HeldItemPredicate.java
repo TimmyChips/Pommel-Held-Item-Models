@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class HeldItemPredicate {
     public static ModelTransformationMode currentItemRenderMode;
     public static boolean itemInOffhand = false;
-    public static boolean itemBeingUsed = false;
+    public static boolean isUsingItem = false;
     private static final Logger LOGGER = LogUtils.getLogger();
 
     private static final String namespace = "pommel";
@@ -27,7 +27,7 @@ public class HeldItemPredicate {
     private static final String render_fixed = "is_fixed";
     private static final String render_ground = "is_ground";
     private static final String render_head = "is_head";
-    private static final String render_used = "is_used";
+    private static final String render_using = "is_using";
 
     private static final List<ModelTransformationMode> renderModeHands = Arrays.asList(
             ModelTransformationMode.FIRST_PERSON_LEFT_HAND,
@@ -47,7 +47,7 @@ public class HeldItemPredicate {
 
             put(Identifier.of(namespace, render_offhand), renderModeHands ); // Held render modes for the offhand;
 
-            put(Identifier.of(namespace, render_used), renderModeHands ); // Held render modes for item used;
+            put(Identifier.of(namespace, render_using), renderModeHands ); // Held render modes for item used;
 
             put(Identifier.of(namespace, render_fixed), Arrays.asList( // Item Frame, Fixed render mode
                     ModelTransformationMode.FIXED));
@@ -66,12 +66,15 @@ public class HeldItemPredicate {
                 if (currentItemRenderMode == null) return 0.0F; // Return 0 if render mode is null
 
                 boolean isOffhandPredicate = entry.getKey().getPath().equals(render_offhand); // Matches key for offhand
-                boolean isUsedPredicate = entry.getKey().getPath().equals(render_used);
+                boolean isUsedPredicate = entry.getKey().getPath().equals(render_using);
 
                 // If in offhand, return 1 for the offhand predicate
                 // Note that this makes is_held and is_offhand both return 1
                 if (isOffhandPredicate) return (itemInOffhand && entry.getValue().contains(currentItemRenderMode)) ? 1.0F : 0.0F;
-                if (isUsedPredicate) return (itemBeingUsed && entry.getValue().contains(currentItemRenderMode)) ? 1.0F : 0.0F;
+//                if (isUsedPredicate && entry.getValue().contains(currentItemRenderMode)) return UseKeyTracker.getItemUse();
+//                LOGGER.info("Item Use: " + UseKeyTracker.getItemUse());
+                if (isUsedPredicate) return (isUsingItem && entry.getValue().contains(currentItemRenderMode)) ? 1.0F : 0.0F;
+//                itemInUse = 0.0F;
 
                 // Return 1 if whitelisted for all other predicates
                 return entry.getValue().contains(currentItemRenderMode) ? 1.0F : 0.0F;
