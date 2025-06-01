@@ -38,8 +38,10 @@ public class ClientInitializer implements ClientModInitializer {
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			if (client.world != null) {
 				KeyBinding useKey = MinecraftClient.getInstance().options.useKey;
-				HeldItemPredicate.isUsingItem = useKey.isPressed();
-				LOGGER.info(String.valueOf(HeldItemPredicate.isUsingItem));
+//				HeldItemPredicate.isUsingItem = useKey.isPressed();
+				if (useKey.isPressed()) UseKeyTracker.useTicks = 20;
+				HeldItemPredicate.isUsingItemFloat = UseKeyTracker.itemUsingLerp();
+//				LOGGER.info(String.valueOf(HeldItemPredicate.isUsingItem));
 			}
 		});
 

@@ -19,6 +19,7 @@ public class HeldItemPredicate {
     public static ModelTransformationMode currentItemRenderMode;
     public static boolean itemInOffhand = false;
     public static boolean isUsingItem = false;
+    public static float isUsingItemFloat = 0.0F;
     private static final Logger LOGGER = LogUtils.getLogger();
 
     private static final String namespace = "pommel";
@@ -73,7 +74,9 @@ public class HeldItemPredicate {
                 if (isOffhandPredicate) return (itemInOffhand && entry.getValue().contains(currentItemRenderMode)) ? 1.0F : 0.0F;
 //                if (isUsedPredicate && entry.getValue().contains(currentItemRenderMode)) return UseKeyTracker.getItemUse();
 //                LOGGER.info("Item Use: " + UseKeyTracker.getItemUse());
-                if (isUsedPredicate) return (isUsingItem && entry.getValue().contains(currentItemRenderMode)) ? 1.0F : 0.0F;
+//                  if (isUsedPredicate) return (isUsingItem && entry.getValue().contains(currentItemRenderMode)) ? 1.0F : 0.0F;
+                if (isUsedPredicate && entry.getValue().contains(currentItemRenderMode)) return isUsingItemFloat;
+//                LOGGER.info(String.valueOf(isUsingItemFloat));
 //                itemInUse = 0.0F;
 
                 // Return 1 if whitelisted for all other predicates
