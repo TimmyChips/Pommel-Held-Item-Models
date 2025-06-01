@@ -13,7 +13,7 @@ public class UseKeyTracker {
     public static ItemStack itemUsed = null;
 
     public static void register() {
-        LOGGER.info("REGISTERED USE KEY TRACKER");
+        LOGGER.info("!!!!! REGISTERED USE KEY TRACKER");
         UseItemCallback.EVENT.register((PlayerEntity player, World world, net.minecraft.util.Hand hand) -> {
             if (world.isClient) {
                 itemUsed = player.getStackInHand(hand);
@@ -24,7 +24,8 @@ public class UseKeyTracker {
     }
 
     public static ItemStack getItemUsed() {
-        LOGGER.info("useItem method = " + itemUsed);
-        return itemUsed;
+        ItemStack itemWasUsed = itemUsed;
+        itemUsed = null;
+        return itemWasUsed;
     }
 }

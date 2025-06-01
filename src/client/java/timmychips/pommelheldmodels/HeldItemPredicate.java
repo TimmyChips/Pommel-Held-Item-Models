@@ -47,6 +47,8 @@ public class HeldItemPredicate {
 
             put(Identifier.of(namespace, render_offhand), renderModeHands ); // Held render modes for the offhand;
 
+            put(Identifier.of(namespace, render_used), renderModeHands ); // Held render modes for item used;
+
             put(Identifier.of(namespace, render_fixed), Arrays.asList( // Item Frame, Fixed render mode
                     ModelTransformationMode.FIXED));
 
@@ -64,11 +66,12 @@ public class HeldItemPredicate {
                 if (currentItemRenderMode == null) return 0.0F; // Return 0 if render mode is null
 
                 boolean isOffhandPredicate = entry.getKey().getPath().equals(render_offhand); // Matches key for offhand
+                boolean isUsedPredicate = entry.getKey().getPath().equals(render_used);
 
                 // If in offhand, return 1 for the offhand predicate
                 // Note that this makes is_held and is_offhand both return 1
                 if (isOffhandPredicate) return (itemInOffhand && entry.getValue().contains(currentItemRenderMode)) ? 1.0F : 0.0F;
-
+                if (isUsedPredicate) return (itemBeingUsed && entry.getValue().contains(currentItemRenderMode)) ? 1.0F : 0.0F;
 
                 // Return 1 if whitelisted for all other predicates
                 return entry.getValue().contains(currentItemRenderMode) ? 1.0F : 0.0F;
