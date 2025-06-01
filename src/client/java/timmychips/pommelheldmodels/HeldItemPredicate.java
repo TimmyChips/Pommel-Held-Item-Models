@@ -1,18 +1,24 @@
 package timmychips.pommelheldmodels;
 
 import com.mojang.logging.LogUtils;
+import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.minecraft.client.item.ModelPredicateProviderRegistry;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.TypedActionResult;
 import org.slf4j.Logger;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class HeldItemPredicate {
     public static ModelTransformationMode currentItemRenderMode;
     public static boolean itemInOffhand = false;
+    public static boolean itemUsed = false;
     private static final Logger LOGGER = LogUtils.getLogger();
 
     private static final String namespace = "pommel";
@@ -21,6 +27,7 @@ public class HeldItemPredicate {
     private static final String render_fixed = "is_fixed";
     private static final String render_ground = "is_ground";
     private static final String render_head = "is_head";
+    private static final String render_used = "is_used";
 
     private static final List<ModelTransformationMode> renderModeHands = Arrays.asList(
             ModelTransformationMode.FIRST_PERSON_LEFT_HAND,
