@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class HeldItemPredicate {
     public static ModelTransformationMode currentItemRenderMode;
     public static boolean itemInOffhand = false;
-    public static boolean itemUsed = false;
+    public static boolean itemBeingUsed = false;
     private static final Logger LOGGER = LogUtils.getLogger();
 
     private static final String namespace = "pommel";
@@ -68,6 +68,7 @@ public class HeldItemPredicate {
                 // If in offhand, return 1 for the offhand predicate
                 // Note that this makes is_held and is_offhand both return 1
                 if (isOffhandPredicate) return (itemInOffhand && entry.getValue().contains(currentItemRenderMode)) ? 1.0F : 0.0F;
+
 
                 // Return 1 if whitelisted for all other predicates
                 return entry.getValue().contains(currentItemRenderMode) ? 1.0F : 0.0F;
