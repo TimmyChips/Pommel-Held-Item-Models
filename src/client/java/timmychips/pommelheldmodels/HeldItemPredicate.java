@@ -89,7 +89,7 @@ public class HeldItemPredicate {
 
 //                if (isUsedPredicate) return livingEntity != null && livingEntity.getMainHandStack() == itemStack ? isUsingItemFloat : 0.0F;
 
-                if (isUsedPredicate) return livingEntity != null ? UseKeyTracker.player_usedItemTimer(livingEntity) : 0.0F;
+                if (isUsedPredicate && livingEntity != null && livingEntity.isPlayer()) return UseKeyTracker.player_usedItemTimer(livingEntity);
 
                 // Return 1 if whitelisted for all other predicates
                 if (!isUsedPredicate) return entry.getValue().contains(currentItemRenderMode) ? 1.0F : 0.0F;

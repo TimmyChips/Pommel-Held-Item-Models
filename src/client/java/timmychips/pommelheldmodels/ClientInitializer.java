@@ -38,7 +38,8 @@ public class ClientInitializer implements ClientModInitializer {
 //				player_ent = player;
 //				LOGGER.info(String.valueOf(player.getId()));
 				player_usedItem.put(player, player.getStackInHand(hand));
-				UseKeyTracker.tick = 70;
+				UseKeyTracker.tick = 80;
+
 				LOGGER.info("CURRENT Used Item: " + String.valueOf(player_usedItem));
 			}
 			return TypedActionResult.pass(player.getStackInHand(hand));
