@@ -12,9 +12,13 @@ import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
 import org.slf4j.Logger;
 
+import java.util.HashMap;
+
 public class ClientInitializer implements ClientModInitializer {
 
 	private static final Logger LOGGER = LogUtils.getLogger();
+	public static PlayerEntity player_ent;
+	public static HashMap<PlayerEntity, ItemStack> player_usedItem = new HashMap<PlayerEntity, ItemStack>();
 
 	@Override
 	public void onInitializeClient() {
@@ -28,22 +32,27 @@ public class ClientInitializer implements ClientModInitializer {
 		HeldItemPredicate.registerHeldModelPredicate();
 
 		LOGGER.info("!!! Registering UseItemCallback Event");
-//		UseItemCallback.EVENT.register((PlayerEntity player, World world, net.minecraft.util.Hand hand) -> {
-//			if (world.isClient) {
-//				LOGGER.info("[Pommel] Used item: " + player.getStackInHand(hand));
-//			}
-//			return TypedActionResult.pass(player.getStackInHand(hand));
-//		});
-
-		ClientTickEvents.END_CLIENT_TICK.register(client -> {
-			if (client.world != null) {
-				KeyBinding useKey = MinecraftClient.getInstance().options.useKey;
-//				HeldItemPredicate.isUsingItem = useKey.isPressed();
-				if (useKey.isPressed()) UseKeyTracker.useTicks = 20;
-				HeldItemPredicate.isUsingItemFloat = UseKeyTracker.itemUsingLerp();
-//				LOGGER.info(String.valueOf(HeldItemPredicate.isUsingItem));
+		UseItemCallback.EVENT.register((PlayerEntity player, World world, net.minecraft.util.Hand hand) -> {
+			if (world.isClient) {
+				LOGGER.info("[Pommel] Used item: " + player.getStackInHand(hand));
+//				player_ent = player;
+//				LOGGER.info(String.valueOf(player.getId()));
+				player_usedItem.put(player, player.getStackInHand(hand));
+				UseKeyTracker.tick = 70;
+				LOGGER.info("CURRENT Used Item: " + String.valueOf(player_usedItem));
 			}
+			return TypedActionResult.pass(player.getStackInHand(hand));
 		});
+
+//		ClientTickEvents.END_CLIENT_TICK.register(client -> {
+//			if (client.world != null) {
+//				KeyBinding useKey = MinecraftClient.getInstance().options.useKey;
+//				HeldItemPredicate.isUsingItem = useKey.isPressed();
+//				if (useKey.isPressed()) UseKeyTracker.useTicks = 20;
+//				HeldItemPredicate.isUsingItemFloat = UseKeyTracker.itemUsingLerp();
+//				LOGGER.info(String.valueOf(HeldItemPredicate.isUsingItem));
+//			}
+//		});
 
 	}
 }

@@ -4,7 +4,11 @@ import com.mojang.logging.LogUtils;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.minecraft.client.item.ModelPredicateProviderRegistry;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.TypedActionResult;
 import org.slf4j.Logger;
@@ -20,6 +24,7 @@ public class HeldItemPredicate {
     public static boolean itemInOffhand = false;
     public static boolean isUsingItem = false;
     public static float isUsingItemFloat = 0.0F;
+    public static Item activeItem;
     private static final Logger LOGGER = LogUtils.getLogger();
 
     private static final String namespace = "pommel";
@@ -75,13 +80,32 @@ public class HeldItemPredicate {
 //                if (isUsedPredicate && entry.getValue().contains(currentItemRenderMode)) return UseKeyTracker.getItemUse();
 //                LOGGER.info("Item Use: " + UseKeyTracker.getItemUse());
 //                  if (isUsedPredicate) return (isUsingItem && entry.getValue().contains(currentItemRenderMode)) ? 1.0F : 0.0F;
-                if (isUsedPredicate && entry.getValue().contains(currentItemRenderMode)) return isUsingItemFloat;
+//                if (isUsedPredicate && entry.getValue().contains(currentItemRenderMode)) return isUsingItemFloat;
 //                LOGGER.info(String.valueOf(isUsingItemFloat));
 //                itemInUse = 0.0F;
 
+//                if (isUsedPredicate) return livingEntity != null && livingEntity.getActiveItem() == itemStack && isUsingItem ? 1.0F : 0.0F;
+////                LOGGER.info(String.valueOf(livingEntity != null && livingEntity.getActiveItem().getItem() == Items.WOODEN_PICKAXE));
+
+//                if (isUsedPredicate) return livingEntity != null && livingEntity.getMainHandStack() == itemStack ? isUsingItemFloat : 0.0F;
+
+                if (isUsedPredicate && UseKeyTracker.) {
+                    if (UseKeyTracker.player_usedItemTimer())
+                }
+
                 // Return 1 if whitelisted for all other predicates
-                return entry.getValue().contains(currentItemRenderMode) ? 1.0F : 0.0F;
+                if (!isUsedPredicate) return entry.getValue().contains(currentItemRenderMode) ? 1.0F : 0.0F;
+                else return 0.0F;
             });
         }
+
+//        ModelPredicateProviderRegistry.register(Items.WOODEN_PICKAXE, Identifier.ofVanilla("pull"), (itemStack, world, livingEntity, seed) -> {
+//            LOGGER.info("We in the is_used predicate registry for: " + activeItem);
+//            if (livingEntity == null) {
+//                return 0.0F;
+//            } else {
+//                return livingEntity.getMainHandStack() == itemStack ? 1.0F : 0.0F;
+//            }
+//        });
     }
 }
