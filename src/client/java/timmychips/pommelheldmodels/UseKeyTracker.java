@@ -3,6 +3,7 @@ package timmychips.pommelheldmodels;
 import com.mojang.logging.LogUtils;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.TypedActionResult;
@@ -25,16 +26,28 @@ public class UseKeyTracker {
         return f;
     }
 
-    public static HashMap<PlayerEntity, ItemStack> player_usedItemTimer() {
-        HashMap<PlayerEntity, ItemStack> player_lastUsedItemMap = ClientInitializer.player_usedItem;
-        for (var p:player_lastUsedItemMap.entrySet()) {
-//            ItemStack lastUsedItem = ItemStack.EMPTY;
-//            lastUsedItem = p.getValue();
-            if (tick > 0) tick--;
-//            if (tick == 0) lastUsedItem = ItemStack.EMPTY;
-            if (tick == 0) p.setValue(ItemStack.EMPTY);
-        }
-        LOGGER.info("LAST Used Item: " + String.valueOf(player_lastUsedItemMap) + " and tick: " + tick);
-        return player_lastUsedItemMap;
+    public static float player_usedItemTimer(LivingEntity livingEntity) {
+        if (!livingEntity.isPlayer()) return 0.0F;
+//        HashMap<PlayerEntity, ItemStack> player_lastUsedItemMap = ClientInitializer.player_usedItem;
+
+        ItemStack lastUsedItem = ClientInitializer.player_usedItem.get((PlayerEntity) livingEntity);
+        if (tick > 0) tick--;
+        if (tick == 0) lastUsedItem = ItemStack.EMPTY;
+
+        LOGGER.info("Owner " + livingEntity + "'s LAST Used Item: " + lastUsedItem + " and tick: " + tick);
+
+//        if (lastUsedItem.isEmpty()) return 0.0F;
+        return (lastUsedItem == livingEntity.getMainHandStack()) ? 1.0F : 0.0F;
+
+//        for (var p:player_lastUsedItemMap.entrySet()) {
+////            ItemStack lastUsedItem = ItemStack.EMPTY;
+////            lastUsedItem = p.getValue();
+//            if (tick > 0) tick--;
+////            if (tick == 0) lastUsedItem = ItemStack.EMPTY;
+//            if (tick == 0) p.setValue(ItemStack.EMPTY);
+//        }
+//        LOGGER.info("LAST Used Item: " + String.valueOf(player_lastUsedItemMap) + " and tick: " + tick);
+//
+//        return 1.0F;
     }
 }
