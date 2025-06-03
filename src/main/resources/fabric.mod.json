@@ -17,6 +17,7 @@
 	"environment": "*",
 	"entrypoints": {
 		"main": [
+			"timmychips.pommelheldmodels.ServerInitializer"
 		],
 		"client": [
 			"timmychips.pommelheldmodels.ClientInitializer"

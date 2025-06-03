@@ -25,7 +25,6 @@ public class ClientInitializer implements ClientModInitializer {
 	private static final Logger LOGGER = LogUtils.getLogger();
 	public static PlayerEntity player_ent;
 	public static HashMap<PlayerEntity, ItemStack> player_usedItem = new HashMap<PlayerEntity, ItemStack>();
-	public static final Identifier USE_KEY_PACKET_ID = Identifier.of("pommel", "use_item");
 
 	@Override
 	public void onInitializeClient() {
@@ -34,7 +33,6 @@ public class ClientInitializer implements ClientModInitializer {
 		// Register model item predicate
 			// Any .json model file with the <"pommel:is_held": 1.0> item predicate will override and render the item
 			// with the specified held model file
-
 		LOGGER.info("Hello There");
 		HeldItemPredicate.registerHeldModelPredicate();
 
@@ -70,6 +68,8 @@ public class ClientInitializer implements ClientModInitializer {
 				if (useKey.isPressed() && player != null) {
 					ItemStack stack = player.getMainHandStack().isEmpty() ? player.getOffHandStack() : player.getMainHandStack();
 					player_usedItem.put(player, stack);
+
+//					UseKeyPayload payload = new UseKeyPayload
 				}
 
 				if (!useKey.isPressed()) player_usedItem.remove(player);
