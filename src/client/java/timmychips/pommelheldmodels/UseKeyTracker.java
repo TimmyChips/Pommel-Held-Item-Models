@@ -17,6 +17,7 @@ public class UseKeyTracker {
     public static ItemStack itemUsed = null;
     public static int useTicks = 0;
     public static int tick = 80;
+    public static boolean isUsingItem = false;
 //    public static HashMap<PlayerEntity, ItemStack> player_lastUsedItem;
 
     public static float itemUsingLerp() {
@@ -32,8 +33,9 @@ public class UseKeyTracker {
         }
     }
 
-    public static float player_usedItemTimer(LivingEntity livingEntity) {
+    public static float player_usedItemTimer(LivingEntity livingEntity, ItemStack usableItem) {
         if (!livingEntity.isPlayer()) return 0.0F;
+        if (livingEntity.isUsingItem() && livingEntity.getActiveItem() == usableItem) return 1.0F;
 //        HashMap<PlayerEntity, ItemStack> player_lastUsedItemMap = ClientInitializer.player_usedItem;
 
         ItemStack lastUsedItem = ClientInitializer.player_usedItem.get((PlayerEntity) livingEntity);
@@ -58,5 +60,17 @@ public class UseKeyTracker {
 //        LOGGER.info("LAST Used Item: " + String.valueOf(player_lastUsedItemMap) + " and tick: " + tick);
 //
 //        return 1.0F;
+    }
+
+    public static float player_useItemKey(LivingEntity livingEntity, ItemStack usableItem) {
+        if (!livingEntity.isPlayer()) return 0.0F;
+        if (livingEntity.isUsingItem() && livingEntity.getActiveItem() == usableItem) return 1.0F;
+
+        ItemStack usedItem = ClientInitializer.player_usedItem.get((PlayerEntity) livingEntity);
+        if (usedItem != null) {
+            if (usedItem.isEmpty()) return 0.0F;
+            return (usedItem == livingEntity.getMainHandStack() || usedItem == livingEntity.getOffHandStack()) ? 1.0F : 0.0F;
+        }
+        return 0.0F;
     }
 }
