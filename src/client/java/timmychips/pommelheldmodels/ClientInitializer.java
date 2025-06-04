@@ -41,64 +41,7 @@ public class ClientInitializer implements ClientModInitializer {
 		HeldItemPredicate.registerHeldModelPredicate();
 
 		LOGGER.info("!!! Registering UseItemCallback Event");
-//		UseItemCallback.EVENT.register((PlayerEntity player, World world, net.minecraft.util.Hand hand) -> {
-//			if (world.isClient) {
-//				LOGGER.info("[Pommel] Used item: " + player.getStackInHand(hand));
-////				player_ent = player;
-////				LOGGER.info(String.valueOf(player.getId()));
-//				player_usedItem.put(player, player.getStackInHand(hand));
-//				UseKeyTracker.tick = 80;
-//
-//				LOGGER.info("CURRENT Used Item: " + String.valueOf(player_usedItem));
-//			}
-//			return TypedActionResult.pass(player.getStackInHand(hand));
-//		});
-
-//		ClientTickEvents.END_CLIENT_TICK.register(client -> {
-//			if (client.world != null) {
-//				KeyBinding useKey = MinecraftClient.getInstance().options.useKey;
-//				HeldItemPredicate.isUsingItem = useKey.isPressed();
-//				if (useKey.isPressed()) UseKeyTracker.useTicks = 20;
-//				HeldItemPredicate.isUsingItemFloat = UseKeyTracker.itemUsingLerp();
-//				LOGGER.info(String.valueOf(HeldItemPredicate.isUsingItem));
-//			}
-//		});
-
-		ClientTickEvents.END_CLIENT_TICK.register(client -> {
-			if (client.world != null) {
-				PlayerEntity user = MinecraftClient.getInstance().player;
-				World world = MinecraftClient.getInstance().world;
-				KeyBinding useKey = MinecraftClient.getInstance().options.useKey;
-
-				ItemStack stack = ItemStack.EMPTY;
-				if (user != null) stack = user.getMainHandStack().isEmpty() ? user.getOffHandStack() : user.getMainHandStack();
-
-				boolean useKeyPressed = useKey.isPressed();
-
-				if (useKeyPressed) player_usedItem.put(user, stack);
-
-//				UseKeyPayload payload = new UseKeyPayload(user.getUuid(), stack, useKeyPressed);
-//				for (ServerPlayerEntity player : PlayerLookup.world((ServerWorld) world)) {
-//					ServerPlayNetworking.send(player, payload);
-//				}
-
-				if (client.player != null) {
-					UUID playerUuid = client.player.getUuid();
-
-					UseKeyPayload payload = new UseKeyPayload(playerUuid, stack, useKeyPressed);
-					ClientPlayNetworking.send(payload);
-
-					// TODO: Push ClientTickEvent to it's own classes
-					//  Push the payload to UseItemCallback.EVENT?
-					//  Also need to have it read true or false
-					//  Currently ClientTickEvent causes it take forever to save and exit world -> bad
-//					LOGGER.info(String.valueOf(payload));
-				}
-
-				if (!useKeyPressed) player_usedItem.remove(user);
-
-//				LOGGER.info("CURRENT Used Item: " + String.valueOf(player_usedItem));
-			}
-		});
+		UseKeyTracker.clientUseKey();
+		UseKeyTracker.eventUseKeyPacket();
 	}
 }
