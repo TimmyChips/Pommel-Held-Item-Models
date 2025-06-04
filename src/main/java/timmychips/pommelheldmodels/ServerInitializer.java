@@ -1,3 +1,5 @@
+package timmychips.pommelheldmodels;
+
 import net.fabricmc.api.ModInitializer;
 
 public class ServerInitializer implements ModInitializer {

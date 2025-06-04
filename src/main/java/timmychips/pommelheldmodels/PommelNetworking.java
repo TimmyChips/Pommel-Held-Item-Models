@@ -1,3 +1,5 @@
+package timmychips.pommelheldmodels;
+
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 
 public class PommelNetworking {

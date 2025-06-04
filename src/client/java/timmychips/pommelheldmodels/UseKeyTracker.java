@@ -20,6 +20,10 @@ public class UseKeyTracker {
     public static boolean isUsingItem = false;
 //    public static HashMap<PlayerEntity, ItemStack> player_lastUsedItem;
 
+    public static void clientUseKey() {
+
+    }
+
     public static float itemUsingLerp() {
         int tickMax = 20;
         float f = (float) useTicks / tickMax;

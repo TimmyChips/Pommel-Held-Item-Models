@@ -4,8 +4,10 @@ import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.Hash;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
@@ -13,12 +15,14 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
 import org.slf4j.Logger;
 
 import java.util.HashMap;
+import java.util.UUID;
 
 public class ClientInitializer implements ClientModInitializer {
 
@@ -62,19 +66,38 @@ public class ClientInitializer implements ClientModInitializer {
 
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			if (client.world != null) {
-				PlayerEntity player = MinecraftClient.getInstance().player;
+				PlayerEntity user = MinecraftClient.getInstance().player;
+				World world = MinecraftClient.getInstance().world;
 				KeyBinding useKey = MinecraftClient.getInstance().options.useKey;
 
-				if (useKey.isPressed() && player != null) {
-					ItemStack stack = player.getMainHandStack().isEmpty() ? player.getOffHandStack() : player.getMainHandStack();
-					player_usedItem.put(player, stack);
+				ItemStack stack = ItemStack.EMPTY;
+				if (user != null) stack = user.getMainHandStack().isEmpty() ? user.getOffHandStack() : user.getMainHandStack();
 
-//					UseKeyPayload payload = new UseKeyPayload
+				boolean useKeyPressed = useKey.isPressed();
+
+				if (useKeyPressed) player_usedItem.put(user, stack);
+
+//				UseKeyPayload payload = new UseKeyPayload(user.getUuid(), stack, useKeyPressed);
+//				for (ServerPlayerEntity player : PlayerLookup.world((ServerWorld) world)) {
+//					ServerPlayNetworking.send(player, payload);
+//				}
+
+				if (client.player != null) {
+					UUID playerUuid = client.player.getUuid();
+
+					UseKeyPayload payload = new UseKeyPayload(playerUuid, stack, useKeyPressed);
+					ClientPlayNetworking.send(payload);
+
+					// TODO: Push ClientTickEvent to it's own classes
+					//  Push the payload to UseItemCallback.EVENT?
+					//  Also need to have it read true or false
+					//  Currently ClientTickEvent causes it take forever to save and exit world -> bad
+//					LOGGER.info(String.valueOf(payload));
 				}
 
-				if (!useKey.isPressed()) player_usedItem.remove(player);
+				if (!useKeyPressed) player_usedItem.remove(user);
 
-				LOGGER.info("CURRENT Used Item: " + String.valueOf(player_usedItem));
+//				LOGGER.info("CURRENT Used Item: " + String.valueOf(player_usedItem));
 			}
 		});
 	}
