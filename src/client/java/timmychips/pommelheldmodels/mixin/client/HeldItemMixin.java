@@ -28,32 +28,19 @@ public abstract class HeldItemMixin {
 
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    // Sets item render predicate to 0.0 or 1.0 based on the current render mode
+    // Sets item render predicate to 0.0 or 1.0 based on the current render mode or other conditions
     @Inject(method = "renderItem(Lnet/minecraft/entity/LivingEntity;Lnet/minecraft/item/ItemStack;Lnet/minecraft/client/render/model/json/ModelTransformationMode;ZLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;Lnet/minecraft/world/World;III)V", at = @At(value = "HEAD"))
     private void pommel$renderHeldItem(LivingEntity entity, ItemStack item, ModelTransformationMode renderMode, boolean leftHanded, MatrixStack matrices, VertexConsumerProvider vertexConsumers, World world, int light, int overlay, int seed, CallbackInfo ci) {
-        if (entity != null) HeldItemPredicate.itemInOffhand = entity.getOffHandStack() == item; // True if current item in entity's offhand
-//        HeldItemPredicate.itemBeingUsed = UseKeyTracker.getItemUsed() == item;
-//        System.out.println(HeldItemPredicate.itemBeingUsed);
+        if (entity != null) {
+            HeldItemPredicate.itemInOffhand = entity.getOffHandStack() == item; // True if current item in entity's offhand
+//          UseKeyTracker.itemUsingLerp();
+            UseKeyTracker.tickTimer(entity); // Countdown tick timer for other (non-client) players to retain item usage
+        }
 
-//        if (entity != null) LOGGER.info(String.valueOf(entity.getId()));
-//        if (ClientInitializer.player_ent != null && entity != null) {
-//            if (ClientInitializer.player_ent.getId() == entity.getId()) {
-//                LOGGER.info("matched entity");
-//                ClientInitializer.player_ent = null;
-//                HeldItemPredicate.isUsingItemFloat = 1.0F;
-//            }
-//        }
-
-//        LOGGER.info(String.valueOf(item.getItem()));
-//        if (entity != null) HeldItemPredicate.activeItem = item.getItem();
-//        UseKeyTracker.itemUsingLerp();
-
-        if (entity != null) UseKeyTracker.tickTimer(entity);
-
-        HeldItemPredicate.currentItemRenderMode = renderMode; // Sets the item model's "is_held" item predicate based on renderMode
+        HeldItemPredicate.currentItemRenderMode = renderMode; // Sets the item model's "is_held" and other item predicates based on renderMode
     }
 
-    // Resets the item back to the base model when it's in the GUI, on the Ground, or in an Item Frame
+    // Resets the item back to the base model when it's in the GUI
     @Inject(method = "renderItem(Lnet/minecraft/item/ItemStack;Lnet/minecraft/client/render/model/json/ModelTransformationMode;ZLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;IILnet/minecraft/client/render/model/BakedModel;)V", at = @At(value = "HEAD"))
     private void pommel$renderBaseItem(ItemStack stack, ModelTransformationMode renderMode, boolean leftHanded, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, BakedModel model, CallbackInfo ci) {
         HeldItemPredicate.currentItemRenderMode = null; // Resets the item predicate so it renders the 2d model

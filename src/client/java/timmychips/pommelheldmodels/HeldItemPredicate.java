@@ -77,20 +77,15 @@ public class HeldItemPredicate {
                 // If in offhand, return 1 for the offhand predicate
                 // Note that this makes is_held and is_offhand both return 1
                 if (isOffhandPredicate) return (itemInOffhand && entry.getValue().contains(currentItemRenderMode)) ? 1.0F : 0.0F;
-//                if (isUsedPredicate && entry.getValue().contains(currentItemRenderMode)) return UseKeyTracker.getItemUse();
-//                LOGGER.info("Item Use: " + UseKeyTracker.getItemUse());
-//                  if (isUsedPredicate) return (isUsingItem && entry.getValue().contains(currentItemRenderMode)) ? 1.0F : 0.0F;
-//                if (isUsedPredicate && entry.getValue().contains(currentItemRenderMode)) return isUsingItemFloat;
-//                LOGGER.info(String.valueOf(isUsingItemFloat));
-//                itemInUse = 0.0F;
 
-//                if (isUsedPredicate) return livingEntity != null && livingEntity.getActiveItem() == itemStack && isUsingItem ? 1.0F : 0.0F;
-////                LOGGER.info(String.valueOf(livingEntity != null && livingEntity.getActiveItem().getItem() == Items.WOODEN_PICKAXE));
-
-//                if (isUsedPredicate) return livingEntity != null && livingEntity.getMainHandStack() == itemStack ? isUsingItemFloat : 0.0F;
-
-//                if (isUsedPredicate && livingEntity != null && livingEntity.isPlayer()) return UseKeyTracker.player_usedItemTimer(livingEntity, itemStack);
+                // Predicate when player presses the use key for the using item predicate
                 if (isUsedPredicate && livingEntity != null) return UseKeyTracker.player_useItemKey(livingEntity, itemStack);
+
+                // TODO: Remove is_ground for thrown items (eggs, snowballs) and separate into two predicates: "is_ground" and a new, "is_thrown"
+                //  Add a new item predicate for when player is submerged underwater "is_submerged"
+                //  Probably add new predicate for falling/in air "is_falling"
+                //  TBD (Probably): re-add smooth interpolation when player stops holding use key?
+                //  TBD: revise/change using tick cooldown for other players to a (potentially) better method?
 
                 // Return 1 if whitelisted for all other predicates
                 if (!isUsedPredicate) return entry.getValue().contains(currentItemRenderMode) ? 1.0F : 0.0F;
