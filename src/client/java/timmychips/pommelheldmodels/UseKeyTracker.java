@@ -9,7 +9,6 @@ import net.minecraft.client.option.KeyBinding;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
 import org.slf4j.Logger;
@@ -22,6 +21,7 @@ public class UseKeyTracker {
     private static ItemStack itemUsed = ItemStack.EMPTY;
     private static boolean useKeyPressed = false;
     public static HashMap<PlayerEntity, ItemStack> player_usedItem = new HashMap<PlayerEntity, ItemStack>();
+    public static HashMap<PlayerEntity, Integer> player_useCooldown = new HashMap<PlayerEntity, Integer>();
     public static int useTicks = 0;
     public static int tick = 80;
     public static boolean isUsingItem = false;
@@ -43,21 +43,24 @@ public class UseKeyTracker {
 
     public static void eventUseKeyPacket() {
         UseItemCallback.EVENT.register((PlayerEntity user, World world, net.minecraft.util.Hand hand) -> {
-			if (world.isClient) {
-                return TypedActionResult.pass(user.getStackInHand(hand));
-			}
+//			if (world.isClient) {
+//                return TypedActionResult.pass(user.getStackInHand(hand));
+//			}
 
-            LOGGER.info("Used Item");
-            UUID playerUuid = user.getUuid();
+            if (!world.isClient) {
+                LOGGER.info("Used Item");
+                UUID playerUuid = user.getUuid();
 
-            UseKeyPayload payload = new UseKeyPayload(playerUuid, itemUsed, useKeyPressed);
-            ClientPlayNetworking.send(payload);
+                ItemStack sendItemUsed = user.getStackInHand(hand);
+                UseKeyPayload payload = new UseKeyPayload(playerUuid, sendItemUsed, true);
+                ClientPlayNetworking.send(payload);
+            }
 
 			return TypedActionResult.pass(user.getStackInHand(hand));
 		});
     }
 
-    public static void recieveUseKeyPacket() {
+    public static void receiveUseKeyPacket() {
         ClientPlayNetworking.registerGlobalReceiver(UseKeyS2CPayload.PACKET_ID, (payload, context) -> {
             MinecraftClient client = MinecraftClient.getInstance();
             if (client.world != null) {
@@ -66,9 +69,12 @@ public class UseKeyTracker {
                     if (sender != null) {
                         if (payload.isUsing()) {
                             UseKeyTracker.player_usedItem.put(sender, payload.itemStack());
-                        } else {
-                            UseKeyTracker.player_usedItem.remove(sender);
+                            UseKeyTracker.player_useCooldown.put(sender, 70);
+                            LOGGER.info("Other player: " + sender + " using: " + payload.itemStack());
                         }
+//                        else {
+//                            UseKeyTracker.player_usedItem.remove(sender);
+//                        }
                     }
                 });
             }
@@ -82,11 +88,25 @@ public class UseKeyTracker {
         return f;
     }
 
-//    public static void tickTimer(LivingEntity entity) {
+    public static void tickTimer(LivingEntity entity) {
 //        if (entity.isPlayer() && player_usedItem.containsKey((PlayerEntity) entity)) {
-//            if (tick > 0) tick--;
-//        }
-//    }
+        if (entity.isPlayer()) {
+            PlayerEntity player = (PlayerEntity) entity;
+            if (player_useCooldown.containsKey(player)) {
+
+                int p_tick = player_useCooldown.get(player);
+                LOGGER.info(String.valueOf(p_tick));
+                if (p_tick > 0) p_tick--;
+
+                if (p_tick == 0) {
+                    UseKeyTracker.player_useCooldown.remove(player);
+                    UseKeyTracker.player_usedItem.remove(player);
+                }
+                else player_useCooldown.replace(player, p_tick);
+            }
+        }
+    }
+
 //
 //    public static float player_usedItemTimer(LivingEntity livingEntity, ItemStack usableItem) {
 //        if (!livingEntity.isPlayer()) return 0.0F;
@@ -107,9 +127,15 @@ public class UseKeyTracker {
         if (livingEntity.isUsingItem() && livingEntity.getActiveItem() == usableItem) return 1.0F;
 
         ItemStack usedItem = player_usedItem.get((PlayerEntity) livingEntity);
+
         if (usedItem != null) {
+
+//            LOGGER.info("Used: " + usedItem + " | Main: " + livingEntity.getMainHandStack());
             if (usedItem.isEmpty()) return 0.0F;
-            return (usedItem == livingEntity.getMainHandStack() || usedItem == livingEntity.getOffHandStack()) ? 1.0F : 0.0F;
+//            return (usedItem == livingEntity.getMainHandStack() || usedItem == livingEntity.getOffHandStack()) ? 1.0F : 0.0F;
+            return 1.0F;
+//            return usedItem == livingEntity.getMainHandStack() || usedItem == livingEntity.getOffHandStack() ? 1.0F : 0.0F;
+
         }
         return 0.0F;
     }

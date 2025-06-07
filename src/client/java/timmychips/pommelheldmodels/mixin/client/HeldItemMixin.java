@@ -48,7 +48,7 @@ public abstract class HeldItemMixin {
 //        if (entity != null) HeldItemPredicate.activeItem = item.getItem();
 //        UseKeyTracker.itemUsingLerp();
 
-//        UseKeyTracker.tickTimer(entity);
+        if (entity != null) UseKeyTracker.tickTimer(entity);
 
         HeldItemPredicate.currentItemRenderMode = renderMode; // Sets the item model's "is_held" item predicate based on renderMode
     }
