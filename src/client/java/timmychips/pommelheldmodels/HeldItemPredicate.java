@@ -6,11 +6,16 @@ import net.minecraft.client.item.ModelPredicateProviderRegistry;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.fluid.Fluid;
+import net.minecraft.fluid.FluidState;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.registry.tag.FluidTags;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.TypedActionResult;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import org.slf4j.Logger;
 
 import java.util.HashMap;
@@ -22,9 +27,9 @@ import java.util.concurrent.atomic.AtomicReference;
 public class HeldItemPredicate {
     public static ModelTransformationMode currentItemRenderMode;
     public static boolean itemInOffhand = false;
-    public static boolean isUsingItem = false;
+    public static boolean isSubmerged = false;
+    public static boolean isFalling = false;
     public static float isUsingItemFloat = 0.0F;
-    public static Item activeItem;
     private static final Logger LOGGER = LogUtils.getLogger();
 
     private static final String namespace = "pommel";
@@ -34,6 +39,8 @@ public class HeldItemPredicate {
     private static final String render_ground = "is_ground";
     private static final String render_head = "is_head";
     private static final String render_using = "is_using";
+    private static final String render_submerged = "is_submerged";
+    private static final String render_falling = "is_falling";
 
     private static final List<ModelTransformationMode> renderModeHands = Arrays.asList(
             ModelTransformationMode.FIRST_PERSON_LEFT_HAND,
@@ -45,15 +52,15 @@ public class HeldItemPredicate {
     private static HashMap<Identifier, List<ModelTransformationMode>> renderTypeWhitelist;
 
     public static void registerHeldModelPredicate() {
-
         // Creates association to render type and transformation modes
         // HashMap contains Indentifiers (held, on ground) with several mode types linked to each identifier
         renderTypeWhitelist = new HashMap<Identifier, List<ModelTransformationMode>>() {{
             put(Identifier.of(namespace, render_held), renderModeHands ); // Held render modes
 
             put(Identifier.of(namespace, render_offhand), renderModeHands ); // Held render modes for the offhand;
-
             put(Identifier.of(namespace, render_using), renderModeHands ); // Held render modes for item used;
+            put(Identifier.of(namespace, render_submerged), renderModeHands );
+            put(Identifier.of(namespace, render_falling), renderModeHands );
 
             put(Identifier.of(namespace, render_fixed), Arrays.asList( // Item Frame, Fixed render mode
                     ModelTransformationMode.FIXED));
@@ -73,13 +80,27 @@ public class HeldItemPredicate {
 
                 boolean isOffhandPredicate = entry.getKey().getPath().equals(render_offhand); // Matches key for offhand
                 boolean isUsedPredicate = entry.getKey().getPath().equals(render_using);
+                boolean isSubmergedPredicate = entry.getKey().getPath().equals(render_submerged);
+                boolean isFallingPredicate = entry.getKey().getPath().equals(render_falling);
 
                 // If in offhand, return 1 for the offhand predicate
                 // Note that this makes is_held and is_offhand both return 1
                 if (isOffhandPredicate) return (itemInOffhand && entry.getValue().contains(currentItemRenderMode)) ? 1.0F : 0.0F;
 
-                // Predicate when player presses the use key for the using item predicate
-                if (isUsedPredicate && livingEntity != null) return UseKeyTracker.player_useItemKey(livingEntity, itemStack);
+                if (livingEntity != null) {
+                    // Predicate when player presses the use key for the using item predicate
+                    if (isUsedPredicate ) return UseKeyTracker.player_useItemKey(livingEntity, itemStack);
+//                    //if (isSubmergedPredicate) return livingEntity.isSubmergedInWater() ? 1.0F : 0.0F;
+//                    if (isSubmergedPredicate) return livingEntity.isSubmergedIn(FluidTags.WATER) || livingEntity.isSubmergedIn(FluidTags.LAVA) ? 1.0F : 0.0F;
+                    if (isSubmergedPredicate) return submergedInFluidCheck(livingEntity);
+//                    if (isFallingPredicate) return livingEntity.isFallFlying() || (!livingEntity.isOnGround() && livingEntity.fallDistance > 0.25) ? 1.0F : 0.0F;
+                    double yVelocity = livingEntity.getVelocity().y;
+//                    if (isFallingPredicate) return (!livingEntity.isOnGround() && yVelocity < -0.24) ? 1.0F : 0.0F;
+                    if (isFallingPredicate) return isFallingCheck(livingEntity);
+//                    if (isFallingPredicate) return !livingEntity.isOnGround() && livingEntity.fallDistance > 0 ? 1.0F : 0.0F;
+
+
+                }
 
                 // TODO: Remove is_ground for thrown items (eggs, snowballs) and separate into two predicates: "is_ground" and a new, "is_thrown"
                 //  Add a new item predicate for when player is submerged underwater "is_submerged"
@@ -101,5 +122,19 @@ public class HeldItemPredicate {
 //                return livingEntity.getMainHandStack() == itemStack ? 1.0F : 0.0F;
 //            }
 //        });
+    }
+
+    private static float submergedInFluidCheck(LivingEntity entity) {
+        Vec3d eyePos = entity.getEyePos();
+        BlockPos fluidBlock = BlockPos.ofFloored(eyePos);
+        FluidState fluidState = entity.getWorld().getFluidState(fluidBlock);
+        return !fluidState.isEmpty() ? 1.0F : 0.0F;
+    }
+
+    public static float isFallingCheck(LivingEntity entity) {
+        if (entity.isOnGround()) return 0.0F;
+        double entGrav = -1 * entity.getFinalGravity();
+        double yVel = entity.getVelocity().y;
+        return (yVel - entGrav) < -0.24 && entity.fallDistance > 0 ? 1.0F : 0.0F; // ensures player is moving down enough (negative y velocity) and is falling
     }
 }

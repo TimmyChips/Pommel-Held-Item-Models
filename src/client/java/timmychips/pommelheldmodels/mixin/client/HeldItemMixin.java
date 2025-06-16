@@ -11,6 +11,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.tag.TagKey;
 import net.minecraft.world.World;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Mixin;
@@ -33,6 +34,12 @@ public abstract class HeldItemMixin {
     private void pommel$renderHeldItem(LivingEntity entity, ItemStack item, ModelTransformationMode renderMode, boolean leftHanded, MatrixStack matrices, VertexConsumerProvider vertexConsumers, World world, int light, int overlay, int seed, CallbackInfo ci) {
         if (entity != null) {
             HeldItemPredicate.itemInOffhand = entity.getOffHandStack() == item; // True if current item in entity's offhand
+            HeldItemPredicate.isSubmerged = entity.isSubmergedInWater();
+//            if (entity.isFallFlying()) LOGGER.info("is elyta flying");
+//            if (!entity.isOnGround() && entity.fallDistance > 0.0) LOGGER.info("is falling");
+//            LOGGER.info(String.valueOf(entity.fallDistance));
+            HeldItemPredicate.isFallingCheck(entity);
+
 //          UseKeyTracker.itemUsingLerp();
             UseKeyTracker.tickTimer(entity); // Countdown tick timer for other (non-client) players to retain item usage
         }
