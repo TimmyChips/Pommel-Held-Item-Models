@@ -6,9 +6,13 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
 import org.slf4j.Logger;
@@ -48,6 +52,7 @@ public class UseKeyTracker {
 //                LOGGER.info("Used Item");
                 UUID playerUuid = user.getUuid();
                 ItemStack sendItemUsed = user.getStackInHand(hand);
+
                 UseKeyPayload payload = new UseKeyPayload(playerUuid, sendItemUsed, true);
 
                 ClientPlayNetworking.send(payload); // Sends payload to server

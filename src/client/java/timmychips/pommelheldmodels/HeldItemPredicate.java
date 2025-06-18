@@ -90,9 +90,9 @@ public class HeldItemPredicate {
                 if (livingEntity != null) {
                     // Predicate when player presses the use key for the using item predicate
                     if (isUsedPredicate ) return UseKeyTracker.player_useItemKey(livingEntity, itemStack);
-//                    //if (isSubmergedPredicate) return livingEntity.isSubmergedInWater() ? 1.0F : 0.0F;
+                    if (isSubmergedPredicate) return livingEntity.isSubmergedInWater() ? 1.0F : 0.0F;
 //                    if (isSubmergedPredicate) return livingEntity.isSubmergedIn(FluidTags.WATER) || livingEntity.isSubmergedIn(FluidTags.LAVA) ? 1.0F : 0.0F;
-                    if (isSubmergedPredicate) return submergedInFluidCheck(livingEntity);
+//                    if (isSubmergedPredicate) return submergedInFluidCheck(livingEntity);
 //                    if (isFallingPredicate) return livingEntity.isFallFlying() || (!livingEntity.isOnGround() && livingEntity.fallDistance > 0.25) ? 1.0F : 0.0F;
                     double yVelocity = livingEntity.getVelocity().y;
 //                    if (isFallingPredicate) return (!livingEntity.isOnGround() && yVelocity < -0.24) ? 1.0F : 0.0F;
