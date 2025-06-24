@@ -74,8 +74,6 @@ public class ClientInitializer implements ClientModInitializer {
 						LOGGER.warn("[Pommel] Failed to parse item definition for {}", id, e);
 					}
 				}
-				LOGGER.info(ItemModelRegistry.get(Identifier.of("minecraft","stick")).toString());
-				LOGGER.info("[Pommel] Get registry path" + ItemModelDefinitionCodec.Case.CODEC.toString());
 
 
 			}

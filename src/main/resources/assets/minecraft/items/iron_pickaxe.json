@@ -1,0 +1,31 @@
+{
+  "model": {
+    "type": "minecraft:condition",
+    "property": "minecraft:damaged",
+    "on_false": {
+      "type": "minecraft:model",
+      "model": "minecraft:item/gunpowder"
+    },
+    "on_true": {
+      "type": "minecraft:select",
+      "property": "minecraft:display_context",
+      "cases": [
+        {
+          "model": {
+            "type": "minecraft:model",
+            "model": "minecraft:item/redstone"
+          },
+          "when": [
+            "gui",
+            "ground",
+            "fixed"
+          ]
+        }
+      ],
+      "fallback": {
+        "type": "minecraft:model",
+        "model": "minecraft:item/iron_pickaxe"
+      }
+    }
+  }
+}
