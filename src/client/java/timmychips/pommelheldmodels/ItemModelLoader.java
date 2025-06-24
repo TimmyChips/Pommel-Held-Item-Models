@@ -11,10 +11,23 @@ import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
 
 import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.Map;
 
 import static timmychips.pommelheldmodels.ClientInitializer.LOGGER;
 
 public class ItemModelLoader {
+
+    private static final Map<Identifier, ItemModelDefinitionCodec.ItemModelDefinition> DEFINITION_MAP = new HashMap<>();
+
+    public static void register(Identifier id, ItemModelDefinitionCodec.ItemModelDefinition def) {
+        DEFINITION_MAP.put(id, def);
+    }
+
+    public static ItemModelDefinitionCodec.ItemModelDefinition getDefinition(Identifier id) {
+        return DEFINITION_MAP.get(id);
+    }
+
     public static void loadItemModelDefinition(Identifier id) {
         ResourceManager manager = MinecraftClient.getInstance().getResourceManager();
         Identifier path = Identifier.of(id.getNamespace(), "items/" + id.getPath() + ".json");

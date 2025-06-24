@@ -75,6 +75,9 @@ public class ClientInitializer implements ClientModInitializer {
 					}
 				}
 				LOGGER.info(ItemModelRegistry.get(Identifier.of("minecraft","stick")).toString());
+				LOGGER.info("[Pommel] Get registry path" + ItemModelDefinitionCodec.Case.CODEC.toString());
+
+
 			}
 		});
 

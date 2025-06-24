@@ -3,30 +3,51 @@ package timmychips.pommelheldmodels.mixin.client;
 import com.mojang.logging.LogUtils;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.item.ItemModels;
 import net.minecraft.client.render.item.ItemRenderer;
 import net.minecraft.client.render.model.BakedModel;
+import net.minecraft.client.render.model.BakedModelManager;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
+import net.minecraft.client.util.ModelIdentifier;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.tag.TagKey;
+import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import org.slf4j.Logger;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import timmychips.pommelheldmodels.ClientInitializer;
 import timmychips.pommelheldmodels.HeldItemPredicate;
+import timmychips.pommelheldmodels.ItemModelResolver;
 import timmychips.pommelheldmodels.UseKeyTracker;
+
+import java.util.Optional;
+import java.util.Set;
 
 // Mixin injects into target ItemRenderer vanilla class
 @Environment(EnvType.CLIENT)
 @Mixin(ItemRenderer.class)
 public abstract class HeldItemMixin {
 
+    @Shadow protected abstract void renderBakedItemModel(BakedModel model, ItemStack stack, int light, int overlay, MatrixStack matrices, VertexConsumer vertices);
+
+    @Shadow public abstract void renderItem(ItemStack stack, ModelTransformationMode renderMode, boolean leftHanded, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, BakedModel model);
+
+    @Shadow @Final private ItemModels models;
+    @Shadow @Final private static Set<Item> WITHOUT_MODELS;
     private static final Logger LOGGER = LogUtils.getLogger();
 
     // Sets item render predicate to 0.0 or 1.0 based on the current render mode or other conditions
@@ -40,16 +61,66 @@ public abstract class HeldItemMixin {
 //            LOGGER.info(String.valueOf(entity.fallDistance));
             HeldItemPredicate.isFallingCheck(entity);
 
+//            Identifier itemId = Registries.ITEM.getId(item.getItem());
+//
+//            Optional<Identifier> maybeModel = ItemModelResolver.resolveModel(itemId, renderMode);
+//            maybeModel.ifPresent(modelId -> LOGGER.info("Resolved model for {} in {} mode: {}", item, renderMode.toString().toLowerCase(), modelId));
+
 //          UseKeyTracker.itemUsingLerp();
             UseKeyTracker.tickTimer(entity); // Countdown tick timer for other (non-client) players to retain item usage
         }
 
-        HeldItemPredicate.currentItemRenderMode = renderMode; // Sets the item model's "is_held" and other item predicates based on renderMode
+
+
+//        HeldItemPredicate.currentItemRenderMode = renderMode; // Sets the item model's "is_held" and other item predicates based on renderMode
     }
 
     // Resets the item back to the base model when it's in the GUI
-    @Inject(method = "renderItem(Lnet/minecraft/item/ItemStack;Lnet/minecraft/client/render/model/json/ModelTransformationMode;ZLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;IILnet/minecraft/client/render/model/BakedModel;)V", at = @At(value = "HEAD"))
-    private void pommel$renderBaseItem(ItemStack stack, ModelTransformationMode renderMode, boolean leftHanded, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, BakedModel model, CallbackInfo ci) {
-        HeldItemPredicate.currentItemRenderMode = null; // Resets the item predicate so it renders the 2d model
+    @Inject(method = "renderItem(Lnet/minecraft/item/ItemStack;Lnet/minecraft/client/render/model/json/ModelTransformationMode;ZLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;IILnet/minecraft/client/render/model/BakedModel;)V", at = @At("HEAD"), cancellable = true)
+    private void pommel$renderBaseItem(ItemStack stack, ModelTransformationMode renderMode, boolean leftHanded, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, BakedModel originalModel, CallbackInfo ci) {
+//        HeldItemPredicate.currentItemRenderMode = null; // Resets the item predicate so it renders the 2d model
+
+        Identifier itemId = Registries.ITEM.getId(stack.getItem());
+
+        Optional<Identifier> maybeModelId = ItemModelResolver.resolveModel(itemId, renderMode);
+//        maybeModel.ifPresent(modelId -> LOGGER.info("Resolved model for {} in {} mode: {}", stack, renderMode.toString().toLowerCase(), modelId));
+
+        maybeModelId.ifPresent(modelId -> {
+
+            String cleanPath = modelId.getPath().startsWith("item/")
+                    ? modelId.getPath().substring("item/".length())
+                    : modelId.getPath();
+
+            LOGGER.info(modelId.toString());
+            LOGGER.info("Path: " + modelId.getPath()); // prints item/spylgass # Wrong
+            ModelIdentifier modelIdentifier = new ModelIdentifier(Identifier.of("minecraft", cleanPath), "inventory"); // gets correct path
+            LOGGER.info(modelIdentifier.toString());
+
+//            this.models.putModel(stack.getItem(), ModelIdentifier.ofVanilla(modelId.getPath(), "test"));
+//            LOGGER.info("[Pommel] Model path: " + ModelIdentifier.ofVanilla(modelId.getPath(), "test"));
+            BakedModel customModel = this.models.getModelManager().getModel(ModelIdentifier.ofVanilla(modelId.getPath(), "test"));
+
+            customModel = this.models.getModelManager().getModel(modelIdentifier);
+
+//            //BakedModel customModel = MinecraftClient.getInstance().getBakedModelManager().getModel(modelId);
+//            BakedModel customModel = ((ItemRenderer)(Object)this).getModels().getModelManager().getModel(modelId);
+
+
+//            customModel = MinecraftClient.getInstance().getBakedModelManager().getModel(ModelIdentifier.ofInventoryVariant(Identifier.ofVanilla("spyglass_in_hand")));
+
+
+            if (customModel != null) LOGGER.info(customModel.toString());
+            if (customModel == null) LOGGER.info("[Pommel] Could not find baked model of: " + modelId);
+
+            if (customModel != null && customModel != originalModel) {
+//                MinecraftClient.getInstance().getItemRenderer().renderItem(
+//                        stack, renderMode, leftHanded, matrices, vertexConsumers, light, overlay, customModel
+//                );
+                ItemRenderer self = (ItemRenderer)(Object)this;
+                self.renderItem(stack, renderMode, leftHanded, matrices, vertexConsumers, light, overlay, customModel);
+
+                ci.cancel();
+            }
+        });
     }
 }
