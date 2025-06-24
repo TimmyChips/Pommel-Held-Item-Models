@@ -82,7 +82,7 @@ public abstract class HeldItemMixin {
 
         Identifier itemId = Registries.ITEM.getId(stack.getItem());
 
-        Optional<Identifier> maybeModelId = ItemModelResolver.resolveModel(itemId, renderMode);
+        Optional<Identifier> maybeModelId = ItemModelResolver.resolveModel(itemId, renderMode, stack);
 //        maybeModel.ifPresent(modelId -> LOGGER.info("Resolved model for {} in {} mode: {}", stack, renderMode.toString().toLowerCase(), modelId));
 
         maybeModelId.ifPresent(modelId -> {
