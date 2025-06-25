@@ -12,11 +12,30 @@ import net.minecraft.util.math.GlobalPos;
 import net.minecraft.world.World;
 import org.slf4j.Logger;
 import timmychips.pommelheldmodels.ItemModelDefinitionCodec.*;
+
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 public class ItemModelResolver {
 
     private static final Logger LOGGER = LogUtils.getLogger();
+    private static final Set<String> WARNED_MODELS = new HashSet<>();
+
+    //TODO
+    // Maybe move resolveModel(), resolveRecursive() methods to new, separate class?
+    // Make it return missing texture (missingno) if it cant find something in items model definition .json
+    // Add Warning logs for certain conditions
+    // Continue to add more condition, select, range_dispatch properties
+    // Add to charged_projectiles to yield string "modid:projectile_path" as well (i.e. you could specify ' "when": "mymod:bomb_arrow" ')
+
+    //TODO (model registration)
+    // Make it register custom models specified in the items model definition .json file
+    // ( the "items" folder works as well for resource packs)
+
+    //TODO (item use)
+    // Add UseKeyTracker logic for non-usable items from original branch
+    //   -> Fix crash from decoding packets with complex data from enchanted_books, bottles, etc.
 
     public static Optional<Identifier> resolveModel(Identifier itemId, ModelTransformationMode renderMode, ItemStack stack, LivingEntity entity) {
         ItemModelDefinition def = ItemModelRegistry.get(itemId);
@@ -53,7 +72,6 @@ public class ItemModelResolver {
 
         if (def instanceof RangeDispatchDefinition range) {
             float value = resolveRangePropertyValue(range.property(), range.scale(), stack, entity);
-            float scaled = value * range.scale();
 
             // Sort entries descending by threshold so highest matches first
             return range.entries().stream()
@@ -61,7 +79,17 @@ public class ItemModelResolver {
                     .filter(entry -> value >= entry.threshold())
                     .findFirst()
                     .map(entry -> resolveRecursive(entry.model(), renderMode, stack, entity))
-                    .orElseGet(() -> resolveRecursive(range.fallback(), renderMode, stack, entity));
+                    .orElseGet(() -> {
+                        if (range.fallback() != null) {
+                            return resolveRecursive(range.fallback(), renderMode, stack, entity);
+                        } else {
+                            String key = stack.getItem().toString() + "|" + range.property();
+                            if (WARNED_MODELS.add(key)) { // true only the first time
+                                LOGGER.warn("No matching range threshold and no fallback model for property '{}', for item: '{}'", range.property(), stack.getItem());
+                            }
+                            return Optional.of(Identifier.ofVanilla("missingno")); // Return missing model
+                        }
+                    });
         }
 
         return Optional.empty();
@@ -125,10 +153,7 @@ public class ItemModelResolver {
                 yield 0f;
             }
 
-            case "minecraft:bundle/fullness" -> {
-                LOGGER.info(String.valueOf(BundleItem.getAmountFilled(stack)));
-                yield BundleItem.getAmountFilled(stack);
-            }
+            case "minecraft:bundle/fullness" -> BundleItem.getAmountFilled(stack);
 
 //            case "minecraft:compass" -> {
 //                World world = entity.getWorld();

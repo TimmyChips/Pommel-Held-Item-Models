@@ -5,8 +5,10 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Optional;
 
 public final class ItemModelDefinitionCodec {
 
@@ -14,33 +16,38 @@ public final class ItemModelDefinitionCodec {
 
     static {
         // Lazy to allow recursion
-        DEFINITION_CODEC = Codec.lazyInitialized(() ->
-            Codec.either(
+        DEFINITION_CODEC = Codec.lazyInitialized(() -> Codec.either(
                 SelectDefinition.codec(DEFINITION_CODEC).codec(),
                 Codec.either(
-                    ConditionDefinition.codec(DEFINITION_CODEC).codec(),
-                    Codec.either(
-                            RangeDispatchDefinition.codec(DEFINITION_CODEC).codec(),
-                            ModelDefinition.MAP_CODEC.codec()
-                    )
+                        ConditionDefinition.codec(DEFINITION_CODEC).codec(),
+                        Codec.either(
+                                RangeDispatchDefinition.codec(DEFINITION_CODEC).codec(),
+                                ModelDefinition.MAP_CODEC.codec()
+                        )
                 )
-            ).xmap(
+        ).xmap(
                 either -> either.map(
-                    select -> select,
-                    inner -> inner.map(
-                            condition -> condition,
-                            inner2 -> inner2.map(range -> range, model -> model)
-                    )
+                        select -> select,
+                        inner -> inner.map(
+                                cond -> cond,
+                                deeper -> deeper.map(range -> range, model -> model)
+                        )
                 ),
                 def -> {
-                    if (def instanceof SelectDefinition s) return Either.left(s);
-                    if (def instanceof ConditionDefinition c) return Either.right(Either.left(c));
-                    if (def instanceof RangeDispatchDefinition r) return Either.right(Either.right(Either.left(r)));
-                    if (def instanceof ModelDefinition m) return Either.right(Either.right(Either.right(m)));
-                    throw new IllegalStateException("Unknown ItemModelDefinition: " + def);
+                    if (def instanceof SelectDefinition s) {
+                        return Either.left(s);
+                    } else if (def instanceof ConditionDefinition c) {
+                        return Either.right(Either.left(c));
+                    } else if (def instanceof RangeDispatchDefinition r) {
+                        return Either.right(Either.right(Either.left(r)));
+                    } else if (def instanceof ModelDefinition m) {
+                        return Either.right(Either.right(Either.right(m)));
+                    } else {
+                        throw new IllegalStateException("Unknown ItemModelDefinition: " + def);
+                    }
                 }
-            )
-        );
+        ));
+
 
     }
 
@@ -90,7 +97,7 @@ public final class ItemModelDefinitionCodec {
             String type,
             String property,
             List<ThresholdEntry> entries,
-            ItemModelDefinition fallback,
+            @Nullable ItemModelDefinition fallback,
             float scale
     ) implements ItemModelDefinition {
         public static MapCodec<RangeDispatchDefinition> codec(Codec<ItemModelDefinition> selfCodec) {
@@ -98,9 +105,11 @@ public final class ItemModelDefinitionCodec {
                     Codec.STRING.fieldOf("type").forGetter(RangeDispatchDefinition::type),
                     Codec.STRING.fieldOf("property").forGetter(RangeDispatchDefinition::property),
                     ThresholdEntry.codec(selfCodec).listOf().fieldOf("entries").forGetter(RangeDispatchDefinition::entries),
-                    selfCodec.fieldOf("fallback").forGetter(RangeDispatchDefinition::fallback),
+                    selfCodec.optionalFieldOf("fallback").forGetter(range -> Optional.ofNullable(range.fallback)),
                     Codec.FLOAT.fieldOf("scale").forGetter(RangeDispatchDefinition::scale)
-            ).apply(instance, RangeDispatchDefinition::new));
+            ).apply(instance, (type, property, entries, fallbackOpt, scale) ->
+                    new RangeDispatchDefinition(type, property, entries, fallbackOpt.orElse(null), scale)
+            ));
         }
     }
 
