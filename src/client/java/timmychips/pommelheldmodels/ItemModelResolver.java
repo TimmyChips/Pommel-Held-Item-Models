@@ -1,17 +1,22 @@
 package timmychips.pommelheldmodels;
 
+import com.mojang.logging.LogUtils;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.LodestoneTrackerComponent;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
+import net.minecraft.item.*;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.GlobalPos;
+import net.minecraft.world.World;
+import org.slf4j.Logger;
 import timmychips.pommelheldmodels.ItemModelDefinitionCodec.*;
 import java.util.Optional;
 
 public class ItemModelResolver {
+
+    private static final Logger LOGGER = LogUtils.getLogger();
 
     public static Optional<Identifier> resolveModel(Identifier itemId, ModelTransformationMode renderMode, ItemStack stack, LivingEntity entity) {
         ItemModelDefinition def = ItemModelRegistry.get(itemId);
@@ -119,6 +124,17 @@ public class ItemModelResolver {
                 }
                 yield 0f;
             }
+
+            case "minecraft:bundle/fullness" -> {
+                LOGGER.info(String.valueOf(BundleItem.getAmountFilled(stack)));
+                yield BundleItem.getAmountFilled(stack);
+            }
+
+//            case "minecraft:compass" -> {
+//                World world = entity.getWorld();
+//                LodestoneTrackerComponent lodestoneTrackerComponent = stack.get(DataComponentTypes.LODESTONE_TRACKER);
+//                yield lodestoneTrackerComponent != null ? (GlobalPos)lodestoneTrackerComponent.target().orElse((Object)null) : CompassItem.createSpawnPos(world);
+//            }
 
             // Add more ranged float-returning properties here
             default -> 0f;

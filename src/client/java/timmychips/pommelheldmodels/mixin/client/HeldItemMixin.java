@@ -17,6 +17,7 @@ import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ChargedProjectilesComponent;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.BundleItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
@@ -64,9 +65,6 @@ public abstract class HeldItemMixin {
             HeldItemPredicate.isFallingCheck(entity);
 
             CURRENT_ENTITY.set(entity);
-            if (entity != null) {
-                LOGGER.info(String.valueOf(entity.getActiveItem() != item ? 0.0F : (float)(item.getMaxUseTime(entity) - entity.getItemUseTimeLeft()) / 20.0F));
-            }
 
 //          UseKeyTracker.itemUsingLerp();
             UseKeyTracker.tickTimer(entity); // Countdown tick timer for other (non-client) players to retain item usage
