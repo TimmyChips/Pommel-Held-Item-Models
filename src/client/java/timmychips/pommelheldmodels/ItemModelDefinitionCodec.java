@@ -72,15 +72,25 @@ public final class ItemModelDefinitionCodec {
         }
     }
 
-    public record ConditionDefinition(String type, String property, ItemModelDefinition on_true, ItemModelDefinition on_false)
-            implements ItemModelDefinition {
+    public record ConditionDefinition(
+            String type,
+            String property,
+            ItemModelDefinition on_true,
+            ItemModelDefinition on_false,
+            @Nullable String predicate,
+            @Nullable String value
+    ) implements ItemModelDefinition {
         public static MapCodec<ConditionDefinition> codec(Codec<ItemModelDefinition> selfCodec) {
             return RecordCodecBuilder.mapCodec(instance -> instance.group(
                     Codec.STRING.fieldOf("type").forGetter(ConditionDefinition::type),
                     Codec.STRING.fieldOf("property").forGetter(ConditionDefinition::property),
                     selfCodec.fieldOf("on_true").forGetter(ConditionDefinition::on_true),
-                    selfCodec.fieldOf("on_false").forGetter(ConditionDefinition::on_false)
-            ).apply(instance, ConditionDefinition::new));
+                    selfCodec.fieldOf("on_false").forGetter(ConditionDefinition::on_false),
+                    Codec.STRING.optionalFieldOf("predicate").forGetter(d -> Optional.ofNullable(d.predicate())),
+                    Codec.STRING.optionalFieldOf("value").forGetter(d -> Optional.ofNullable(d.value()))
+            ).apply(instance, (type, property, onTrue, onFalse, pred, val) ->
+                    new ConditionDefinition(type, property, onTrue, onFalse, pred.orElse(null), val.orElse(null))
+            ));
         }
     }
 

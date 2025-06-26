@@ -1,0 +1,15 @@
+{
+  "model": {
+    "type": "minecraft:component",
+    "property": "minecraft:enchantments",
+    "value": "levels",
+    "on_false": {
+      "type": "minecraft:model",
+      "model": "minecraft:item/apple"
+    },
+    "on_true": {
+      "type": "minecraft:model",
+      "model": "minecraft:item/golden_apple"
+    }
+  }
+}

@@ -1,17 +1,17 @@
 package timmychips.pommelheldmodels;
 
 import com.mojang.logging.LogUtils;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LodestoneTrackerComponent;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.*;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.GlobalPos;
-import net.minecraft.world.World;
 import org.slf4j.Logger;
 import timmychips.pommelheldmodels.ItemModelDefinitionCodec.*;
+import timmychips.pommelheldmodels.codec.condition.ComponentBool;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -64,7 +64,7 @@ public class ItemModelResolver {
         }
 
         if (def instanceof ConditionDefinition cond) {
-            boolean result = evaluateCondition(cond.property(), stack, entity);
+            boolean result = evaluateCondition(cond.property(), cond.value(), stack, entity);
             return result
                     ? resolveRecursive(cond.on_true(), renderMode, stack, entity)
                     : resolveRecursive(cond.on_false(), renderMode, stack, entity);
@@ -100,6 +100,9 @@ public class ItemModelResolver {
             case "minecraft:display_context" -> renderMode.asString().toLowerCase();
 
             case "minecraft:charge_type" -> {
+                //TODO
+                // Maybe add charged_projectiles to bow by getting list of valid projectiles and retrieving first one
+
                 // Safely extract the first charged projectile type
                 var charged = stack.get(DataComponentTypes.CHARGED_PROJECTILES);
                 if (charged != null) {
@@ -126,8 +129,38 @@ public class ItemModelResolver {
     }
 
 
-    private static boolean evaluateCondition(String property, ItemStack stack, LivingEntity entity) {
+    private static boolean evaluateCondition(String property, String value, ItemStack stack, LivingEntity entity) {
         return switch (property) {
+            case "minecraft:broken" -> stack.getMaxDamage() - stack.getDamage() <= 1;
+
+            case "minecraft:carried" -> {
+                boolean carrying_item = false;
+                ClientPlayerEntity clientPlayer = null;
+
+                // Try to use the rendering entity, or fallback to the client player
+                if (entity instanceof ClientPlayerEntity player) {
+                    clientPlayer = player;
+                } else if (MinecraftClient.getInstance().player != null) {
+                    clientPlayer = MinecraftClient.getInstance().player;
+                }
+
+                if (clientPlayer != null) {
+                    if (clientPlayer.currentScreenHandler.getCursorStack() == stack) { // get item from cursor
+                        carrying_item = true;
+                    }
+                }
+
+                yield carrying_item;
+            }
+
+            case "minecraft:component" -> {
+                //TODO
+                // Value needs to be a JSON object, not a string
+                // Also check if it needs an Array for value, such as for the "enchantments" predicate
+                // Doesn't seem to like trying to check enchantments in 1.21.5, just that the item is enchanted
+                yield ComponentBool.testComponentPredicate(property, value, stack);
+            }
+
             case "minecraft:damaged" -> stack.isDamaged();
 
             case "minecraft:fishing_rod/cast" -> {

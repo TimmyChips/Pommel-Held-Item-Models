@@ -1,35 +1,48 @@
 {
   "model": {
-    "type": "minecraft:condition",
-    "property": "minecraft:using_item",
-    "on_false": {
+    "type": "minecraft:select",
+    "property": "minecraft:charge_type",
+    "cases": [
+      {
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/arrow"
+        },
+        "when": [
+          "arrow"
+        ]
+      },
+      {
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/spectral_arrow"
+        },
+        "when": [
+          "spectral"
+        ]
+      },
+      {
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/firework_rocket"
+        },
+        "when": [
+          "rocket"
+        ]
+      },
+      {
+        "model": {
+          "type": "minecraft:model",
+          "model": "minecraft:item/milk_bucket"
+        },
+        "when": [
+          "unknown"
+        ]
+      }
+    ],
+    "fallback": {
       "type": "minecraft:model",
       "model": "minecraft:item/bow"
-    },
-    "on_true": {
-      "type": "minecraft:range_dispatch",
-      "property": "minecraft:use_duration",
-      "scale": 0.05,
-      "entries": [
-        {
-          "model": {
-            "type": "minecraft:model",
-            "model": "minecraft:item/iron_ingot"
-          },
-          "threshold": 0.65
-        },
-        {
-          "model": {
-            "type": "minecraft:model",
-            "model": "minecraft:item/gold_ingot"
-          },
-          "threshold": 0.9
-        }
-      ],
-      "fallback": {
-        "type": "minecraft:model",
-        "model": "minecraft:item/copper_ingot"
-      }
     }
   }
 }

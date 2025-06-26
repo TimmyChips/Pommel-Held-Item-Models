@@ -1,7 +1,7 @@
 {
   "model": {
     "type": "minecraft:condition",
-    "property": "minecraft:damaged",
+    "property": "minecraft:broken",
     "on_false": {
       "type": "minecraft:model",
       "model": "minecraft:item/gunpowder"
