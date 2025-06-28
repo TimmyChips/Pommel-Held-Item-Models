@@ -77,10 +77,13 @@ public final class ItemModelDefinitionCodec {
     public record ConditionDefinition(
             String type,
             String property,
-            @Nullable String predicate,
-            @Nullable JsonElement value,
+            @Nullable String predicate,       // for property "component"
+            @Nullable JsonElement value,      //
+            @Nullable String component,       // for property "has_component"
+            @Nullable Boolean ignore_default, //
             ItemModelDefinition on_true,
             ItemModelDefinition on_false
+
     ) implements ItemModelDefinition {
         public static MapCodec<ConditionDefinition> codec(Codec<ItemModelDefinition> selfCodec) {
             return RecordCodecBuilder.mapCodec(instance -> instance.group(
@@ -88,10 +91,17 @@ public final class ItemModelDefinitionCodec {
                     Codec.STRING.fieldOf("property").forGetter(ConditionDefinition::property),
                     Codec.STRING.optionalFieldOf("predicate").forGetter(cd -> Optional.ofNullable(cd.predicate())),
                     JsonElementHelper.JSON_ELEMENT_CODEC.optionalFieldOf("value").forGetter(cd -> Optional.ofNullable(cd.value())),
+                    Codec.STRING.optionalFieldOf("component").forGetter(cd -> Optional.ofNullable(cd.component())),
+                    Codec.BOOL.optionalFieldOf("ignore_default").forGetter(cd -> Optional.ofNullable(cd.ignore_default())),
                     selfCodec.fieldOf("on_true").forGetter(ConditionDefinition::on_true),
                     selfCodec.fieldOf("on_false").forGetter(ConditionDefinition::on_false)
-            ).apply(instance, (type, property, optPredicate, optValue, onTrue, onFalse) ->
-                    new ConditionDefinition(type, property, optPredicate.orElse(null), optValue.orElse(null), onTrue, onFalse)
+
+            ).apply(instance, (type, property, optPredicate, optValue, optComponent, optIgnoreDef, onTrue, onFalse) ->
+                    new ConditionDefinition(
+                            type, property,
+                            optPredicate.orElse(null), optValue.orElse(null),
+                            optComponent.orElse(null), optIgnoreDef.orElse(null),
+                            onTrue, onFalse)
             ));
         }
     }

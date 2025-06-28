@@ -22,6 +22,7 @@ import timmychips.pommelheldmodels.ItemModelDefinitionCodec.*;
 import timmychips.pommelheldmodels.codec.MouseHelper;
 import timmychips.pommelheldmodels.codec.StringIDHelper;
 import timmychips.pommelheldmodels.codec.condition.ComponentBool;
+import timmychips.pommelheldmodels.codec.condition.HasComponentBool;
 import timmychips.pommelheldmodels.mixin.client.HandleSlotAccessor;
 
 import java.util.HashSet;
@@ -75,7 +76,7 @@ public class ItemModelResolver {
         }
 
         if (def instanceof ConditionDefinition cond) {
-            boolean result = evaluateCondition(cond.property(), cond.predicate(), cond.value(), stack, entity);
+            boolean result = evaluateCondition(cond.property(), cond.predicate(), cond.value(), cond.component(), cond.ignore_default(), stack, entity);
             return result
                     ? resolveRecursive(cond.on_true(), renderMode, stack, entity)
                     : resolveRecursive(cond.on_false(), renderMode, stack, entity);
@@ -140,7 +141,11 @@ public class ItemModelResolver {
     }
 
 
-    private static boolean evaluateCondition(String property, @Nullable String predicate, @Nullable JsonElement value, ItemStack stack, LivingEntity entity) {
+    private static boolean evaluateCondition(
+            String property,
+            @Nullable String predicate, @Nullable JsonElement value,
+            @Nullable String component, @Nullable Boolean ignore_default,
+            ItemStack stack, LivingEntity entity) {
 
         property = StringIDHelper.parseStringtoID(property, stack); // formats string with vanilla namespace (turns "broken" to "minecraft:broken")
 
@@ -180,9 +185,11 @@ public class ItemModelResolver {
                 yield false;
             }
 
-            case "pommel:hovered_item" -> {
-                yield MouseHelper.isHoveredOverStack(stack, MinecraftClient.getInstance());
+            case "minecraft:has_component" -> {
+                yield HasComponentBool.testHasComponent(component, ignore_default, stack);
             }
+
+            case "pommel:hovered_item" -> MouseHelper.isHoveredOverStack(stack, MinecraftClient.getInstance());
 
             case "minecraft:selected" -> {
                 if (entity.isPlayer()) {

@@ -1,0 +1,16 @@
+{
+  "model": {
+    "type": "minecraft:condition",
+    "property": "minecraft:has_component",
+    "component": "rarity",
+    "ignore_default": true,
+    "on_false": {
+      "type": "minecraft:model",
+      "model": "minecraft:item/apple"
+    },
+    "on_true": {
+      "type": "minecraft:model",
+      "model": "minecraft:item/carrot"
+    }
+  }
+}
