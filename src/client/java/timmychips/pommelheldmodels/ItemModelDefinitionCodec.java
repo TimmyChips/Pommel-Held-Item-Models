@@ -1,11 +1,13 @@
 package timmychips.pommelheldmodels;
 
+import com.google.gson.JsonElement;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
+import timmychips.pommelheldmodels.codec.JsonElementHelper;
 
 import java.util.List;
 import java.util.Optional;
@@ -75,21 +77,21 @@ public final class ItemModelDefinitionCodec {
     public record ConditionDefinition(
             String type,
             String property,
-            ItemModelDefinition on_true,
-            ItemModelDefinition on_false,
             @Nullable String predicate,
-            @Nullable String value
+            @Nullable JsonElement value,
+            ItemModelDefinition on_true,
+            ItemModelDefinition on_false
     ) implements ItemModelDefinition {
         public static MapCodec<ConditionDefinition> codec(Codec<ItemModelDefinition> selfCodec) {
             return RecordCodecBuilder.mapCodec(instance -> instance.group(
                     Codec.STRING.fieldOf("type").forGetter(ConditionDefinition::type),
                     Codec.STRING.fieldOf("property").forGetter(ConditionDefinition::property),
+                    Codec.STRING.optionalFieldOf("predicate").forGetter(cd -> Optional.ofNullable(cd.predicate())),
+                    JsonElementHelper.JSON_ELEMENT_CODEC.optionalFieldOf("value").forGetter(cd -> Optional.ofNullable(cd.value())),
                     selfCodec.fieldOf("on_true").forGetter(ConditionDefinition::on_true),
-                    selfCodec.fieldOf("on_false").forGetter(ConditionDefinition::on_false),
-                    Codec.STRING.optionalFieldOf("predicate").forGetter(d -> Optional.ofNullable(d.predicate())),
-                    Codec.STRING.optionalFieldOf("value").forGetter(d -> Optional.ofNullable(d.value()))
-            ).apply(instance, (type, property, onTrue, onFalse, pred, val) ->
-                    new ConditionDefinition(type, property, onTrue, onFalse, pred.orElse(null), val.orElse(null))
+                    selfCodec.fieldOf("on_false").forGetter(ConditionDefinition::on_false)
+            ).apply(instance, (type, property, optPredicate, optValue, onTrue, onFalse) ->
+                    new ConditionDefinition(type, property, optPredicate.orElse(null), optValue.orElse(null), onTrue, onFalse)
             ));
         }
     }

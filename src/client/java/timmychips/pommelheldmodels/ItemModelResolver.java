@@ -1,17 +1,28 @@
 package timmychips.pommelheldmodels;
 
+import com.google.gson.JsonElement;
 import com.mojang.logging.LogUtils;
+import net.fabricmc.fabric.mixin.networking.client.accessor.MinecraftClientAccessor;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.*;
+import net.minecraft.screen.slot.Slot;
+import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import timmychips.pommelheldmodels.ItemModelDefinitionCodec.*;
+import timmychips.pommelheldmodels.codec.MouseHelper;
+import timmychips.pommelheldmodels.codec.StringIDHelper;
 import timmychips.pommelheldmodels.codec.condition.ComponentBool;
+import timmychips.pommelheldmodels.mixin.client.HandleSlotAccessor;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -64,7 +75,7 @@ public class ItemModelResolver {
         }
 
         if (def instanceof ConditionDefinition cond) {
-            boolean result = evaluateCondition(cond.property(), cond.value(), stack, entity);
+            boolean result = evaluateCondition(cond.property(), cond.predicate(), cond.value(), stack, entity);
             return result
                     ? resolveRecursive(cond.on_true(), renderMode, stack, entity)
                     : resolveRecursive(cond.on_false(), renderMode, stack, entity);
@@ -129,7 +140,10 @@ public class ItemModelResolver {
     }
 
 
-    private static boolean evaluateCondition(String property, String value, ItemStack stack, LivingEntity entity) {
+    private static boolean evaluateCondition(String property, @Nullable String predicate, @Nullable JsonElement value, ItemStack stack, LivingEntity entity) {
+
+        property = StringIDHelper.parseStringtoID(property, stack); // formats string with vanilla namespace (turns "broken" to "minecraft:broken")
+
         return switch (property) {
             case "minecraft:broken" -> stack.getMaxDamage() - stack.getDamage() <= 1;
 
@@ -153,19 +167,28 @@ public class ItemModelResolver {
                 yield carrying_item;
             }
 
-            case "minecraft:component" -> {
-                //TODO
-                // Value needs to be a JSON object, not a string
-                // Also check if it needs an Array for value, such as for the "enchantments" predicate
-                // Doesn't seem to like trying to check enchantments in 1.21.5, just that the item is enchanted
-                yield ComponentBool.testComponentPredicate(property, value, stack);
-            }
+            case "minecraft:component" -> ComponentBool.testComponentPredicate(predicate, value, stack);
 
             case "minecraft:damaged" -> stack.isDamaged();
+
+            case "minecraft:extended_view" -> Screen.hasShiftDown();
 
             case "minecraft:fishing_rod/cast" -> {
                 if (entity instanceof PlayerEntity player) {
                     yield player.fishHook != null;
+                }
+                yield false;
+            }
+
+            case "pommel:hovered_item" -> {
+                yield MouseHelper.isHoveredOverStack(stack, MinecraftClient.getInstance());
+            }
+
+            case "minecraft:selected" -> {
+                if (entity.isPlayer()) {
+                    PlayerEntity player = (PlayerEntity) entity;
+                    Hand hand = player.getActiveHand();
+                    yield hand != null && player.getStackInHand(hand) == stack;
                 }
                 yield false;
             }

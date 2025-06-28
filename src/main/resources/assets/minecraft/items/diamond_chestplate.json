@@ -1,8 +1,11 @@
 {
   "model": {
-    "type": "minecraft:component",
-    "property": "minecraft:enchantments",
-    "value": "levels",
+    "type": "minecraft:condition",
+    "property": "minecraft:component",
+    "predicate": "minecraft:trim",
+    "value": {
+      "pattern": "minecraft:wayfinder"
+    },
     "on_false": {
       "type": "minecraft:model",
       "model": "minecraft:item/apple"

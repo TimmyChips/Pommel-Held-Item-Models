@@ -1,57 +1,61 @@
 package timmychips.pommelheldmodels.codec.condition;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.ItemStack;
 import net.minecraft.predicate.item.ItemSubPredicate;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryOps;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
+import timmychips.pommelheldmodels.codec.StringIDHelper;
 
+import java.util.Objects;
 import java.util.Optional;
 
 public class ComponentBool {
 
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    public static Boolean testComponentPredicate(String predicate, String value, ItemStack stack) {
-
+    public static Boolean testComponentPredicate(String predicate, @Nullable JsonElement value, ItemStack stack) {
         if (stack == null || predicate == null || value == null) return false;
 
-        Identifier predicateId;
-        if (predicate.contains(":")) {
-            String[] parts = predicate.split(":");
-            String id = parts[0];
-            String path = parts[1];
-            predicateId = Identifier.of(id, path);
-        }
-        else {
-            predicateId = Identifier.ofVanilla("predicate");
-        }
-
-        ItemSubPredicate.Type<?> type = Registries.ITEM_SUB_PREDICATE_TYPE.get(predicateId);
-
-        if (type == null) {
-            LOGGER.warn("Unknown item component predicate: '{}'", predicateId);
+        Identifier predicateId = Identifier.tryParse(predicate);
+        if (predicateId == null) {
+            LOGGER.warn("Invalid component predicate ID '{}'", predicate);
             return false;
         }
 
-        // Parse the "value" string as JSON
-        JsonElement element = JsonParser.parseString(value);
+        ItemSubPredicate.Type<?> type = Registries.ITEM_SUB_PREDICATE_TYPE.get(predicateId);
+        if (type == null) {
+            LOGGER.warn("Unknown component predicate type '{}'", predicateId);
+            return false;
+        }
 
+        try {
+            DynamicOps<JsonElement> registryOps = RegistryOps.of(
+                    JsonOps.INSTANCE,
+                    Objects.requireNonNull(MinecraftClient.getInstance().getNetworkHandler()).getRegistryManager());
 
-        // Decode the ItemSubPredicate instance from the component's Codec
-        Optional<? extends ItemSubPredicate> maybePredicate = type.codec().decode(JsonOps.INSTANCE, element)
-                .result()
-                .map(Pair::getFirst);
+            Optional<? extends ItemSubPredicate> parsed = type.codec()
+                    .decode(registryOps, value)
+                    .result()
+                    .map(Pair::getFirst);
 
-        if (maybePredicate.isPresent()) {
-            return maybePredicate.get().test(stack);
-        } else {
-            LOGGER.warn("Failed to decode component predicate for '{}': {}", predicateId, value);
+            if (parsed.isPresent()) {
+                return parsed.get().test(stack);
+            } else {
+                LOGGER.warn("Failed to decode predicate value for '{}': {}", predicateId, value);
+                return false;
+            }
+
+        } catch (Exception e) {
+            LOGGER.error("Error parsing component predicate JSON for '{}': {}", predicateId, value, e);
             return false;
         }
     }

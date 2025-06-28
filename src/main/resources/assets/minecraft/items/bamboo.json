@@ -1,0 +1,14 @@
+{
+  "model": {
+	"type": "condition",
+    "property": "pommel:hovered_item",
+	"on_false": {
+      "type": "model",
+      "model": "item/charcoal"
+    },
+    "on_true": {
+      "type": "model",
+      "model": "item/raw_copper"
+    }
+  }
+}

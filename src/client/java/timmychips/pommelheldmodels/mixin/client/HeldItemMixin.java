@@ -38,6 +38,7 @@ import timmychips.pommelheldmodels.ClientInitializer;
 import timmychips.pommelheldmodels.HeldItemPredicate;
 import timmychips.pommelheldmodels.ItemModelResolver;
 import timmychips.pommelheldmodels.UseKeyTracker;
+import timmychips.pommelheldmodels.codec.StringIDHelper;
 
 import java.util.Optional;
 import java.util.Set;
