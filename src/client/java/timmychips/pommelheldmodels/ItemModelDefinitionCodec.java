@@ -3,18 +3,26 @@ package timmychips.pommelheldmodels;
 import com.google.gson.JsonElement;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.client.option.KeyBinding;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
-import timmychips.pommelheldmodels.codec.JsonElementHelper;
+import timmychips.pommelheldmodels.codec.helper.JsonElementHelper;
+import timmychips.pommelheldmodels.mixin.client.KeyBindingAccessor;
 
 import java.util.List;
 import java.util.Optional;
 
 public final class ItemModelDefinitionCodec {
 
+    //TODO (class cleanup)
+    // Maybe move code into Codecs like KEYBIND_CODEC, which could be in other classes
+    // Break up code from different types to their own class
+
     public static Codec<ItemModelDefinition> DEFINITION_CODEC = null;
+    private static final Codec<KeyBinding> KEYBIND_CODEC;
 
     static {
         // Lazy to allow recursion
@@ -50,6 +58,10 @@ public final class ItemModelDefinitionCodec {
                 }
         ));
 
+        KEYBIND_CODEC = Codec.STRING.comapFlatMap((id) -> {                      // Keybind string
+            KeyBinding keyBinding = KeyBindingAccessor.getKeyIds().get(id);
+            return keyBinding != null ? DataResult.success(keyBinding) : DataResult.error(() -> "Invalid keybind: " + id);
+        }, KeyBinding::getTranslationKey);
 
     }
 
@@ -80,7 +92,8 @@ public final class ItemModelDefinitionCodec {
             @Nullable String predicate,       // for property "component"
             @Nullable JsonElement value,      //
             @Nullable String component,       // for property "has_component"
-            @Nullable Boolean ignore_default, //
+            Boolean ignore_default, //
+            KeyBinding keybind,
             ItemModelDefinition on_true,
             ItemModelDefinition on_false
 
@@ -93,14 +106,16 @@ public final class ItemModelDefinitionCodec {
                     JsonElementHelper.JSON_ELEMENT_CODEC.optionalFieldOf("value").forGetter(cd -> Optional.ofNullable(cd.value())),
                     Codec.STRING.optionalFieldOf("component").forGetter(cd -> Optional.ofNullable(cd.component())),
                     Codec.BOOL.optionalFieldOf("ignore_default").forGetter(cd -> Optional.ofNullable(cd.ignore_default())),
+                    KEYBIND_CODEC.optionalFieldOf("keybind").forGetter(cd -> Optional.ofNullable(cd.keybind())),
                     selfCodec.fieldOf("on_true").forGetter(ConditionDefinition::on_true),
                     selfCodec.fieldOf("on_false").forGetter(ConditionDefinition::on_false)
 
-            ).apply(instance, (type, property, optPredicate, optValue, optComponent, optIgnoreDef, onTrue, onFalse) ->
+            ).apply(instance, (type, property, optPredicate, optValue, optComponent, optIgnoreDef, optKeybind, onTrue, onFalse) ->
                     new ConditionDefinition(
                             type, property,
                             optPredicate.orElse(null), optValue.orElse(null),
-                            optComponent.orElse(null), optIgnoreDef.orElse(null),
+                            optComponent.orElse(null), optIgnoreDef.orElse(false),
+                            optKeybind.orElse(null),
                             onTrue, onFalse)
             ));
         }

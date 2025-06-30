@@ -2,10 +2,8 @@ package timmychips.pommelheldmodels;
 
 import com.google.gson.JsonElement;
 import com.mojang.logging.LogUtils;
-import net.fabricmc.fabric.mixin.networking.client.accessor.MinecraftClientAccessor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
@@ -13,17 +11,16 @@ import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.*;
-import net.minecraft.screen.slot.Slot;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import timmychips.pommelheldmodels.ItemModelDefinitionCodec.*;
-import timmychips.pommelheldmodels.codec.MouseHelper;
-import timmychips.pommelheldmodels.codec.StringIDHelper;
+import timmychips.pommelheldmodels.codec.helper.MouseHelper;
+import timmychips.pommelheldmodels.codec.helper.StringIDHelper;
 import timmychips.pommelheldmodels.codec.condition.ComponentBool;
 import timmychips.pommelheldmodels.codec.condition.HasComponentBool;
-import timmychips.pommelheldmodels.mixin.client.HandleSlotAccessor;
+import timmychips.pommelheldmodels.codec.condition.KeybindDownProperty;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -46,7 +43,8 @@ public class ItemModelResolver {
     // ( the "items" folder works as well for resource packs)
 
     //TODO (item use)
-    // Add UseKeyTracker logic for non-usable items from original branch
+    // Condition "keybind_down" does this already
+    // Work on sending packet of data to server:
     //   -> Fix crash from decoding packets with complex data from enchanted_books, bottles, etc.
 
     public static Optional<Identifier> resolveModel(Identifier itemId, ModelTransformationMode renderMode, ItemStack stack, LivingEntity entity) {
@@ -76,7 +74,7 @@ public class ItemModelResolver {
         }
 
         if (def instanceof ConditionDefinition cond) {
-            boolean result = evaluateCondition(cond.property(), cond.predicate(), cond.value(), cond.component(), cond.ignore_default(), stack, entity);
+            boolean result = evaluateCondition(cond.property(), cond.predicate(), cond.value(), cond.component(), cond.ignore_default(), cond.keybind(), stack, entity);
             return result
                     ? resolveRecursive(cond.on_true(), renderMode, stack, entity)
                     : resolveRecursive(cond.on_false(), renderMode, stack, entity);
@@ -145,6 +143,7 @@ public class ItemModelResolver {
             String property,
             @Nullable String predicate, @Nullable JsonElement value,
             @Nullable String component, @Nullable Boolean ignore_default,
+            KeyBinding keybind,
             ItemStack stack, LivingEntity entity) {
 
         property = StringIDHelper.parseStringtoID(property, stack); // formats string with vanilla namespace (turns "broken" to "minecraft:broken")
@@ -185,15 +184,14 @@ public class ItemModelResolver {
                 yield false;
             }
 
-            case "minecraft:has_component" -> {
-                yield HasComponentBool.testHasComponent(component, ignore_default, stack);
-            }
+            case "minecraft:has_component" -> HasComponentBool.testHasComponent(component, ignore_default, stack);
 
             case "pommel:hovered_item" -> MouseHelper.isHoveredOverStack(stack, MinecraftClient.getInstance());
 
+            case "minecraft:keybind_down" -> KeybindDownProperty.testKeybind(keybind);
+
             case "minecraft:selected" -> {
-                if (entity.isPlayer()) {
-                    PlayerEntity player = (PlayerEntity) entity;
+                if (entity instanceof PlayerEntity player) {
                     Hand hand = player.getActiveHand();
                     yield hand != null && player.getStackInHand(hand) == stack;
                 }

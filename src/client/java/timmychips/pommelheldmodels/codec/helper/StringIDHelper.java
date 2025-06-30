@@ -1,4 +1,4 @@
-package timmychips.pommelheldmodels.codec;
+package timmychips.pommelheldmodels.codec.helper;
 
 import com.mojang.logging.LogUtils;
 import net.minecraft.item.ItemStack;
@@ -13,7 +13,7 @@ public class StringIDHelper {
 
         Identifier inputId = Identifier.tryParse(inputString);
         if (inputId != null) {
-            LOGGER.info(inputId.toString());
+//            LOGGER.info(inputId.toString());
             return inputId.toString();
         }
 

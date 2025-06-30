@@ -8,8 +8,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(HandledScreen.class)
 public interface HandleSlotAccessor {
-    @Accessor("focusedSlot")
-    Slot getfocusedSlot();
 
     @Accessor("x")
     int getX();

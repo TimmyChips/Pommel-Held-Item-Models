@@ -2,7 +2,7 @@
   "model": {
     "type": "minecraft:condition",
     "property": "minecraft:has_component",
-    "component": "rarity",
+    "component": "fireworks",
     "ignore_default": false,
     "on_false": {
       "type": "minecraft:model",

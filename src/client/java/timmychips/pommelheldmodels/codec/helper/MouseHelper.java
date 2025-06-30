@@ -1,6 +1,5 @@
-package timmychips.pommelheldmodels.codec;
+package timmychips.pommelheldmodels.codec.helper;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.slot.Slot;

@@ -13,7 +13,6 @@ import net.minecraft.registry.RegistryOps;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
-import timmychips.pommelheldmodels.codec.StringIDHelper;
 
 import java.util.Objects;
 import java.util.Optional;

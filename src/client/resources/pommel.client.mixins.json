@@ -5,12 +5,12 @@
   "client": [
     "GroundItemMixin",
     "HandleSlotAccessor",
-    "HeldItemMixin"
+    "HeldItemMixin",
+    "KeyBindingAccessor"
   ],
   "injectors": {
     "defaultRequire": 1
   },
   "mixins": [
-    "ComponentChangesAccessor"
   ]
 }
