@@ -8,16 +8,14 @@ import com.mojang.serialization.JsonOps;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
+import timmychips.pommelheldmodels.type.ItemModelDefinition;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.HashMap;
 
 public class ClientInitializer implements ClientModInitializer {
 
@@ -37,6 +35,10 @@ public class ClientInitializer implements ClientModInitializer {
 		UseKeyTracker.clientUseKey();
 		UseKeyTracker.eventUseKeyPacket();
 
+		// TODO (model registration)
+		//  Make it register custom models specified in the items model definition .json file
+		//  ( the "items" folder works as well for resource packs)
+
 		ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
 			public Identifier getFabricId() {
 				return Identifier.of("pommel", "item_model_definitions");
@@ -55,7 +57,7 @@ public class ClientInitializer implements ClientModInitializer {
 						JsonElement modelElement = root.get("model");
 
 						if (modelElement != null && modelElement.isJsonObject()) {
-							ItemModelDefinitionCodec.DEFINITION_CODEC.decode(JsonOps.INSTANCE, modelElement)
+							ItemModelDefinition.CODEC.decode(JsonOps.INSTANCE, modelElement)
 									.resultOrPartial(error -> LOGGER.warn("[Pommel] Failed to decode model definition for {}: {}", id, error))
 									.ifPresent(pair -> {
 										// Clean up path to match item ID (remove "items/" and ".json")

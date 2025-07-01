@@ -24,8 +24,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import timmychips.pommelheldmodels.HeldItemPredicate;
-import timmychips.pommelheldmodels.ItemModelResolver;
 import timmychips.pommelheldmodels.UseKeyTracker;
+import timmychips.pommelheldmodels.resolver.ItemModelResolver;
 
 import java.util.Optional;
 

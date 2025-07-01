@@ -1,4 +1,4 @@
-package timmychips.pommelheldmodels.codec.condition;
+package timmychips.pommelheldmodels.type.condition;
 
 import com.google.gson.JsonElement;
 import com.mojang.datafixers.util.Pair;
@@ -21,7 +21,7 @@ public class ComponentBool {
 
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    public static Boolean testComponentPredicate(String predicate, @Nullable JsonElement value, ItemStack stack) {
+    public static Boolean test(String predicate, @Nullable JsonElement value, ItemStack stack) {
         if (stack == null || predicate == null || value == null) return false;
 
         Identifier predicateId = Identifier.tryParse(predicate);

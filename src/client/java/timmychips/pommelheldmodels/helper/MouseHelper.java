@@ -1,4 +1,4 @@
-package timmychips.pommelheldmodels.codec.helper;
+package timmychips.pommelheldmodels.helper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.item.ItemStack;

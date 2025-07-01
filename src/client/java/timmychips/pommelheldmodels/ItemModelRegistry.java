@@ -2,17 +2,19 @@
 package timmychips.pommelheldmodels;
 
 import net.minecraft.util.Identifier;
+import timmychips.pommelheldmodels.type.ItemModelDefinition;
+
 import java.util.HashMap;
 import java.util.Map;
 
 public class ItemModelRegistry {
-    private static final Map<Identifier, ItemModelDefinitionCodec.ItemModelDefinition> definitions = new HashMap<>();
+    private static final Map<Identifier, ItemModelDefinition> definitions = new HashMap<>();
 
-    public static void put(Identifier id, ItemModelDefinitionCodec.ItemModelDefinition definition) {
+    public static void put(Identifier id, ItemModelDefinition definition) {
         definitions.put(id, definition);
     }
 
-    public static ItemModelDefinitionCodec.ItemModelDefinition get(Identifier id) {
+    public static ItemModelDefinition get(Identifier id) {
         return definitions.get(id);
     }
 

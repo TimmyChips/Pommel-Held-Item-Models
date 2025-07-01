@@ -1,4 +1,4 @@
-package timmychips.pommelheldmodels.codec.helper;
+package timmychips.pommelheldmodels.helper;
 
 import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;

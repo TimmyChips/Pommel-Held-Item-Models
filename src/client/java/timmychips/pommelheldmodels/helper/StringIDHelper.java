@@ -1,4 +1,4 @@
-package timmychips.pommelheldmodels.codec.helper;
+package timmychips.pommelheldmodels.helper;
 
 import com.mojang.logging.LogUtils;
 import net.minecraft.item.ItemStack;
