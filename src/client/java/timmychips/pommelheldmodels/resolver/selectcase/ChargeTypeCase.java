@@ -1,4 +1,4 @@
-package timmychips.pommelheldmodels.type.selectcase;
+package timmychips.pommelheldmodels.resolver.selectcase;
 
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.Item;

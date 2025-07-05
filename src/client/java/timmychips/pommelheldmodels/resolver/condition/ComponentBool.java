@@ -1,4 +1,4 @@
-package timmychips.pommelheldmodels.type.condition;
+package timmychips.pommelheldmodels.resolver.condition;
 
 import com.google.gson.JsonElement;
 import com.mojang.datafixers.util.Pair;

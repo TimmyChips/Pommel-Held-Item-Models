@@ -1,4 +1,4 @@
-package timmychips.pommelheldmodels.type.condition;
+package timmychips.pommelheldmodels.resolver.condition;
 
 import com.mojang.logging.LogUtils;
 import net.minecraft.component.ComponentChanges;

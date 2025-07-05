@@ -28,7 +28,12 @@ public class ResolveRecursive {
         }
 
         if (def instanceof SelectDefinition.Definition select) {
-            String propertyValue = SelectValueResolver.evaluate(select.property(), renderMode, stack, entity);
+            String propertyValue = SelectValueResolver.evaluate(
+                    select.property(),
+                    renderMode,
+                    select.block_state_property(),
+                    stack,
+                    entity);
 
             if (propertyValue != null) {
                 for (SelectDefinition.Case c : select.cases()) {
@@ -42,14 +47,27 @@ public class ResolveRecursive {
         }
 
         if (def instanceof ConditionDefinition cond) {
-            boolean result = ConditionValueResolver.evaluate(cond.property(), cond.predicate(), cond.value(), cond.component(), cond.ignore_default(), cond.keybind(), stack, entity);
+            boolean result = ConditionValueResolver.evaluate(
+                    cond.property(),
+                    cond.predicate(),
+                    cond.value(),
+                    cond.component(),
+                    cond.ignore_default(),
+                    cond.keybind(),
+                    stack,
+                    entity);
+
             return result
                     ? resolve(cond.on_true(), renderMode, stack, entity)
                     : resolve(cond.on_false(), renderMode, stack, entity);
         }
 
         if (def instanceof RangeDispatchDefinition.Definition range) {
-            float value = RangeDispatchValueResolver.evaluate(range.property(), range.scale(), stack, entity);
+            float value = RangeDispatchValueResolver.evaluate(
+                    range.property(),
+                    range.scale(),
+                    stack,
+                    entity);
 
             // Sort entries descending by threshold so highest matches first
             return range.entries().stream()

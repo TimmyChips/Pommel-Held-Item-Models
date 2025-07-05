@@ -1,4 +1,4 @@
-package timmychips.pommelheldmodels.type.condition;
+package timmychips.pommelheldmodels.resolver.condition;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;

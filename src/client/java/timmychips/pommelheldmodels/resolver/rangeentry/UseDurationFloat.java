@@ -1,4 +1,4 @@
-package timmychips.pommelheldmodels.type.rangeentry;
+package timmychips.pommelheldmodels.resolver.rangeentry;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
