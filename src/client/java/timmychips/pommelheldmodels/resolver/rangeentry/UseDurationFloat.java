@@ -8,6 +8,7 @@ public class UseDurationFloat {
         if (entity != null) {
             return entity.getActiveItem() != stack ? 0.0F : (float)(stack.getMaxUseTime(entity) - entity.getItemUseTimeLeft()) * scale;
         }
+        // TODO: add "remaining" field
         return  0f;
     }
 }

@@ -15,7 +15,8 @@ public class SelectDefinition {
             List<Case> cases,
             ItemModelDefinition fallback,
             Identifier property,
-            @Nullable String block_state_property
+            @Nullable String block_state_property,
+            @Nullable String component
 
     ) implements ItemModelDefinition {
 
@@ -25,11 +26,13 @@ public class SelectDefinition {
                     Case.codec(selfCodec).listOf().fieldOf("cases").forGetter(Definition::cases),
                     selfCodec.fieldOf("fallback").forGetter(Definition::fallback),
                     Identifier.CODEC.fieldOf("property").forGetter(Definition::property),
-                    selfCodec.STRING.optionalFieldOf("block_state_property").forGetter(cd -> Optional.ofNullable(cd.block_state_property()))
-            ).apply(instance, (type, cases, fallback, property, optBlockStare) ->
+                    selfCodec.STRING.optionalFieldOf("block_state_property").forGetter(cd -> Optional.ofNullable(cd.block_state_property())),
+                    selfCodec.STRING.optionalFieldOf("component").forGetter(cd -> Optional.ofNullable(cd.component()))
+            ).apply(instance, (type, cases, fallback, property, optBlockStare, optComponent) ->
                     new Definition(
                             type, cases, fallback, property,
-                            optBlockStare.orElse(null)
+                            optBlockStare.orElse(null),
+                            optComponent.orElse(null)
             )));
         }
     }

@@ -32,6 +32,7 @@ public class ResolveRecursive {
                     select.property(),
                     renderMode,
                     select.block_state_property(),
+                    select.component(),
                     stack,
                     entity);
 
@@ -66,6 +67,7 @@ public class ResolveRecursive {
             float value = RangeDispatchValueResolver.evaluate(
                     range.property(),
                     range.scale(),
+                    range.target(),
                     stack,
                     entity);
 

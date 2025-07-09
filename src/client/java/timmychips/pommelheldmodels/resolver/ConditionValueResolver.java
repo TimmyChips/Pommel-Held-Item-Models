@@ -24,7 +24,6 @@ public class ConditionValueResolver {
             KeyBinding keybind,
             ItemStack stack, LivingEntity entity) {
 
-//        property = StringIDHelper.parseStringtoID(property, stack); // formats string with vanilla namespace (turns "broken" to "minecraft:broken")
         String propertyStr = property.toString();
 
         return switch (propertyStr) {
@@ -44,6 +43,7 @@ public class ConditionValueResolver {
 
             // Modded Condition properties
             case "pommel:hovered_item" -> MouseHelper.isHoveredOverStack(stack, MinecraftClient.getInstance());
+            case "pommel:submerged" -> entity.isSubmergedInWater();
 
             // Extend with more custom logic here
             default -> false;

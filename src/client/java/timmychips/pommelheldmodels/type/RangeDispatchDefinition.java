@@ -16,6 +16,7 @@ public final class RangeDispatchDefinition {
             Identifier property,
             List<ThresholdEntry> entries,
             @Nullable ItemModelDefinition fallback,
+            @Nullable String target,
             float scale
     ) implements ItemModelDefinition {
 
@@ -25,9 +26,13 @@ public final class RangeDispatchDefinition {
                     Identifier.CODEC.fieldOf("property").forGetter(Definition::property),
                     ThresholdEntry.codec(selfCodec).listOf().fieldOf("entries").forGetter(Definition::entries),
                     selfCodec.optionalFieldOf("fallback").forGetter(range -> Optional.ofNullable(range.fallback)),
+                    selfCodec.STRING.optionalFieldOf("target").forGetter(cd -> Optional.ofNullable(cd.target)),
                     Codec.FLOAT.fieldOf("scale").forGetter(Definition::scale)
-            ).apply(instance, (type, property, entries, fallbackOpt, scale) ->
-                    new Definition(type, property, entries, fallbackOpt.orElse(null), scale)
+            ).apply(instance, (type, property, entries, fallbackOpt, optTarget, scale) ->
+                    new Definition(
+                            type, property, entries, fallbackOpt.orElse(null),
+                            optTarget.orElse(null),
+                            scale)
             ));
         }
     }

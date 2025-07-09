@@ -4,21 +4,22 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.BundleItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.Nullable;
+import timmychips.pommelheldmodels.resolver.rangeentry.UseDurationFloat;
 
 public class RangeDispatchValueResolver {
-    public static float evaluate(Identifier property, Float scale, ItemStack stack, LivingEntity entity) {
+    public static float evaluate(
+            Identifier property, Float scale,
+            @Nullable String target,
+            ItemStack stack, LivingEntity entity) {
 
         String propertyStr = property.toString();
 
         return switch (propertyStr) {
-            case "minecraft:use_duration" -> {
-                if (entity != null) {
-                    yield entity.getActiveItem() != stack ? 0.0F : (float)(stack.getMaxUseTime(entity) - entity.getItemUseTimeLeft()) * scale;
-                }
-                yield 0f;
-            }
-
-            case "minecraft:bundle/fullness" -> BundleItem.getAmountFilled(stack);
+            case "minecraft:use_duration" -> UseDurationFloat.test(entity, stack, scale);
+            case "minecraft:bundle/fullness" -> BundleItem.getAmountFilled(stack) * scale;
+            case "minecraft:compass" ->
+            //case "minecraft:compass" ->
 
 //            case "minecraft:compass" -> {
 //                World world = entity.getWorld();
