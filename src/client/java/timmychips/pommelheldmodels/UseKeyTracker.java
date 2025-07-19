@@ -23,7 +23,6 @@ public class UseKeyTracker {
     private static boolean useKeyPressed = false;
     public static HashMap<PlayerEntity, ItemStack> player_usedItem = new HashMap<PlayerEntity, ItemStack>();
     public static HashMap<PlayerEntity, Integer> player_useCooldown = new HashMap<PlayerEntity, Integer>();
-    public static int useTicks = 0;
 
     // When client player/user presses the use key; occurs every client tick
     public static void clientUseKey() {
@@ -36,7 +35,10 @@ public class UseKeyTracker {
                 if (user != null) itemUsed = user.getMainHandStack().isEmpty() ? user.getOffHandStack() : user.getMainHandStack(); // gets main or offhand ItemStack
 
                 // Adds or removes the client user and the item used to HashMap when pressing the use key or not
-                if (useKeyPressed) player_usedItem.put(user, itemUsed);
+                if (useKeyPressed) {
+                    player_usedItem.put(user, itemUsed);
+                    UseKeyTracker.player_useCooldown.put(user, 70);
+                }
                 if (!useKeyPressed) player_usedItem.remove(user);
             }
         });
@@ -80,13 +82,6 @@ public class UseKeyTracker {
         });
     }
 
-    public static float stoppedUsingLerp() {
-        int tickMax = 20; // 1 second long
-        float f = (float) useTicks / tickMax;
-        if (useTicks > 0) useTicks -= 1;
-        return f;
-    }
-
     // Countdown tick timer
     // Since UseItemCallback event doesn't occur every tick, we have a countdown before we update that the other player is no longer using an item
     public static void playerUsedItemTickTimer(LivingEntity entity) {
@@ -95,7 +90,6 @@ public class UseKeyTracker {
 
             if (player_useCooldown.containsKey(player)) { // Gets player and their current countdown tick
                 int p_tick = player_useCooldown.get(player);
-//                LOGGER.info(String.valueOf(p_tick));
                 if (p_tick > 0) p_tick--; // Get and subtract the player's tick
 
                 if (p_tick == 0) { // Removes the player from both HashMaps when countdown reaches 0; item no longer being used
@@ -116,10 +110,15 @@ public class UseKeyTracker {
         PlayerEntity player = (PlayerEntity) livingEntity;
         // Get items that the player used that may be un-interactable items (pickaxes, materials)
         ItemStack usedItem = player_usedItem.get(player);
-        Integer cooldownTick = player_useCooldown.get(player);
 
-        if (usedItem != null && cooldownTick != null) {
-            return (usedItem.isEmpty()) ? 0.0F : stoppedUsingLerp();
+        ItemStack usedItem2 = ItemStack.EMPTY; // copies usedItem since it's removed immediately from HashMap when not using item
+        if (usedItem != null) usedItem2 = usedItem.copy();
+        float cooldownTick = 0.0F;
+        if (player_useCooldown.get(player) != null) cooldownTick = (float) player_useCooldown.get(player); // get cooldown from map
+
+        if (usedItem2 != null) {
+            cooldownTick /= 60.0F; // normalizes range from 0.0 to ~1.0
+            return cooldownTick;
         }
         return 0.0F;
     }
