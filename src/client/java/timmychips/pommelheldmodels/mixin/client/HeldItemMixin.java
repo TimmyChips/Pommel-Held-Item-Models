@@ -9,16 +9,16 @@ import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.item.Item;
+import net.minecraft.entity.mob.WitchEntity;
+import net.minecraft.entity.passive.PandaEntity;
+import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.registry.tag.TagKey;
 import net.minecraft.world.World;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import timmychips.pommelheldmodels.ClientInitializer;
 import timmychips.pommelheldmodels.HeldItemPredicate;
 import timmychips.pommelheldmodels.UseKeyTracker;
 
@@ -41,7 +41,11 @@ public abstract class HeldItemMixin {
             HeldItemPredicate.isFallingCheck(entity);
 
 //          UseKeyTracker.itemUsingLerp();
-            UseKeyTracker.tickTimer(entity); // Countdown tick timer for other (non-client) players to retain item usage
+            UseKeyTracker.playerUsedItemTickTimer(entity); // Countdown tick timer for other (non-client) players to retain item usage
+        }
+
+        if (entity instanceof VillagerEntity || entity instanceof WitchEntity || entity instanceof PandaEntity) {
+            renderMode = ModelTransformationMode.THIRD_PERSON_RIGHT_HAND;
         }
 
         HeldItemPredicate.currentItemRenderMode = renderMode; // Sets the item model's "is_held" and other item predicates based on renderMode

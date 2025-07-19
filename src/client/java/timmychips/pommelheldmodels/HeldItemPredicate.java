@@ -1,19 +1,11 @@
 package timmychips.pommelheldmodels;
 
 import com.mojang.logging.LogUtils;
-import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.minecraft.client.item.ModelPredicateProviderRegistry;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.FluidState;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.registry.tag.FluidTags;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import org.slf4j.Logger;
@@ -21,8 +13,6 @@ import org.slf4j.Logger;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class HeldItemPredicate {
     public static ModelTransformationMode currentItemRenderMode;
@@ -89,7 +79,7 @@ public class HeldItemPredicate {
 
                 if (livingEntity != null) {
                     // Predicate when player presses the use key for the using item predicate
-                    if (isUsedPredicate ) return UseKeyTracker.player_useItemKey(livingEntity, itemStack);
+                    if (isUsedPredicate ) return UseKeyTracker.playerUseItemKey(livingEntity, itemStack);
 //                    //if (isSubmergedPredicate) return livingEntity.isSubmergedInWater() ? 1.0F : 0.0F;
 //                    if (isSubmergedPredicate) return livingEntity.isSubmergedIn(FluidTags.WATER) || livingEntity.isSubmergedIn(FluidTags.LAVA) ? 1.0F : 0.0F;
                     if (isSubmergedPredicate) return submergedInFluidCheck(livingEntity);

@@ -9,12 +9,12 @@ import java.util.UUID;
 
 public class PommelNetworking {
     public static void registerPayloads() {
-        PayloadTypeRegistry.playC2S().register(UseKeyPayload.PACKET_ID, UseKeyPayload.CODEC);
+        PayloadTypeRegistry.playC2S().register(UseKeyC2SPayload.PACKET_ID, UseKeyC2SPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(UseKeyS2CPayload.PACKET_ID, UseKeyS2CPayload.CODEC);
     }
 
     public static void useKeyGlobalReceiver() {
-        ServerPlayNetworking.registerGlobalReceiver(UseKeyPayload.PACKET_ID, (payload, context) -> {
+        ServerPlayNetworking.registerGlobalReceiver(UseKeyC2SPayload.PACKET_ID, (payload, context) -> {
             ServerPlayerEntity sender = context.player();
             UUID senderUuid = payload.playerUuid();
             ItemStack stack = payload.itemStack();

@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -45,10 +46,14 @@ public class UseKeyTracker {
     public static void eventUseKeyPacket() {
         UseItemCallback.EVENT.register((PlayerEntity user, World world, net.minecraft.util.Hand hand) -> {
             if (!world.isClient) {
-//                LOGGER.info("Used Item");
                 UUID playerUuid = user.getUuid();
                 ItemStack sendItemUsed = user.getStackInHand(hand);
-                UseKeyPayload payload = new UseKeyPayload(playerUuid, sendItemUsed, true);
+
+                ItemStack sendItemUsed2 = sendItemUsed.copy(); // Create new item and remove enchantments as game crashes when trying to send enchanted item data
+                sendItemUsed2.remove(DataComponentTypes.ENCHANTMENTS);
+                sendItemUsed2.remove(DataComponentTypes.STORED_ENCHANTMENTS);
+
+                UseKeyC2SPayload payload = new UseKeyC2SPayload(playerUuid, sendItemUsed2, true);
 
                 ClientPlayNetworking.send(payload); // Sends payload to server
             }
@@ -68,7 +73,6 @@ public class UseKeyTracker {
                         if (payload.isUsing()) {
                             UseKeyTracker.player_usedItem.put(sender, payload.itemStack()); // Add the sender player and their item to HashMap
                             UseKeyTracker.player_useCooldown.put(sender, 70); // Adds sender to second HashMap with a tick countdown timer
-//                            LOGGER.info("Other player: " + sender + " using: " + payload.itemStack());
                         }
                     }
                 });
@@ -76,8 +80,8 @@ public class UseKeyTracker {
         });
     }
 
-    public static float itemUsingLerp() {
-        int tickMax = 20;
+    public static float stoppedUsingLerp() {
+        int tickMax = 20; // 1 second long
         float f = (float) useTicks / tickMax;
         if (useTicks > 0) useTicks -= 1;
         return f;
@@ -85,7 +89,7 @@ public class UseKeyTracker {
 
     // Countdown tick timer
     // Since UseItemCallback event doesn't occur every tick, we have a countdown before we update that the other player is no longer using an item
-    public static void tickTimer(LivingEntity entity) {
+    public static void playerUsedItemTickTimer(LivingEntity entity) {
         if (entity.isPlayer()) {
             PlayerEntity player = (PlayerEntity) entity; // Cast LivingEntity to PlayerEntity
 
@@ -104,18 +108,18 @@ public class UseKeyTracker {
     }
 
     // Item Predicate logic to set "is_using" predicate float based on some criteria
-    public static float player_useItemKey(LivingEntity livingEntity, ItemStack usableItem) {
+    public static float playerUseItemKey(LivingEntity livingEntity, ItemStack usableItem) {
         // Items that you can actually use (food, bow, shield, etc.)
         if (!livingEntity.isPlayer()) return 0.0F;
         if (livingEntity.isUsingItem() && livingEntity.getActiveItem() == usableItem) return 1.0F;
 
+        PlayerEntity player = (PlayerEntity) livingEntity;
         // Get items that the player used that may be un-interactable items (pickaxes, materials)
-        ItemStack usedItem = player_usedItem.get((PlayerEntity) livingEntity);
+        ItemStack usedItem = player_usedItem.get(player);
+        Integer cooldownTick = player_useCooldown.get(player);
 
-        if (usedItem != null) {
-            if (usedItem.isEmpty()) return 0.0F;
-            return 1.0F;
-
+        if (usedItem != null && cooldownTick != null) {
+            return (usedItem.isEmpty()) ? 0.0F : stoppedUsingLerp();
         }
         return 0.0F;
     }
