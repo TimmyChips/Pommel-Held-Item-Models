@@ -3,8 +3,10 @@ package timmychips.pommelheldmodels.type;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.client.item.CompassAnglePredicateProvider;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
+import timmychips.pommelheldmodels.resolver.rangeentry.CompassFloat;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,7 +18,8 @@ public final class RangeDispatchDefinition {
             Identifier property,
             List<ThresholdEntry> entries,
             @Nullable ItemModelDefinition fallback,
-            @Nullable String target,
+            @Nullable CompassFloat.CompassTarget target,
+            @Nullable Boolean wobble,
             float scale
     ) implements ItemModelDefinition {
 
@@ -26,12 +29,13 @@ public final class RangeDispatchDefinition {
                     Identifier.CODEC.fieldOf("property").forGetter(Definition::property),
                     ThresholdEntry.codec(selfCodec).listOf().fieldOf("entries").forGetter(Definition::entries),
                     selfCodec.optionalFieldOf("fallback").forGetter(range -> Optional.ofNullable(range.fallback)),
-                    selfCodec.STRING.optionalFieldOf("target").forGetter(cd -> Optional.ofNullable(cd.target)),
+                    CompassFloat.CompassTarget.CODEC.optionalFieldOf("target").forGetter(range -> Optional.ofNullable(range.target)),
+                    Codec.BOOL.optionalFieldOf("wobble").forGetter(range -> Optional.ofNullable(range.wobble)),
                     Codec.FLOAT.fieldOf("scale").forGetter(Definition::scale)
-            ).apply(instance, (type, property, entries, fallbackOpt, optTarget, scale) ->
+            ).apply(instance, (type, property, entries, fallbackOpt, optCompass, optWobble, scale) ->
                     new Definition(
                             type, property, entries, fallbackOpt.orElse(null),
-                            optTarget.orElse(null),
+                            optCompass.orElse(null), optWobble.orElse(null),
                             scale)
             ));
         }
@@ -44,5 +48,14 @@ public final class RangeDispatchDefinition {
                     Codec.FLOAT.fieldOf("threshold").forGetter(ThresholdEntry::threshold)
             ).apply(instance, ThresholdEntry::new));
         }
+    }
+
+    @Nullable CompassConfig compass; // contains target + wobble
+
+    public record CompassConfig(CompassFloat.CompassTarget target, boolean wobble) {
+        public static final Codec<CompassConfig> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                CompassFloat.CompassTarget.CODEC.fieldOf("target").forGetter(CompassConfig::target),
+                Codec.BOOL.optionalFieldOf("wobble", true).forGetter(CompassConfig::wobble)
+        ).apply(instance, CompassConfig::new));
     }
 }

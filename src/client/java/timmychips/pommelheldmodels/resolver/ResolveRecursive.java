@@ -67,9 +67,9 @@ public class ResolveRecursive {
             float value = RangeDispatchValueResolver.evaluate(
                     range.property(),
                     range.scale(),
-                    range.target(),
                     stack,
-                    entity);
+                    entity,
+                    range);
 
             // Sort entries descending by threshold so highest matches first
             return range.entries().stream()

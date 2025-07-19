@@ -6,16 +6,21 @@ import com.google.gson.JsonParser;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.JsonOps;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
+import timmychips.pommelheldmodels.resolver.rangeentry.CompassFloat;
+import timmychips.pommelheldmodels.resolver.rangeentry.RangePropertyRegistry;
 import timmychips.pommelheldmodels.type.ItemModelDefinition;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Collection;
+import java.util.Set;
 
 public class ClientInitializer implements ClientModInitializer {
 
@@ -39,6 +44,14 @@ public class ClientInitializer implements ClientModInitializer {
 		//  Make it register custom models specified in the items model definition .json file
 		//  ( the "items" folder works as well for resource packs)
 
+		ModelLoadingPlugin.register(pluginContext -> {
+			Collection<Identifier> modelIds = ItemModelRegistry.getAllModelDependencies();
+			modelIds.forEach(id -> LOGGER.info("[Pommel] Registering model dependency: {}", id));
+
+			// Add them all in one go
+			pluginContext.addModels(Identifier.ofVanilla("a_test"));
+		});
+
 		ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
 			public Identifier getFabricId() {
 				return Identifier.of("pommel", "item_model_definitions");
@@ -48,6 +61,7 @@ public class ClientInitializer implements ClientModInitializer {
 				LOGGER.info("Pommel: Reloading Resource Manager");
 
 				ItemModelRegistry.clear();
+				RangePropertyRegistry.register("minecraft:compass", new CompassFloat());
 
 				for (Identifier id : manager.findResources("items", path -> path.getPath().endsWith(".json")).keySet()) {
 					try (InputStream stream = manager.getResource(id).get().getInputStream()) {
