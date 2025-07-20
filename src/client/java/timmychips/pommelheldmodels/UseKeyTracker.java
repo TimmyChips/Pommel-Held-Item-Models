@@ -40,16 +40,19 @@ public class UseKeyTracker {
                 // Adds or removes the client user and the item used to HashMap when pressing the use key or not
                 if (useKeyPressed) {
                     player_usedItem.put(user, itemUsed);
-                    UseKeyTracker.player_useCooldown.put(user, 70);
-                    UseKeyTracker.player_releaseCountdown.put(user, 70.0F);
+                    UseKeyTracker.player_useCooldown.put(user, 4);
+                    UseKeyTracker.player_releaseCountdown.put(user, 20.0F);
                 }
                 if (!useKeyPressed) player_usedItem.remove(user);
             }
         });
 
-        ServerTickEvents.END_WORLD_TICK.register(world -> {
-            for (var entry:player_usedItem.entrySet()) {
-                UseKeyTracker.playerUsedItemTickTimer(entry.getKey()); // Countdown tick timer for other (non-client) players to retain item usage
+        // Occurs at every world tick so frame rate is capped to ~20ticks/sec
+        // Updates void methods
+        ClientTickEvents.END_WORLD_TICK.register(world -> {
+            for (var player:world.getPlayers()) {
+                UseKeyTracker.playerUsedItemTickTimer(player); // Tick timer for other (non-client) players to retain item usage
+                UseKeyTracker.playerReleaseCountdown(player); // Release countdown
             }
         });
     }
@@ -84,8 +87,8 @@ public class UseKeyTracker {
                     if (sender != null) {
                         if (payload.isUsing()) {
                             UseKeyTracker.player_usedItem.put(sender, payload.itemStack()); // Add the sender player and their item to HashMap
-                            UseKeyTracker.player_useCooldown.put(sender, 70); // Adds sender to second HashMap with a tick countdown timer
-                            UseKeyTracker.player_releaseCountdown.put(sender, 70.0F); // Adds sender to a countdown that'll start when no longer using item
+                            UseKeyTracker.player_useCooldown.put(sender, 4); // Adds sender to second HashMap with a tick countdown timer
+                            UseKeyTracker.player_releaseCountdown.put(sender, 20.0F); // Adds sender to a countdown that'll start when no longer using item
                         }
                     }
                 });
@@ -114,22 +117,24 @@ public class UseKeyTracker {
         }
     }
 
-    private static float playerReleaseCountdown(PlayerEntity player) {
-        if (player_releaseCountdown.containsKey(player)) {
-            float p_countdown = player_releaseCountdown.get(player);
+    public static void playerReleaseCountdown(LivingEntity entity) {
+        if (entity.isPlayer()) {
+            PlayerEntity player = (PlayerEntity) entity;
 
-            if (!player_usedItem.containsKey(player) || !player_useCooldown.containsKey(player)) {
+            if (player_releaseCountdown.containsKey(player)) {
+                float p_countdown = player_releaseCountdown.get(player);
 
-                LOGGER.info(String.valueOf(player_releaseCountdown.get(player)));
-                if (p_countdown > 0F) p_countdown--;
+                if (!player_usedItem.containsKey(player) || !player_useCooldown.containsKey(player)) {
 
-                if (p_countdown == 0F) {
-                    UseKeyTracker.player_releaseCountdown.remove(player);
-                } else player_releaseCountdown.replace(player, p_countdown);
+                    LOGGER.info(String.valueOf(player_releaseCountdown.get(player)));
+                    if (p_countdown > 0F) p_countdown--;
+
+                    if (p_countdown == 0F) {
+                        UseKeyTracker.player_releaseCountdown.remove(player);
+                    } else player_releaseCountdown.replace(player, p_countdown);
+                }
             }
-            return p_countdown;
         }
-        return 0.0F;
     }
 
     // Item Predicate logic to set "is_using" predicate float based on some criteria
@@ -145,12 +150,13 @@ public class UseKeyTracker {
         ItemStack usedItem2 = ItemStack.EMPTY; // copies usedItem since it's removed immediately from HashMap when not using item
         if (usedItem != null) usedItem2 = usedItem.copy();
         float cooldownTick = 0.0F;
-        // TODO: item model constantly changes/flickers for other, non-client player as tick cooldown doesn't get updated immediately
-        //  Find another solution, perhaps a second HashMap for player_releaseCountdown ?
-        if (player_releaseCountdown.get(player) != null) cooldownTick = playerReleaseCountdown(player); // get cooldown from map
+        // TODO:
+        //  Possible to refactor the cooldown hashmap into the other? Should stay separate?
+        //  Also need to reset/fix cooldown when you swap items then back to used item; rn it doesn't reset
+        if (player_releaseCountdown.get(player) != null) cooldownTick = player_releaseCountdown.get(player); // get cooldown from map
 
         if (usedItem2 != null) {
-            cooldownTick /= 60.0F; // normalizes range from 0.0 to ~1.0
+            cooldownTick /= 18.0F; // normalizes range from 0.0 to ~1.0
             return cooldownTick;
         }
         return 0.0F;

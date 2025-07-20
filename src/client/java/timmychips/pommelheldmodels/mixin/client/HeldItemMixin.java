@@ -43,6 +43,7 @@ public abstract class HeldItemMixin {
             HeldItemPredicate.isSubmerged = entity.isSubmergedInWater();
 
 //            UseKeyTracker.playerUsedItemTickTimer(entity); // Countdown tick timer for other (non-client) players to retain item usage
+//            UseKeyTracker.playerReleaseCountdown(entity);
         }
 
         // Replaces the render mode for these entities from using the GROUND render mode to using a third person render mode for rendering held item models
