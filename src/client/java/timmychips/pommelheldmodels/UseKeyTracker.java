@@ -125,8 +125,6 @@ public class UseKeyTracker {
                 float p_countdown = player_releaseCountdown.get(player);
 
                 if (!player_usedItem.containsKey(player) || !player_useCooldown.containsKey(player)) {
-
-                    LOGGER.info(String.valueOf(player_releaseCountdown.get(player)));
                     if (p_countdown > 0F) p_countdown--;
 
                     if (p_countdown == 0F) {
