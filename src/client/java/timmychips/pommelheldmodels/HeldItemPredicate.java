@@ -82,12 +82,11 @@ public class HeldItemPredicate {
                 boolean isUsedPredicate = entry.getKey().getPath().equals(render_using);
                 boolean isSubmergedPredicate = entry.getKey().getPath().equals(render_submerged);
 
-                if (livingEntity != null && matchesItemInHand(livingEntity, itemStack)) {
+                if (livingEntity != null) {
+                    // Predicate when player presses the use key for the using item predicate + item is in hand
+                    if (isUsedPredicate && matchesItemInHand(livingEntity, itemStack)) return UseKeyTracker.playerUseItemKey(livingEntity, itemStack);
 
-                    // Predicate when player presses the use key for the using item predicate
-                    if (isUsedPredicate) return UseKeyTracker.playerUseItemKey(livingEntity, itemStack);
                     // Predicate when player is in water
-                    // TODO: Should item GUI model change? Should GUI model only change when selected (aka as of now). Or just change the held model?
                     if (isSubmergedPredicate) return livingEntity.isSubmergedInWater() ? 1.0F : 0.0F;
                 }
 
@@ -101,7 +100,6 @@ public class HeldItemPredicate {
                 // TODO: Remove is_ground for thrown items (eggs, snowballs) and separate into two predicates: "is_ground" and a new, "is_thrown"
                 //  Add a new item predicate for when player is submerged underwater "is_submerged"
                 //  Probably add new predicate for falling/in air "is_falling"
-                //  TBD (Probably): re-add smooth interpolation when player stops holding use key?
                 //  TBD: revise/change using tick cooldown for other players to a (potentially) better method?
 
                 // Return 1 if whitelisted for all other predicates

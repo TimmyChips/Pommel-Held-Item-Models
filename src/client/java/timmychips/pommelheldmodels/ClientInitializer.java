@@ -26,4 +26,6 @@ public class ClientInitializer implements ClientModInitializer {
 		UseKeyTracker.clientUseKey();
 		UseKeyTracker.eventUseKeyPacket();
 	}
+
+
 }

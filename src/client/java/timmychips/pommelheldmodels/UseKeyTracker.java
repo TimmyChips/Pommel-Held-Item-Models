@@ -3,6 +3,7 @@ package timmychips.pommelheldmodels;
 import com.mojang.logging.LogUtils;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
@@ -10,6 +11,7 @@ import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
 import org.slf4j.Logger;
@@ -23,6 +25,7 @@ public class UseKeyTracker {
     private static boolean useKeyPressed = false;
     public static HashMap<PlayerEntity, ItemStack> player_usedItem = new HashMap<PlayerEntity, ItemStack>();
     public static HashMap<PlayerEntity, Integer> player_useCooldown = new HashMap<PlayerEntity, Integer>();
+    public static HashMap<PlayerEntity, Float> player_releaseCountdown = new HashMap<PlayerEntity, Float>();
 
     // When client player/user presses the use key; occurs every client tick
     public static void clientUseKey() {
@@ -38,8 +41,15 @@ public class UseKeyTracker {
                 if (useKeyPressed) {
                     player_usedItem.put(user, itemUsed);
                     UseKeyTracker.player_useCooldown.put(user, 70);
+                    UseKeyTracker.player_releaseCountdown.put(user, 70.0F);
                 }
                 if (!useKeyPressed) player_usedItem.remove(user);
+            }
+        });
+
+        ServerTickEvents.END_WORLD_TICK.register(world -> {
+            for (var entry:player_usedItem.entrySet()) {
+                UseKeyTracker.playerUsedItemTickTimer(entry.getKey()); // Countdown tick timer for other (non-client) players to retain item usage
             }
         });
     }
@@ -75,6 +85,7 @@ public class UseKeyTracker {
                         if (payload.isUsing()) {
                             UseKeyTracker.player_usedItem.put(sender, payload.itemStack()); // Add the sender player and their item to HashMap
                             UseKeyTracker.player_useCooldown.put(sender, 70); // Adds sender to second HashMap with a tick countdown timer
+                            UseKeyTracker.player_releaseCountdown.put(sender, 70.0F); // Adds sender to a countdown that'll start when no longer using item
                         }
                     }
                 });
@@ -95,10 +106,30 @@ public class UseKeyTracker {
                 if (p_tick == 0) { // Removes the player from both HashMaps when countdown reaches 0; item no longer being used
                     UseKeyTracker.player_useCooldown.remove(player);
                     UseKeyTracker.player_usedItem.remove(player);
+
+                    // method call
                 }
                 else player_useCooldown.replace(player, p_tick); // Updates tick timer to new, subtracted value
             }
         }
+    }
+
+    private static float playerReleaseCountdown(PlayerEntity player) {
+        if (player_releaseCountdown.containsKey(player)) {
+            float p_countdown = player_releaseCountdown.get(player);
+
+            if (!player_usedItem.containsKey(player) || !player_useCooldown.containsKey(player)) {
+
+                LOGGER.info(String.valueOf(player_releaseCountdown.get(player)));
+                if (p_countdown > 0F) p_countdown--;
+
+                if (p_countdown == 0F) {
+                    UseKeyTracker.player_releaseCountdown.remove(player);
+                } else player_releaseCountdown.replace(player, p_countdown);
+            }
+            return p_countdown;
+        }
+        return 0.0F;
     }
 
     // Item Predicate logic to set "is_using" predicate float based on some criteria
@@ -116,7 +147,7 @@ public class UseKeyTracker {
         float cooldownTick = 0.0F;
         // TODO: item model constantly changes/flickers for other, non-client player as tick cooldown doesn't get updated immediately
         //  Find another solution, perhaps a second HashMap for player_releaseCountdown ?
-        if (player_useCooldown.get(player) != null) cooldownTick = (float) player_useCooldown.get(player); // get cooldown from map
+        if (player_releaseCountdown.get(player) != null) cooldownTick = playerReleaseCountdown(player); // get cooldown from map
 
         if (usedItem2 != null) {
             cooldownTick /= 60.0F; // normalizes range from 0.0 to ~1.0

@@ -42,7 +42,7 @@ public abstract class HeldItemMixin {
             HeldItemPredicate.itemInOffhand = entity.getOffHandStack() == item; // True if current item in entity's offhand
             HeldItemPredicate.isSubmerged = entity.isSubmergedInWater();
 
-            UseKeyTracker.playerUsedItemTickTimer(entity); // Countdown tick timer for other (non-client) players to retain item usage
+//            UseKeyTracker.playerUsedItemTickTimer(entity); // Countdown tick timer for other (non-client) players to retain item usage
         }
 
         // Replaces the render mode for these entities from using the GROUND render mode to using a third person render mode for rendering held item models
