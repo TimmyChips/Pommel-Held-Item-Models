@@ -33,17 +33,13 @@ public abstract class HeldItemMixin {
     @Inject(method = "renderItem(Lnet/minecraft/entity/LivingEntity;Lnet/minecraft/item/ItemStack;Lnet/minecraft/client/render/model/json/ModelTransformationMode;ZLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;Lnet/minecraft/world/World;III)V", at = @At(value = "HEAD"))
     private void pommel$renderHeldItem(LivingEntity entity, ItemStack item, ModelTransformationMode renderMode, boolean leftHanded, MatrixStack matrices, VertexConsumerProvider vertexConsumers, World world, int light, int overlay, int seed, CallbackInfo ci) {
         if (entity != null) {
+            UseKeyTracker.playerUsedItemTickTimer(entity); // Countdown tick timer for other (non-client) players to retain item usage
+
             HeldItemPredicate.itemInOffhand = entity.getOffHandStack() == item; // True if current item in entity's offhand
             HeldItemPredicate.isSubmerged = entity.isSubmergedInWater();
-//            if (entity.isFallFlying()) LOGGER.info("is elyta flying");
-//            if (!entity.isOnGround() && entity.fallDistance > 0.0) LOGGER.info("is falling");
-//            LOGGER.info(String.valueOf(entity.fallDistance));
-            HeldItemPredicate.isFallingCheck(entity);
-
-//          UseKeyTracker.itemUsingLerp();
-            UseKeyTracker.playerUsedItemTickTimer(entity); // Countdown tick timer for other (non-client) players to retain item usage
         }
 
+        // Replaces the render mode for these entities from using the GROUND render mode to using a third person render mode for rendering held item models
         if (entity instanceof VillagerEntity || entity instanceof WitchEntity || entity instanceof PandaEntity) {
             renderMode = ModelTransformationMode.THIRD_PERSON_RIGHT_HAND;
         }

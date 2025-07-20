@@ -30,7 +30,6 @@ public class HeldItemPredicate {
     private static final String render_head = "is_head";
     private static final String render_using = "is_using";
     private static final String render_submerged = "is_submerged";
-    private static final String render_falling = "is_falling";
 
     private static final List<ModelTransformationMode> renderModeHands = Arrays.asList(
             ModelTransformationMode.FIRST_PERSON_LEFT_HAND,
@@ -39,18 +38,29 @@ public class HeldItemPredicate {
             ModelTransformationMode.THIRD_PERSON_RIGHT_HAND
     );
 
+    private static final List<ModelTransformationMode> renderAny = Arrays.asList(
+            ModelTransformationMode.FIRST_PERSON_LEFT_HAND,
+            ModelTransformationMode.FIRST_PERSON_RIGHT_HAND,
+            ModelTransformationMode.THIRD_PERSON_LEFT_HAND,
+            ModelTransformationMode.THIRD_PERSON_RIGHT_HAND,
+            ModelTransformationMode.HEAD,
+            ModelTransformationMode.FIXED,
+            ModelTransformationMode.GROUND,
+            ModelTransformationMode.GUI
+    );
+
     private static HashMap<Identifier, List<ModelTransformationMode>> renderTypeWhitelist;
 
     public static void registerHeldModelPredicate() {
         // Creates association to render type and transformation modes
-        // HashMap contains Indentifiers (held, on ground) with several mode types linked to each identifier
+        // HashMap contains Identifiers (held, on ground) with several mode types linked to each identifier
         renderTypeWhitelist = new HashMap<Identifier, List<ModelTransformationMode>>() {{
             put(Identifier.of(namespace, render_held), renderModeHands ); // Held render modes
 
             put(Identifier.of(namespace, render_offhand), renderModeHands ); // Held render modes for the offhand;
-            put(Identifier.of(namespace, render_using), renderModeHands ); // Held render modes for item used;
-            put(Identifier.of(namespace, render_submerged), renderModeHands );
-            put(Identifier.of(namespace, render_falling), renderModeHands );
+
+            put(Identifier.of(namespace, render_using), renderAny ); // Register for any modes for item used;
+            put(Identifier.of(namespace, render_submerged), renderAny );
 
             put(Identifier.of(namespace, render_fixed), Arrays.asList( // Item Frame, Fixed render mode
                     ModelTransformationMode.FIXED));
@@ -71,7 +81,6 @@ public class HeldItemPredicate {
                 boolean isOffhandPredicate = entry.getKey().getPath().equals(render_offhand); // Matches key for offhand
                 boolean isUsedPredicate = entry.getKey().getPath().equals(render_using);
                 boolean isSubmergedPredicate = entry.getKey().getPath().equals(render_submerged);
-                boolean isFallingPredicate = entry.getKey().getPath().equals(render_falling);
 
                 // If in offhand, return 1 for the offhand predicate
                 // Note that this makes is_held and is_offhand both return 1
@@ -80,16 +89,7 @@ public class HeldItemPredicate {
                 if (livingEntity != null) {
                     // Predicate when player presses the use key for the using item predicate
                     if (isUsedPredicate ) return UseKeyTracker.playerUseItemKey(livingEntity, itemStack);
-//                    //if (isSubmergedPredicate) return livingEntity.isSubmergedInWater() ? 1.0F : 0.0F;
-//                    if (isSubmergedPredicate) return livingEntity.isSubmergedIn(FluidTags.WATER) || livingEntity.isSubmergedIn(FluidTags.LAVA) ? 1.0F : 0.0F;
-                    if (isSubmergedPredicate) return submergedInFluidCheck(livingEntity);
-//                    if (isFallingPredicate) return livingEntity.isFallFlying() || (!livingEntity.isOnGround() && livingEntity.fallDistance > 0.25) ? 1.0F : 0.0F;
-                    double yVelocity = livingEntity.getVelocity().y;
-//                    if (isFallingPredicate) return (!livingEntity.isOnGround() && yVelocity < -0.24) ? 1.0F : 0.0F;
-                    if (isFallingPredicate) return isFallingCheck(livingEntity);
-//                    if (isFallingPredicate) return !livingEntity.isOnGround() && livingEntity.fallDistance > 0 ? 1.0F : 0.0F;
-
-
+                    if (isSubmergedPredicate) return livingEntity.isSubmergedInWater() ? 1.0F : 0.0F;
                 }
 
                 // TODO: Remove is_ground for thrown items (eggs, snowballs) and separate into two predicates: "is_ground" and a new, "is_thrown"
