@@ -5,6 +5,8 @@ import net.minecraft.client.item.ModelPredicateProviderRegistry;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.fluid.FluidState;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -76,21 +78,25 @@ public class HeldItemPredicate {
             // Performs for each Identifier and associated List items
             ModelPredicateProviderRegistry.register(entry.getKey(), (itemStack, world, livingEntity, i) -> { // Registers Identifier key
 
-                if (currentItemRenderMode == null) return 0.0F; // Return 0 if render mode is null
-
                 boolean isOffhandPredicate = entry.getKey().getPath().equals(render_offhand); // Matches key for offhand
                 boolean isUsedPredicate = entry.getKey().getPath().equals(render_using);
                 boolean isSubmergedPredicate = entry.getKey().getPath().equals(render_submerged);
 
+                if (livingEntity != null && matchesItemInHand(livingEntity, itemStack)) {
+
+                    // Predicate when player presses the use key for the using item predicate
+                    if (isUsedPredicate) return UseKeyTracker.playerUseItemKey(livingEntity, itemStack);
+                    // Predicate when player is in water
+                    // TODO: Should item GUI model change? Should GUI model only change when selected (aka as of now). Or just change the held model?
+                    if (isSubmergedPredicate) return livingEntity.isSubmergedInWater() ? 1.0F : 0.0F;
+                }
+
+                if (currentItemRenderMode == null) return 0.0F; // Return 0 if render mode is null
+                // Do this after those other predicates so that they can render in the gui
+
                 // If in offhand, return 1 for the offhand predicate
                 // Note that this makes is_held and is_offhand both return 1
                 if (isOffhandPredicate) return (itemInOffhand && entry.getValue().contains(currentItemRenderMode)) ? 1.0F : 0.0F;
-
-                if (livingEntity != null) {
-                    // Predicate when player presses the use key for the using item predicate
-                    if (isUsedPredicate ) return UseKeyTracker.playerUseItemKey(livingEntity, itemStack);
-                    if (isSubmergedPredicate) return livingEntity.isSubmergedInWater() ? 1.0F : 0.0F;
-                }
 
                 // TODO: Remove is_ground for thrown items (eggs, snowballs) and separate into two predicates: "is_ground" and a new, "is_thrown"
                 //  Add a new item predicate for when player is submerged underwater "is_submerged"
@@ -112,6 +118,11 @@ public class HeldItemPredicate {
 //                return livingEntity.getMainHandStack() == itemStack ? 1.0F : 0.0F;
 //            }
 //        });
+    }
+
+    private static boolean matchesItemInHand(LivingEntity entity, ItemStack stack) {
+        ItemStack currentItem = entity.getMainHandStack().isEmpty() ? entity.getOffHandStack() : entity.getMainHandStack();
+        return stack.equals(currentItem);
     }
 
     private static float submergedInFluidCheck(LivingEntity entity) {

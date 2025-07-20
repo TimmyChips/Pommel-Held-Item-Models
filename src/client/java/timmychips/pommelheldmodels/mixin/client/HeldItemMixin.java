@@ -16,6 +16,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -29,14 +30,19 @@ public abstract class HeldItemMixin {
 
     private static final Logger LOGGER = LogUtils.getLogger();
 
+    @Unique
+    private static final ThreadLocal<LivingEntity> CURRENT_ENTITY = new ThreadLocal<>();
+
     // Sets item render predicate to 0.0 or 1.0 based on the current render mode or other conditions
     @Inject(method = "renderItem(Lnet/minecraft/entity/LivingEntity;Lnet/minecraft/item/ItemStack;Lnet/minecraft/client/render/model/json/ModelTransformationMode;ZLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;Lnet/minecraft/world/World;III)V", at = @At(value = "HEAD"))
     private void pommel$renderHeldItem(LivingEntity entity, ItemStack item, ModelTransformationMode renderMode, boolean leftHanded, MatrixStack matrices, VertexConsumerProvider vertexConsumers, World world, int light, int overlay, int seed, CallbackInfo ci) {
         if (entity != null) {
-            UseKeyTracker.playerUsedItemTickTimer(entity); // Countdown tick timer for other (non-client) players to retain item usage
+            CURRENT_ENTITY.set(entity);
 
             HeldItemPredicate.itemInOffhand = entity.getOffHandStack() == item; // True if current item in entity's offhand
             HeldItemPredicate.isSubmerged = entity.isSubmergedInWater();
+
+            UseKeyTracker.playerUsedItemTickTimer(entity); // Countdown tick timer for other (non-client) players to retain item usage
         }
 
         // Replaces the render mode for these entities from using the GROUND render mode to using a third person render mode for rendering held item models
@@ -50,6 +56,12 @@ public abstract class HeldItemMixin {
     // Resets the item back to the base model when it's in the GUI
     @Inject(method = "renderItem(Lnet/minecraft/item/ItemStack;Lnet/minecraft/client/render/model/json/ModelTransformationMode;ZLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;IILnet/minecraft/client/render/model/BakedModel;)V", at = @At(value = "HEAD"))
     private void pommel$renderBaseItem(ItemStack stack, ModelTransformationMode renderMode, boolean leftHanded, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, BakedModel model, CallbackInfo ci) {
-        HeldItemPredicate.currentItemRenderMode = null; // Resets the item predicate so it renders the 2d model
+//        HeldItemPredicate.currentItemRenderMode = null; // Resets the item predicate so it renders the 2d model
+
+        LivingEntity entity = CURRENT_ENTITY.get();
+
+        if (entity != null) {
+            HeldItemPredicate.currentItemRenderMode = null; // Resets the item predicate so it renders the 2d model
+        }
     }
 }

@@ -114,6 +114,8 @@ public class UseKeyTracker {
         ItemStack usedItem2 = ItemStack.EMPTY; // copies usedItem since it's removed immediately from HashMap when not using item
         if (usedItem != null) usedItem2 = usedItem.copy();
         float cooldownTick = 0.0F;
+        // TODO: item model constantly changes/flickers for other, non-client player as tick cooldown doesn't get updated immediately
+        //  Find another solution, perhaps a second HashMap for player_releaseCountdown ?
         if (player_useCooldown.get(player) != null) cooldownTick = (float) player_useCooldown.get(player); // get cooldown from map
 
         if (usedItem2 != null) {
