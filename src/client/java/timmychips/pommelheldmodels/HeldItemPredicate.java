@@ -3,7 +3,11 @@ package timmychips.pommelheldmodels;
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.item.ModelPredicateProviderRegistry;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.FlyingItemEntity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.projectile.ProjectileEntity;
+import net.minecraft.entity.projectile.thrown.ThrownItemEntity;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
@@ -16,12 +20,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Arrays;
 
-public class HeldItemPredicate {
+public class HeldItemPredicate<T extends Entity & FlyingItemEntity> {
     public static ModelTransformationMode currentItemRenderMode;
     public static boolean itemInOffhand = false;
-    public static boolean isSubmerged = false;
-    public static boolean isFalling = false;
-    public static float isUsingItemFloat = 0.0F;
+    public static boolean isFlyingItem = false;
     private static final Logger LOGGER = LogUtils.getLogger();
 
     private static final String namespace = "pommel";
@@ -29,6 +31,7 @@ public class HeldItemPredicate {
     private static final String render_offhand = "is_offhand";
     private static final String render_fixed = "is_fixed";
     private static final String render_ground = "is_ground";
+    private static final String render_thrown = "is_thrown";
     private static final String render_head = "is_head";
     private static final String render_using = "is_using";
     private static final String render_submerged = "is_submerged";
@@ -67,7 +70,10 @@ public class HeldItemPredicate {
             put(Identifier.of(namespace, render_fixed), Arrays.asList( // Item Frame, Fixed render mode
                     ModelTransformationMode.FIXED));
 
-            put(Identifier.of(namespace, render_ground), Arrays.asList( // Thrown item or in panda's hands
+            put(Identifier.of(namespace, render_ground), Arrays.asList( // Ground item entity
+                    ModelTransformationMode.GROUND));
+
+            put(Identifier.of(namespace, render_thrown), Arrays.asList( // Thrown item entity
                     ModelTransformationMode.GROUND));
 
             put(Identifier.of(namespace, render_head), Arrays.asList( // When worn on head armor slot
@@ -81,6 +87,8 @@ public class HeldItemPredicate {
                 boolean isOffhandPredicate = entry.getKey().getPath().equals(render_offhand); // Matches key for offhand
                 boolean isUsedPredicate = entry.getKey().getPath().equals(render_using);
                 boolean isSubmergedPredicate = entry.getKey().getPath().equals(render_submerged);
+                boolean isGroundPredicate = entry.getKey().getPath().equals(render_ground);
+                boolean isThrownPredicate = entry.getKey().getPath().equals(render_thrown);
 
                 if (livingEntity != null) {
                     // Predicate when player presses the use key for the using item predicate + item is in hand
@@ -91,34 +99,25 @@ public class HeldItemPredicate {
                 }
 
                 if (currentItemRenderMode == null) return 0.0F; // Return 0 if render mode is null
-                // Do this after those other predicates so that they can render in the gui
+                // Do this after those other predicates so that those can render in the gui
 
                 // If in offhand, return 1 for the offhand predicate
                 // Note that this makes is_held and is_offhand both return 1
                 if (isOffhandPredicate) return (itemInOffhand && entry.getValue().contains(currentItemRenderMode)) ? 1.0F : 0.0F;
 
-                // TODO: Remove is_ground for thrown items (eggs, snowballs) and separate into two predicates: "is_ground" and a new, "is_thrown"
-                //  Add a new item predicate for when player is submerged underwater "is_submerged"
-                //  Probably add new predicate for falling/in air "is_falling"
-                //  TBD: revise/change using tick cooldown for other players to a (potentially) better method?
+                // For flying/thrown items
+                if (isThrownPredicate) return isFlyingItem && entry.getValue().contains(currentItemRenderMode) ? 1.0F : 0.0F;
+                // Makes it so thrown items don't use the is_ground model
+                if (isGroundPredicate) return  !isFlyingItem && entry.getValue().contains(currentItemRenderMode) ? 1.0F : 0.0F;
 
                 // Return 1 if whitelisted for all other predicates
                 if (!isUsedPredicate) return entry.getValue().contains(currentItemRenderMode) ? 1.0F : 0.0F;
                 else return 0.0F;
             });
         }
-
-//        ModelPredicateProviderRegistry.register(Items.WOODEN_PICKAXE, Identifier.ofVanilla("pull"), (itemStack, world, livingEntity, seed) -> {
-//            LOGGER.info("We in the is_used predicate registry for: " + activeItem);
-//            if (livingEntity == null) {
-//                return 0.0F;
-//            } else {
-//                return livingEntity.getMainHandStack() == itemStack ? 1.0F : 0.0F;
-//            }
-//        });
     }
 
-    private static boolean matchesItemInHand(LivingEntity entity, ItemStack stack) {
+    public static boolean matchesItemInHand(LivingEntity entity, ItemStack stack) {
         ItemStack currentItem = entity.getMainHandStack().isEmpty() ? entity.getOffHandStack() : entity.getMainHandStack();
         return stack.equals(currentItem);
     }

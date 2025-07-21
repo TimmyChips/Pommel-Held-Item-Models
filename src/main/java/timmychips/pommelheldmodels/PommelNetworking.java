@@ -20,7 +20,7 @@ public class PommelNetworking {
             ItemStack stack = payload.itemStack();
             boolean isUsing = payload.isUsing();
 
-            System.out.println("[Pommel] Player " + senderUuid + " is using: " + stack + ", isUsing: " + isUsing);
+            System.out.println("[Pommel] Player " + senderUuid + " is using: " + stack + ", lastUsed: " + isUsing);
 
             UseKeyS2CPayload broadcastPayload = new UseKeyS2CPayload(senderUuid, stack, isUsing);
 
