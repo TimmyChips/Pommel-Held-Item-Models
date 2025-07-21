@@ -3,7 +3,6 @@ package timmychips.pommelheldmodels;
 import com.mojang.logging.LogUtils;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
@@ -11,7 +10,6 @@ import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
 import org.slf4j.Logger;
@@ -24,8 +22,11 @@ public class UseKeyTracker {
     private static ItemStack itemUsed = ItemStack.EMPTY;
     private static boolean useKeyPressed = false;
     public static HashMap<PlayerEntity, ItemStack> player_usedItem = new HashMap<PlayerEntity, ItemStack>();
+    public static HashMap<PlayerEntity, ItemStack> player_lastUsedItem = new HashMap<PlayerEntity, ItemStack>();
     public static HashMap<PlayerEntity, Integer> player_useCooldown = new HashMap<PlayerEntity, Integer>();
     public static HashMap<PlayerEntity, Float> player_releaseCountdown = new HashMap<PlayerEntity, Float>();
+//    public static ItemUseMap<PlayerEntity, ItemStack, Integer, Float> itemUseMap = new ItemUseMap<>();
+    public static HashMap<PlayerEntity, PlayerHeldItem> itemMap = new HashMap<>();
 
     // When client player/user presses the use key; occurs every client tick
     public static void clientUseKey() {
@@ -39,11 +40,15 @@ public class UseKeyTracker {
 
                 // Adds or removes the client user and the item used to HashMap when pressing the use key or not
                 if (useKeyPressed) {
-                    player_usedItem.put(user, itemUsed);
-                    UseKeyTracker.player_useCooldown.put(user, 4);
-                    UseKeyTracker.player_releaseCountdown.put(user, 20.0F);
+//                    player_usedItem.put(user, itemUsed);
+//                    UseKeyTracker.player_useCooldown.put(user, 4);
+//                    UseKeyTracker.player_releaseCountdown.put(user, 20.0F);
+
+                    // Initialize player with item use data
+                    itemMap.put(user, new PlayerHeldItem(itemUsed));
                 }
-                if (!useKeyPressed) player_usedItem.remove(user);
+//                if (!useKeyPressed) player_usedItem.remove(user);
+                itemMap.get(user).isUsing = 0.0F; // Temp, example of modifying one item use field for player
             }
         });
 
@@ -52,7 +57,7 @@ public class UseKeyTracker {
         ClientTickEvents.END_WORLD_TICK.register(world -> {
             for (var player:world.getPlayers()) {
                 UseKeyTracker.playerUsedItemTickTimer(player); // Tick timer for other (non-client) players to retain item usage
-                UseKeyTracker.playerReleaseCountdown(player); // Release countdown
+//                UseKeyTracker.playerReleaseCountdown(player); // Release countdown
             }
         });
     }
@@ -89,6 +94,8 @@ public class UseKeyTracker {
                             UseKeyTracker.player_usedItem.put(sender, payload.itemStack()); // Add the sender player and their item to HashMap
                             UseKeyTracker.player_useCooldown.put(sender, 4); // Adds sender to second HashMap with a tick countdown timer
                             UseKeyTracker.player_releaseCountdown.put(sender, 20.0F); // Adds sender to a countdown that'll start when no longer using item
+
+                            itemMap.put(sender, new PlayerHeldItem(payload.itemStack()));
                         }
                     }
                 });
@@ -102,17 +109,25 @@ public class UseKeyTracker {
         if (entity.isPlayer()) {
             PlayerEntity player = (PlayerEntity) entity; // Cast LivingEntity to PlayerEntity
 
-            if (player_useCooldown.containsKey(player)) { // Gets player and their current countdown tick
-                int p_tick = player_useCooldown.get(player);
-                if (p_tick > 0) p_tick--; // Get and subtract the player's tick
+//            if (player_useCooldown.containsKey(player)) { // Gets player and their current countdown tick
+//                int p_tick = player_useCooldown.get(player);
+//                if (p_tick > 0) p_tick--; // Get and subtract the player's tick
+//
+//                if (p_tick == 0) { // Removes the player from both HashMaps when countdown reaches 0; item no longer being used
+//                    UseKeyTracker.player_useCooldown.remove(player);
+//                    UseKeyTracker.player_usedItem.remove(player);
+//
+//                    // method call
+//                }
+//                else player_useCooldown.replace(player, p_tick); // Updates tick timer to new, subtracted value
+//            }
 
-                if (p_tick == 0) { // Removes the player from both HashMaps when countdown reaches 0; item no longer being used
-                    UseKeyTracker.player_useCooldown.remove(player);
-                    UseKeyTracker.player_usedItem.remove(player);
+            if (itemMap.containsKey(player)) {
+                int intervalTick = itemMap.get(player).checkInterval;
 
-                    // method call
-                }
-                else player_useCooldown.replace(player, p_tick); // Updates tick timer to new, subtracted value
+                if (intervalTick > 0) intervalTick--;
+                if (intervalTick == 0) playerReleaseCountdown(player);
+                else itemMap.get(player).checkInterval = intervalTick;
             }
         }
     }
@@ -121,16 +136,24 @@ public class UseKeyTracker {
         if (entity.isPlayer()) {
             PlayerEntity player = (PlayerEntity) entity;
 
-            if (player_releaseCountdown.containsKey(player)) {
-                float p_countdown = player_releaseCountdown.get(player);
+//            if (player_releaseCountdown.containsKey(player)) {
+//                float p_countdown = player_releaseCountdown.get(player);
+//
+//                if (!player_usedItem.containsKey(player) || !player_useCooldown.containsKey(player)) {
+//                    if (p_countdown > 0F) p_countdown--;
+//
+//                    if (p_countdown == 0F) {
+//                        UseKeyTracker.player_releaseCountdown.remove(player);
+//                    } else player_releaseCountdown.replace(player, p_countdown);
+//                }
+//            }
 
-                if (!player_usedItem.containsKey(player) || !player_useCooldown.containsKey(player)) {
-                    if (p_countdown > 0F) p_countdown--;
+            if (itemMap.containsKey(player)) {
+                float useTimer = itemMap.get(player).isUsing;
 
-                    if (p_countdown == 0F) {
-                        UseKeyTracker.player_releaseCountdown.remove(player);
-                    } else player_releaseCountdown.replace(player, p_countdown);
-                }
+                if (useTimer > 0F) useTimer--;
+                if (useTimer == 0F) itemMap.remove(player);
+                else itemMap.get(player).isUsing = useTimer;
             }
         }
     }
@@ -145,9 +168,22 @@ public class UseKeyTracker {
         // Get items that the player used that may be un-interactable items (pickaxes, materials)
         ItemStack usedItem = player_usedItem.get(player);
 
-        ItemStack usedItem2 = ItemStack.EMPTY; // copies usedItem since it's removed immediately from HashMap when not using item
-        if (usedItem != null) usedItem2 = usedItem.copy();
+//        LOGGER.info("Usable item: {}", usableItem);
+//        LOGGER.info("Last used item: {}", usedItem2);
+
         float cooldownTick = 0.0F;
+
+        ItemStack usedItem2 = ItemStack.EMPTY; // copies usedItem since it's removed immediately from HashMap when not using item
+        if (usedItem != null && !usedItem.isEmpty()) {
+            player_lastUsedItem.put(player, usedItem);
+
+            usedItem2 = usedItem.copy();
+        }
+
+        if (player_lastUsedItem != null) LOGGER.info(String.valueOf(player_lastUsedItem.get(player) == usableItem));
+
+//        if (usableItem != null) LOGGER.info(String.valueOf(usedItem2.getItem() == usableItem.getItem()));
+
         // TODO:
         //  Possible to refactor the cooldown hashmap into the other? Should stay separate?
         //  Also need to reset/fix cooldown when you swap items then back to used item; rn it doesn't reset
