@@ -119,7 +119,7 @@ public class HeldItemPredicate<T extends Entity & FlyingItemEntity> {
 
     public static boolean matchesItemInHand(LivingEntity entity, ItemStack stack) {
         ItemStack currentItem = entity.getMainHandStack().isEmpty() ? entity.getOffHandStack() : entity.getMainHandStack();
-        return stack.equals(currentItem);
+        return stack.toString().equals(currentItem.toString());
     }
 
     private static float submergedInFluidCheck(LivingEntity entity) {

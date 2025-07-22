@@ -128,7 +128,7 @@ public class UseKeyTracker {
             ItemStack lastItem = itemMap.get(player).lastItem;
 
             if (lastItem != null) {
-                returnFloat = itemMap.get(player).lastUsed / 20.0F; // Get normalized value of last used timer from 0 to 1 for that player
+                returnFloat = itemMap.get(player).lastUsed / 18.0F; // Get normalized value of last used timer from 0 to 1 for that player
             }
         }
         return returnFloat;
