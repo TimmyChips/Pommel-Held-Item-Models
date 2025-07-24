@@ -1,6 +1,9 @@
 package timmychips.pommelheldmodels;
 
 import net.fabricmc.api.ModInitializer;
+import net.minecraft.item.Item;
+import net.minecraft.item.Items;
+import net.minecraft.util.Identifier;
 
 public class ServerInitializer implements ModInitializer {
 
@@ -8,5 +11,7 @@ public class ServerInitializer implements ModInitializer {
     public void onInitialize() {
         PommelNetworking.registerPayloads();
         PommelNetworking.useKeyGlobalReceiver();
+
+        ItemTest.initItem();
     }
 }

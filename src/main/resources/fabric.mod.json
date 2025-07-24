@@ -21,9 +21,6 @@
 		],
 		"client": [
 			"timmychips.pommelheldmodels.ClientInitializer"
-		],
-		"model_loading_plugin": [
-			"timmychips.pommelheldmodels.RegisterItemModels"
 		]
 	},
 	"mixins": [

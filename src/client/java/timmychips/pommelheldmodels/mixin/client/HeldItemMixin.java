@@ -23,6 +23,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import timmychips.pommelheldmodels.ClientInitializer;
 import timmychips.pommelheldmodels.HeldItemPredicate;
 import timmychips.pommelheldmodels.UseKeyTracker;
 import timmychips.pommelheldmodels.resolver.ItemModelResolver;
@@ -77,8 +78,20 @@ public abstract class HeldItemMixin {
                     ? modelId.getPath().substring("item/".length())
                     : modelId.getPath();
 
-            ModelIdentifier modelIdentifier = new ModelIdentifier(Identifier.of("minecraft", cleanPath), "inventory"); // gets correct path
+            String cleanNamespace = modelId.getNamespace();
+
+            Identifier newModelId = Identifier.of(cleanNamespace, cleanPath);
+
+//            ModelIdentifier modelIdentifier = new ModelIdentifier(Identifier.of("minecraft", cleanPath), "inventory"); // gets correct path
+//            ModelIdentifier modelIdentifier = ModelIdentifier.ofInventoryVariant(Identifier.of("pommel",cleanPath)); // works for the pommel test_item model
+            ModelIdentifier modelIdentifier = new ModelIdentifier(Identifier.of(cleanNamespace, cleanPath), "inventory");
+            ModelIdentifier modelIdentifierNew = new ModelIdentifier(newModelId, "");
+
+            LOGGER.info("Pommel: Resolved custom model ID: {}", modelIdentifier);
             BakedModel customModel = this.models.getModelManager().getModel(modelIdentifier);
+//            BakedModel customModel = this.models.getModelManager().getModel(newModelId);
+
+            if (ClientInitializer.)
 
             if (customModel != null && customModel != originalModel) {
 

@@ -20,6 +20,9 @@ public class RegisterItemModels implements ModelLoadingPlugin {
         Set<Identifier> modelIds = ItemModelRegistry.getAllModelDependencies();
         modelIds.forEach(id -> LOGGER.info("[Pommel] Registering model dependency: {}", id));
 
+        pluginContext.addModels(Identifier.ofVanilla("item/a_test"));
+        pluginContext.addModels(Identifier.of("pommel", "item/a_test"));
+        pluginContext.addModels(Identifier.ofVanilla("bruhmoment"));
         // Add them all in one go
         pluginContext.addModels(modelIds);
     }
