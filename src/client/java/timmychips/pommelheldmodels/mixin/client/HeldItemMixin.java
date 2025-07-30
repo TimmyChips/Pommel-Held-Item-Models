@@ -3,6 +3,7 @@ package timmychips.pommelheldmodels.mixin.client;
 import com.mojang.logging.LogUtils;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.item.ItemModels;
 import net.minecraft.client.render.item.ItemRenderer;
@@ -37,6 +38,9 @@ import java.util.Optional;
 public abstract class HeldItemMixin {
 
     @Shadow @Final private ItemModels models;
+
+    @Shadow protected abstract void renderBakedItemModel(BakedModel model, ItemStack stack, int light, int overlay, MatrixStack matrices, VertexConsumer vertices);
+
     private static final Logger LOGGER = LogUtils.getLogger();
 
     @Unique
@@ -72,6 +76,8 @@ public abstract class HeldItemMixin {
 
         Optional<Identifier> maybeModelId = ItemModelResolver.resolveModel(itemId, renderMode, stack, entity);
 
+        ModelIdentifier TEST = ModelIdentifier.ofInventoryVariant(Identifier.of("minecraft", "a_test"));
+
         maybeModelId.ifPresent(modelId -> {
 
             String cleanPath = modelId.getPath().startsWith("item/")
@@ -84,14 +90,17 @@ public abstract class HeldItemMixin {
 
 //            ModelIdentifier modelIdentifier = new ModelIdentifier(Identifier.of("minecraft", cleanPath), "inventory"); // gets correct path
 //            ModelIdentifier modelIdentifier = ModelIdentifier.ofInventoryVariant(Identifier.of("pommel",cleanPath)); // works for the pommel test_item model
-            ModelIdentifier modelIdentifier = new ModelIdentifier(Identifier.of(cleanNamespace, cleanPath), "inventory");
-            ModelIdentifier modelIdentifierNew = new ModelIdentifier(newModelId, "");
+//            ModelIdentifier modelIdentifier = new ModelIdentifier(Identifier.of(cleanNamespace, cleanPath), "inventory");
+            ModelIdentifier modelIdentifier = new ModelIdentifier(newModelId, "inventory");
+            LOGGER.info(cleanPath);
+            ModelIdentifier modelIdTest = new ModelIdentifier(Identifier.of("minecraft","models/item/a_test"), "inventory");
 
-            LOGGER.info("Pommel: Resolved custom model ID: {}", modelIdentifier);
+//            LOGGER.info("Pommel: Resolved custom model ID: {}", modelIdentifier);
             BakedModel customModel = this.models.getModelManager().getModel(modelIdentifier);
+            customModel = this.models.getModelManager().getModel(TEST);
+//            customModel = this.models.getModelManager().getModel(modelIdTest);
+//            BakedModel customModel = this.models.getModelManager().getModel(modelIdentifier);
 //            BakedModel customModel = this.models.getModelManager().getModel(newModelId);
-
-            if (ClientInitializer.)
 
             if (customModel != null && customModel != originalModel) {
 

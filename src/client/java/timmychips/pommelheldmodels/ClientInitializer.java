@@ -29,7 +29,7 @@ public class ClientInitializer implements ClientModInitializer {
 
 	public static final Logger LOGGER = LogUtils.getLogger();
 	private static Collection<Identifier> ModelCollection;
-	public static Collection<Identifier> modelIds = ItemModelRegistry.getAllModelDependencies();
+	public static Collection<Identifier> modelIds;
 
 	@Override
 	public void onInitializeClient() {
@@ -82,10 +82,7 @@ public class ClientInitializer implements ClientModInitializer {
 				}
 			}
 
-
-
-
-			Collection<Identifier> modelIds = ItemModelRegistry.getAllModelDependencies();
+			modelIds = ItemModelRegistry.getAllModelDependencies();
 			modelIds.forEach(id -> LOGGER.info("[Pommel] Registering model dependency: {}", id));
 
 			LOGGER.info("Pommel: ModelLoadingPlugin is active!");
