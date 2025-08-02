@@ -35,7 +35,7 @@ public final class RangeDispatchDefinition {
             ).apply(instance, (type, property, entries, fallbackOpt, optCompass, optWobble, scale) ->
                     new Definition(
                             type, property, entries, fallbackOpt.orElse(null),
-                            optCompass.orElse(null), optWobble.orElse(null),
+                            optCompass.orElse(null), optWobble.orElse(true),
                             scale)
             ));
         }
@@ -48,14 +48,5 @@ public final class RangeDispatchDefinition {
                     Codec.FLOAT.fieldOf("threshold").forGetter(ThresholdEntry::threshold)
             ).apply(instance, ThresholdEntry::new));
         }
-    }
-
-    @Nullable CompassConfig compass; // contains target + wobble
-
-    public record CompassConfig(CompassFloat.CompassTarget target, boolean wobble) {
-        public static final Codec<CompassConfig> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-                CompassFloat.CompassTarget.CODEC.fieldOf("target").forGetter(CompassConfig::target),
-                Codec.BOOL.optionalFieldOf("wobble", true).forGetter(CompassConfig::wobble)
-        ).apply(instance, CompassConfig::new));
     }
 }

@@ -1,5 +1,6 @@
 package timmychips.pommelheldmodels.type;
 
+import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -41,7 +42,7 @@ public class SelectDefinition {
         public static Codec<Case> codec(Codec<ItemModelDefinition> selfCodec) {
             return RecordCodecBuilder.create(instance -> instance.group(
                     selfCodec.fieldOf("model").forGetter(Case::model),
-                    Codec.STRING.listOf().fieldOf("when").forGetter(Case::when)
+                    CodecUtils.STRING_OR_LIST.fieldOf("when").forGetter(Case::when)
             ).apply(instance, Case::new));
         }
     }
