@@ -1,32 +1,34 @@
 package timmychips.pommelheldmodels;
 
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Identifier;
 
 import java.util.UUID;
 
 public class PommelNetworking {
-    public static void registerPayloads() {
-        PayloadTypeRegistry.playC2S().register(UseKeyC2SPayload.PACKET_ID, UseKeyC2SPayload.CODEC);
-        PayloadTypeRegistry.playS2C().register(UseKeyS2CPayload.PACKET_ID, UseKeyS2CPayload.CODEC);
-    }
+    public static final Identifier USE_KEY_C2S_ID = new Identifier("pommel", "use_key_c2s");
+    public static final Identifier USE_KEY_S2C_ID = new Identifier("pommel", "use_key_s2c");
 
     public static void useKeyGlobalReceiver() {
-        ServerPlayNetworking.registerGlobalReceiver(UseKeyC2SPayload.PACKET_ID, (payload, context) -> {
-            ServerPlayerEntity sender = context.player();
-            UUID senderUuid = payload.playerUuid();
-            ItemStack stack = payload.itemStack();
-            boolean isUsing = payload.isUsing();
+        ServerPlayNetworking.registerGlobalReceiver(USE_KEY_C2S_ID, (server, player, handler, buf, responseSender) -> {
+            UUID senderUuid = buf.readUuid();
+            ItemStack stack = buf.readItemStack();
+            boolean isUsing = buf.readBoolean();
 
             System.out.println("[Pommel] Player " + senderUuid + " is using: " + stack + ", lastUsed: " + isUsing);
 
-            UseKeyS2CPayload broadcastPayload = new UseKeyS2CPayload(senderUuid, stack, isUsing);
+            // Now send to other players
+            PacketByteBuf sendBuf = new PacketByteBuf(io.netty.buffer.Unpooled.buffer());
+            sendBuf.writeUuid(senderUuid);
+            sendBuf.writeItemStack(stack);
+            sendBuf.writeBoolean(isUsing);
 
-            for (ServerPlayerEntity player : sender.server.getPlayerManager().getPlayerList()) {
-                if (!player.getUuid().equals(senderUuid)) {
-                    ServerPlayNetworking.send(player, broadcastPayload);
+            for (ServerPlayerEntity otherPlayer : player.server.getPlayerManager().getPlayerList()) {
+                if (!otherPlayer.getUuid().equals(senderUuid)) {
+                    ServerPlayNetworking.send(otherPlayer, USE_KEY_S2C_ID, sendBuf);
                 }
             }
         });

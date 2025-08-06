@@ -1,15 +1,16 @@
 package timmychips.pommelheldmodels;
 
 import com.mojang.logging.LogUtils;
+import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
-import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
 import org.slf4j.Logger;
@@ -58,12 +59,18 @@ public class UseKeyTracker {
                 ItemStack sendItemUsed = user.getStackInHand(hand);
 
                 ItemStack sendItemUsed2 = sendItemUsed.copy(); // Create new item and remove enchantments as game crashes when trying to send enchanted item data
-                sendItemUsed2.remove(DataComponentTypes.ENCHANTMENTS);
-                sendItemUsed2.remove(DataComponentTypes.STORED_ENCHANTMENTS);
+                sendItemUsed2.removeSubNbt("Enchantments");
+                sendItemUsed2.removeSubNbt("StoredEnchantments");
 
-                UseKeyC2SPayload payload = new UseKeyC2SPayload(playerUuid, sendItemUsed2, true);
+                PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+                buf.writeUuid(user.getUuid());
+                buf.writeItemStack(sendItemUsed);
+                buf.writeBoolean(true);
 
-                ClientPlayNetworking.send(payload); // Sends payload to server
+//                UseKeyC2SPayload payload = new UseKeyC2SPayload(playerUuid, sendItemUsed2, true);
+
+                //ClientPlayNetworking.send(payload); // Sends payload to server
+                ClientPlayNetworking.send(PommelNetworking.USE_KEY_C2S_ID, buf); // send packet to server
             }
 
 			return TypedActionResult.pass(user.getStackInHand(hand)); // Pass to return that we did the event
@@ -72,15 +79,30 @@ public class UseKeyTracker {
 
     // Receives packet of other player pressing the use key from the server for other clients
     public static void receiveUseKeyPacket() {
-        ClientPlayNetworking.registerGlobalReceiver(UseKeyS2CPayload.PACKET_ID, (payload, context) -> {
-            MinecraftClient client = MinecraftClient.getInstance();
+//        ClientPlayNetworking.registerGlobalReceiver(UseKeyS2CPayload.PACKET_ID, (payload, context) -> {
+//            MinecraftClient client = MinecraftClient.getInstance();
+//            if (client.world != null) {
+//                client.execute(() -> {
+//                    PlayerEntity sender = client.world.getPlayerByUuid(payload.playerUuid());
+//                    if (sender != null) {
+//                        if (payload.isUsing()) {
+//                            itemMap.put(sender, new PlayerHeldItem(payload.itemStack()));
+//                        }
+//                    }
+//                });
+//            }
+//        });
+
+        ClientPlayNetworking.registerGlobalReceiver(PommelNetworking.USE_KEY_S2C_ID, (client, handler, buf, responseSender) -> {
+            UUID senderUuid = buf.readUuid();
+            ItemStack itemStack = buf.readItemStack();
+            boolean isUsing = buf.readBoolean();
+
             if (client.world != null) {
                 client.execute(() -> {
-                    PlayerEntity sender = client.world.getPlayerByUuid(payload.playerUuid());
-                    if (sender != null) {
-                        if (payload.isUsing()) {
-                            itemMap.put(sender, new PlayerHeldItem(payload.itemStack()));
-                        }
+                    PlayerEntity sender = client.world.getPlayerByUuid(senderUuid);
+                    if (sender != null && isUsing) {
+                        itemMap.put(sender, new PlayerHeldItem(itemStack));
                     }
                 });
             }
@@ -102,6 +124,9 @@ public class UseKeyTracker {
             }
         }
     }
+
+    // TODO
+    //  Item isn't immediately removed when player uses and changes items for client
 
     public static void afterUseCooldown(PlayerEntity player) {
         float useTimer = itemMap.get(player).lastUsed;
