@@ -2,7 +2,11 @@ package timmychips.pommelheldmodels;
 
 import com.mojang.logging.LogUtils;
 import net.fabricmc.api.ClientModInitializer;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
 import org.slf4j.Logger;
+
+import java.util.HashMap;
 
 public class ClientInitializer implements ClientModInitializer {
 
@@ -17,5 +21,11 @@ public class ClientInitializer implements ClientModInitializer {
 			// with the specified held model file
 		HeldItemPredicate.registerHeldModelPredicate();
 
+		// Register methods using items for the is_using predicate
+		UseKeyTracker.receiveUseKeyPacket();
+		UseKeyTracker.clientUseKey();
+		UseKeyTracker.eventUseKeyPacket();
 	}
+
+
 }

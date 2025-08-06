@@ -3,7 +3,7 @@
 	"id": "pommel",
 	"version": "${version}",
 	"name": "Pommel - Held Item Models",
-	"description": "Allows resource pack creators to overwrite the models for held items just like the spyglass and trident",
+	"description": "Allows resource pack creators to overwrite the models for held items and other render modes just like the spyglass and trident",
 	"authors": [
 		"TimmyChips"
 	],
@@ -17,6 +17,7 @@
 	"environment": "*",
 	"entrypoints": {
 		"main": [
+			"timmychips.pommelheldmodels.ServerInitializer"
 		],
 		"client": [
 			"timmychips.pommelheldmodels.ClientInitializer"
