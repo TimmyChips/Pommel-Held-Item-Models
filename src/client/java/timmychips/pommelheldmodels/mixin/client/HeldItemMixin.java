@@ -40,6 +40,10 @@ public abstract class HeldItemMixin {
     //  Add wobble to compass
     //  Refactor other properties and types to follow what was done with the compass instead of using switches
 
+    // TODO
+    //  Make if no fallback field is specified for minecraft:select or minecraft:range_dispatch types in items.json, make it return a missing model
+    //  If there's any error with the model, also show a missing model
+
     // Gets custom model for GUI model mode so the item model changes for the GUI
     @Inject(method = "getModel(Lnet/minecraft/item/ItemStack;Lnet/minecraft/world/World;Lnet/minecraft/entity/LivingEntity;I)Lnet/minecraft/client/render/model/BakedModel;",
             at = @At("HEAD"),

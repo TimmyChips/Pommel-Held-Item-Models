@@ -52,7 +52,8 @@ public class ClientInitializer implements ClientModInitializer {
 			LOGGER.info("Pommel: Reloading Resource Manager");
 
 			ItemModelRegistry.clear();
-			RangePropertyRegistry.register("minecraft:compass", new CompassFloat());
+//			RangePropertyRegistry.register("minecraft:compass", new CompassFloat());
+			RangePropertyRegistry.init();
 
 			for (Identifier id : manager.findResources("items", path -> path.getPath().endsWith(".json")).keySet()) {
 				try (InputStream stream = manager.getResource(id).get().getInputStream()) {

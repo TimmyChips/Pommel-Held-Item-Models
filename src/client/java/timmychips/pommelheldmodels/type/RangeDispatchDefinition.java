@@ -20,6 +20,7 @@ public final class RangeDispatchDefinition {
             @Nullable ItemModelDefinition fallback,
             @Nullable CompassFloat.CompassTarget target,
             @Nullable Boolean wobble,
+            @Nullable Boolean countNormalize,
             float scale
     ) implements ItemModelDefinition {
 
@@ -31,12 +32,14 @@ public final class RangeDispatchDefinition {
                     selfCodec.optionalFieldOf("fallback").forGetter(range -> Optional.ofNullable(range.fallback)),
                     CompassFloat.CompassTarget.CODEC.optionalFieldOf("target").forGetter(range -> Optional.ofNullable(range.target)),
                     Codec.BOOL.optionalFieldOf("wobble").forGetter(range -> Optional.ofNullable(range.wobble)),
-                    Codec.FLOAT.fieldOf("scale").forGetter(Definition::scale)
-            ).apply(instance, (type, property, entries, fallbackOpt, optCompass, optWobble, scale) ->
+                    Codec.BOOL.optionalFieldOf("normalize").forGetter(range -> Optional.ofNullable(range.countNormalize)),
+                    Codec.FLOAT.optionalFieldOf("scale").forGetter(range -> Optional.of(range.scale))
+            ).apply(instance, (type, property, entries, fallbackOpt, optCompassTarget, optWobble, optCountNormalize, scale) ->
                     new Definition(
                             type, property, entries, fallbackOpt.orElse(null),
-                            optCompass.orElse(null), optWobble.orElse(true),
-                            scale)
+                            optCompassTarget.orElse(null), optWobble.orElse(true),
+                            optCountNormalize.orElse(true),
+                            scale.orElse(1F))
             ));
         }
     }
