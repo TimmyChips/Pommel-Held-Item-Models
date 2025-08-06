@@ -3,24 +3,16 @@ package timmychips.pommelheldmodels;
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.item.ModelPredicateProviderRegistry;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.FlyingItemEntity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.projectile.ProjectileEntity;
-import net.minecraft.entity.projectile.thrown.ThrownItemEntity;
-import net.minecraft.fluid.FluidState;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 import org.slf4j.Logger;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Arrays;
 
-public class HeldItemPredicate<T extends Entity & FlyingItemEntity> {
+public class HeldItemPredicate {
     public static ModelTransformationMode currentItemRenderMode;
     public static boolean itemInOffhand = false;
     public static boolean isFlyingItem = false;
@@ -120,19 +112,5 @@ public class HeldItemPredicate<T extends Entity & FlyingItemEntity> {
     public static boolean matchesItemInHand(LivingEntity entity, ItemStack stack) {
         ItemStack currentItem = entity.getMainHandStack().isEmpty() ? entity.getOffHandStack() : entity.getMainHandStack();
         return stack.toString().equals(currentItem.toString());
-    }
-
-    private static float submergedInFluidCheck(LivingEntity entity) {
-        Vec3d eyePos = entity.getEyePos();
-        BlockPos fluidBlock = BlockPos.ofFloored(eyePos);
-        FluidState fluidState = entity.getWorld().getFluidState(fluidBlock);
-        return !fluidState.isEmpty() ? 1.0F : 0.0F;
-    }
-
-    public static float isFallingCheck(LivingEntity entity) {
-        if (entity.isOnGround()) return 0.0F;
-        double entGrav = -1 * entity.getFinalGravity();
-        double yVel = entity.getVelocity().y;
-        return (yVel - entGrav) < -0.24 && entity.fallDistance > 0 ? 1.0F : 0.0F; // ensures player is moving down enough (negative y velocity) and is falling
     }
 }
