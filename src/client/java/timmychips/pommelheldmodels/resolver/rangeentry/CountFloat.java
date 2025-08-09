@@ -2,7 +2,7 @@ package timmychips.pommelheldmodels.resolver.rangeentry;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
-import timmychips.pommelheldmodels.resolver.RangePropertyHandler;
+import timmychips.pommelheldmodels.propertyhandler.RangePropertyHandler;
 import timmychips.pommelheldmodels.type.RangeDispatchDefinition;
 
 // Return Stack Size

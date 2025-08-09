@@ -3,7 +3,7 @@ package timmychips.pommelheldmodels.resolver.rangeentry;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
-import timmychips.pommelheldmodels.resolver.RangePropertyHandler;
+import timmychips.pommelheldmodels.propertyhandler.RangePropertyHandler;
 import timmychips.pommelheldmodels.type.RangeDispatchDefinition;
 
 import java.util.HashMap;
@@ -21,6 +21,8 @@ public class RangePropertyRegistry {
         register(Identifier.of("minecraft:crossbow/pull"), new CrossbowPullFloat());
         register(Identifier.of("minecraft:damage"), new DamageFloat());
         register(Identifier.of("minecraft:time"), new ClockTimeFloat());
+        register(Identifier.of("minecraft:use_cycle"), new UseCycleFloat());
+        register(Identifier.of("minecraft:use_duration"), new UseDurationFloat());
     }
 
     public static void register(Identifier id, RangePropertyHandler handler) {

@@ -3,7 +3,7 @@ package timmychips.pommelheldmodels.resolver.rangeentry;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import timmychips.pommelheldmodels.resolver.RangePropertyHandler;
+import timmychips.pommelheldmodels.propertyhandler.RangePropertyHandler;
 import timmychips.pommelheldmodels.type.RangeDispatchDefinition;
 
 public class CooldownFloat implements RangePropertyHandler {

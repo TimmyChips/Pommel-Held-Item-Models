@@ -1,4 +1,4 @@
-package timmychips.pommelheldmodels.resolver;
+package timmychips.pommelheldmodels.propertyhandler;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;

@@ -15,25 +15,6 @@ public class RangeDispatchValueResolver {
             ItemStack stack, LivingEntity entity,
             RangeDispatchDefinition.Definition def) {
 
-        String propertyStr = property.toString();
-
-        float value = RangePropertyRegistry.resolve(property, stack, entity, def) * scale;
-        return value;
-        /*
-        return switch (propertyStr) {
-            case "minecraft:use_duration" -> UseDurationFloat.test(entity, stack, scale);
-            case "minecraft:bundle/fullness" -> BundleItem.getAmountFilled(stack) * scale;
-            //case "minecraft:compass" ->
-
-//            case "minecraft:compass" -> {
-//                World world = entity.getWorld();
-//                LodestoneTrackerComponent lodestoneTrackerComponent = stack.get(DataComponentTypes.LODESTONE_TRACKER);
-//                yield lodestoneTrackerComponent != null ? (GlobalPos)lodestoneTrackerComponent.target().orElse((Object)null) : CompassItem.createSpawnPos(world);
-//            }
-
-            // Add more ranged float-returning properties here
-            default -> 0f;
-        };
-        */
+        return RangePropertyRegistry.resolve(property, stack, entity, def) * scale;
     }
 }

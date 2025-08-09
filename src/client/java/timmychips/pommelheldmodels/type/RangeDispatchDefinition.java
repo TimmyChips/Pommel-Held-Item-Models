@@ -23,6 +23,8 @@ public final class RangeDispatchDefinition {
             @Nullable Boolean wobble,
             @Nullable Boolean countNormalize,
             @Nullable ClockTimeFloat.ClockSource clockSource,
+            float usePeriod,
+            @Nullable Boolean useRemaining,
             float scale
     ) implements ItemModelDefinition {
 
@@ -36,13 +38,18 @@ public final class RangeDispatchDefinition {
                     Codec.BOOL.optionalFieldOf("wobble").forGetter(range -> Optional.ofNullable(range.wobble)),
                     Codec.BOOL.optionalFieldOf("normalize").forGetter(range -> Optional.ofNullable(range.countNormalize)),
                     ClockTimeFloat.ClockSource.CODEC.optionalFieldOf("source").forGetter(range -> Optional.ofNullable(range.clockSource)),
+                    Codec.FLOAT.optionalFieldOf("period").forGetter(range -> Optional.of(range.usePeriod)),
+                    Codec.BOOL.optionalFieldOf("remaining").forGetter(range -> Optional.ofNullable(range.useRemaining)),
                     Codec.FLOAT.optionalFieldOf("scale").forGetter(range -> Optional.of(range.scale))
-            ).apply(instance, (type, property, entries, fallbackOpt, optCompassTarget, optWobble, optCountNormalize, optClockSource, scale) ->
+            ).apply(instance,
+                    (type, property, entries, fallbackOpt, optCompassTarget, optWobble, optCountNormalize, optClockSource, optUsePeriod, optUseRemaining, scale) ->
                     new Definition(
                             type, property, entries, fallbackOpt.orElse(null),
                             optCompassTarget.orElse(null), optWobble.orElse(true),
                             optCountNormalize.orElse(true),
                             optClockSource.orElse(null),
+                            optUsePeriod.orElse(1F),
+                            optUseRemaining.orElse(false),
                             scale.orElse(1F))
             ));
         }

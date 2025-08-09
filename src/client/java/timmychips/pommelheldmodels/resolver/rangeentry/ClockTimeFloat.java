@@ -10,7 +10,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.StringIdentifiable;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.random.Random;
-import timmychips.pommelheldmodels.resolver.RangePropertyHandler;
+import timmychips.pommelheldmodels.propertyhandler.RangePropertyHandler;
 import timmychips.pommelheldmodels.type.RangeDispatchDefinition;
 
 public class ClockTimeFloat implements RangePropertyHandler {
