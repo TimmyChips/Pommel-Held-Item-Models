@@ -20,6 +20,7 @@ public class RangePropertyRegistry {
         register(Identifier.of("minecraft:count"), new CountFloat());
         register(Identifier.of("minecraft:crossbow/pull"), new CrossbowPullFloat());
         register(Identifier.of("minecraft:damage"), new DamageFloat());
+        register(Identifier.of("minecraft:time"), new ClockTimeFloat());
     }
 
     public static void register(Identifier id, RangePropertyHandler handler) {

@@ -6,6 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.client.item.CompassAnglePredicateProvider;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
+import timmychips.pommelheldmodels.resolver.rangeentry.ClockTimeFloat;
 import timmychips.pommelheldmodels.resolver.rangeentry.CompassFloat;
 
 import java.util.List;
@@ -21,6 +22,7 @@ public final class RangeDispatchDefinition {
             @Nullable CompassFloat.CompassTarget target,
             @Nullable Boolean wobble,
             @Nullable Boolean countNormalize,
+            @Nullable ClockTimeFloat.ClockSource clockSource,
             float scale
     ) implements ItemModelDefinition {
 
@@ -33,12 +35,14 @@ public final class RangeDispatchDefinition {
                     CompassFloat.CompassTarget.CODEC.optionalFieldOf("target").forGetter(range -> Optional.ofNullable(range.target)),
                     Codec.BOOL.optionalFieldOf("wobble").forGetter(range -> Optional.ofNullable(range.wobble)),
                     Codec.BOOL.optionalFieldOf("normalize").forGetter(range -> Optional.ofNullable(range.countNormalize)),
+                    ClockTimeFloat.ClockSource.CODEC.optionalFieldOf("source").forGetter(range -> Optional.ofNullable(range.clockSource)),
                     Codec.FLOAT.optionalFieldOf("scale").forGetter(range -> Optional.of(range.scale))
-            ).apply(instance, (type, property, entries, fallbackOpt, optCompassTarget, optWobble, optCountNormalize, scale) ->
+            ).apply(instance, (type, property, entries, fallbackOpt, optCompassTarget, optWobble, optCountNormalize, optClockSource, scale) ->
                     new Definition(
                             type, property, entries, fallbackOpt.orElse(null),
                             optCompassTarget.orElse(null), optWobble.orElse(true),
                             optCountNormalize.orElse(true),
+                            optClockSource.orElse(null),
                             scale.orElse(1F))
             ));
         }
