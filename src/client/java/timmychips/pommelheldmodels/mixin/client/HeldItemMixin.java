@@ -26,7 +26,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Optional;
 
-import static timmychips.pommelheldmodels.resolver.ItemModelResolver.resolveModel;
+import static timmychips.pommelheldmodels.property.resolver.ItemModelResolver.resolveModel;
 
 // Mixin injects into target ItemRenderer vanilla class
 @Environment(EnvType.CLIENT)

@@ -2,7 +2,7 @@
 package timmychips.pommelheldmodels;
 
 import net.minecraft.util.Identifier;
-import timmychips.pommelheldmodels.type.*;
+import timmychips.pommelheldmodels.property.type.*;
 
 import java.util.HashMap;
 import java.util.HashSet;

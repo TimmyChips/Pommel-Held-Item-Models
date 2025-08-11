@@ -7,23 +7,17 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.JsonOps;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
-import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
-import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.model.json.JsonUnbakedModel;
-import net.minecraft.client.util.ModelIdentifier;
 import net.minecraft.resource.ResourceManager;
-import net.minecraft.resource.ResourceType;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
-import timmychips.pommelheldmodels.resolver.rangeentry.CompassFloat;
-import timmychips.pommelheldmodels.resolver.rangeentry.RangePropertyRegistry;
-import timmychips.pommelheldmodels.type.ItemModelDefinition;
+import timmychips.pommelheldmodels.property.registry.ConditionPropertyRegistry;
+import timmychips.pommelheldmodels.property.registry.RangePropertyRegistry;
+import timmychips.pommelheldmodels.property.type.ItemModelDefinition;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Collection;
-import java.util.Set;
 
 public class ClientInitializer implements ClientModInitializer {
 
@@ -54,6 +48,7 @@ public class ClientInitializer implements ClientModInitializer {
 			ItemModelRegistry.clear();
 //			RangePropertyRegistry.register("minecraft:compass", new CompassFloat());
 			RangePropertyRegistry.init();
+			ConditionPropertyRegistry.init();
 
 			for (Identifier id : manager.findResources("items", path -> path.getPath().endsWith(".json")).keySet()) {
 				try (InputStream stream = manager.getResource(id).get().getInputStream()) {
