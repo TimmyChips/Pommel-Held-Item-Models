@@ -12,6 +12,10 @@ import java.util.Map;
 public class RangePropertyRegistry {
     private static final Map<Identifier, RangePropertyHandler> HANDLERS = new HashMap<>();
 
+    // TODO
+    //  Reorganize project structure to have "property" folder with "handler", "resolver", "type", and "register"
+    //  Refactor other parts of code to new interface object system
+
     // Register each property
     public static void init() {
         register(Identifier.of("minecraft:bundle/fullness"), new BundleFullnessFloat());
@@ -23,6 +27,7 @@ public class RangePropertyRegistry {
         register(Identifier.of("minecraft:time"), new ClockTimeFloat());
         register(Identifier.of("minecraft:use_cycle"), new UseCycleFloat());
         register(Identifier.of("minecraft:use_duration"), new UseDurationFloat());
+        register(Identifier.of("minecraft:custom_model_data"), new CustomModelDataFloat());
     }
 
     public static void register(Identifier id, RangePropertyHandler handler) {

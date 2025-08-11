@@ -8,6 +8,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.item.ItemRenderer;
 import net.minecraft.client.render.model.BakedModel;
+import net.minecraft.client.render.model.BakedModelManager;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.LivingEntity;
@@ -37,7 +38,6 @@ public abstract class HeldItemMixin {
 
     // TODO
     //  Add a second items folder maybe called "mymod_items_override" to allow modded properties while having the resource pack still work seamlessly w/ vanilla
-    //  Add wobble to compass
     //  Refactor other properties and types to follow what was done with the compass instead of using switches
 
     // TODO
@@ -49,7 +49,7 @@ public abstract class HeldItemMixin {
             at = @At("HEAD"),
             cancellable = true)
     private void pommel$overrideGUIModel(ItemStack stack, World world, LivingEntity entity, int seed, CallbackInfoReturnable<BakedModel> cir) {
-        BakedModel gui_model = getCustomModel(stack, entity, world, seed, ModelTransformationMode.GUI);
+        BakedModel gui_model = getCustomModel(stack, entity, ModelTransformationMode.GUI);
         if (gui_model != null) {
             cir.setReturnValue(gui_model);
         }
@@ -63,7 +63,7 @@ public abstract class HeldItemMixin {
                                         MatrixStack matrices, VertexConsumerProvider vertexConsumers, World world,
                                         int light, int overlay, int seed, CallbackInfo ci) {
 
-        BakedModel model = getCustomModel(item, entity, world, seed, renderMode);
+        BakedModel model = getCustomModel(item, entity, renderMode);
         if (model != null) {
             ItemRenderer self = (ItemRenderer)(Object)this;
             // manually call vanilla rendering method with overridden model
@@ -74,12 +74,18 @@ public abstract class HeldItemMixin {
 
     // Get custom model from BakedModelManger's getModel from id (which is needed since we loaded the models with ModelLoadingPlugin)
     @Unique
-    private static BakedModel getCustomModel(ItemStack stack, LivingEntity entity, World world, int seed, ModelTransformationMode mode) {
+    private static BakedModel getCustomModel(ItemStack stack, LivingEntity entity, ModelTransformationMode mode) {
         if (mode == null) mode = ModelTransformationMode.GUI;
 
         Optional<Identifier> maybeModel = resolveModel(Registries.ITEM.getId(stack.getItem()), mode, stack, entity); // Get resolved model specified in items.json for the item
         if (maybeModel.isPresent()) {
             Identifier modelId = maybeModel.get();
+
+            if (modelId.toString().equals("minecraft:missingno")) { // No Fallback Model specified
+                BakedModelManager missingModelManager = MinecraftClient.getInstance().getBakedModelManager();
+                return missingModelManager.getMissingModel(); // Item renders as Missing Model
+            }
+
             FabricBakedModelManager manager = MinecraftClient.getInstance().getBakedModelManager();
             return manager.getModel(modelId); // Use Identifier; Can't use ModelIdentifier since our loaded models don't have corresponding ModelIdentifiers
         }

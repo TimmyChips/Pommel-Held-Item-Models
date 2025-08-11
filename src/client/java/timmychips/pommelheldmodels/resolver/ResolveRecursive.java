@@ -14,8 +14,8 @@ import java.util.Set;
 
 public class ResolveRecursive {
 
-    private static final Logger LOGGER = LogUtils.getLogger();
-    private static final Set<String> WARNED_MODELS = new HashSet<>();
+    public static final Logger LOGGER = LogUtils.getLogger();
+    public static final Set<String> WARNED_MODELS = new HashSet<>();
 
     // TODO
     //  Make it return missing texture (missingno) if it cant find something in items model definition .json
