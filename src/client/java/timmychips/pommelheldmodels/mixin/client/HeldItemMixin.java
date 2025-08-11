@@ -81,7 +81,7 @@ public abstract class HeldItemMixin {
         if (maybeModel.isPresent()) {
             Identifier modelId = maybeModel.get();
 
-            if (modelId.toString().equals("minecraft:missingno")) { // No Fallback Model specified
+            if (modelId.toString().equals("pommel:missingno")) { // No Fallback Model specified
                 BakedModelManager missingModelManager = MinecraftClient.getInstance().getBakedModelManager();
                 return missingModelManager.getMissingModel(); // Item renders as Missing Model
             }

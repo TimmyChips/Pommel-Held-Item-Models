@@ -3,6 +3,7 @@ package timmychips.pommelheldmodels.resolver;
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
@@ -44,6 +45,8 @@ public class ResolveRecursive {
                 }
             }
 
+            if (select.fallback() == null) return missingFallbackModel(stack, select.property()); // Return warning + missing model identifier
+
             return resolve(select.fallback(), renderMode, stack, entity);
         }
 
@@ -80,16 +83,19 @@ public class ResolveRecursive {
                     .orElseGet(() -> {
                         if (range.fallback() != null) {
                             return resolve(range.fallback(), renderMode, stack, entity);
-                        } else {
-                            String key = stack.getItem().toString() + "|" + range.property();
-                            if (WARNED_MODELS.add(key)) { // true only the first time
-                                LOGGER.warn("No matching range threshold and no fallback model for property '{}', for item: '{}'", range.property(), stack.getItem());
-                            }
-                            return Optional.of(Identifier.ofVanilla("missingno")); // Return missing model
-                        }
+                        } else return missingFallbackModel(stack, range.property()); // Return warning + missing model identifier
                     });
         }
 
         return Optional.empty();
+    }
+
+    private static Optional<Identifier> missingFallbackModel(ItemStack stack, Identifier property) {
+        Item item = stack.getItem();
+        String key = item.toString() + "|" + property;
+        if (WARNED_MODELS.add(key)) { // true only the first time, will only print once for each unique item
+            LOGGER.warn("No matching range threshold and no fallback model for property '{}', for item: '{}'", property, item);
+        }
+        return Optional.of(Identifier.of("pommel:missingno")); // Return identifier for RenderItem mixin to use to render missing model (name doesn't matter)
     }
 }

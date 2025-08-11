@@ -14,7 +14,7 @@ public class SelectDefinition {
     public record Definition(
             Identifier type,
             List<Case> cases,
-            ItemModelDefinition fallback,
+            @Nullable ItemModelDefinition fallback,
             Identifier property,
             @Nullable String block_state_property,
             @Nullable String component
@@ -25,13 +25,13 @@ public class SelectDefinition {
             return RecordCodecBuilder.mapCodec(instance -> instance.group(
                     Identifier.CODEC.fieldOf("type").forGetter(Definition::type),
                     Case.codec(selfCodec).listOf().fieldOf("cases").forGetter(Definition::cases),
-                    selfCodec.fieldOf("fallback").forGetter(Definition::fallback),
+                    selfCodec.optionalFieldOf("fallback").forGetter(range -> Optional.ofNullable(range.fallback)),
                     Identifier.CODEC.fieldOf("property").forGetter(Definition::property),
                     selfCodec.STRING.optionalFieldOf("block_state_property").forGetter(cd -> Optional.ofNullable(cd.block_state_property())),
                     selfCodec.STRING.optionalFieldOf("component").forGetter(cd -> Optional.ofNullable(cd.component()))
-            ).apply(instance, (type, cases, fallback, property, optBlockStare, optComponent) ->
+            ).apply(instance, (type, cases, optFallback, property, optBlockStare, optComponent) ->
                     new Definition(
-                            type, cases, fallback, property,
+                            type, cases, optFallback.orElse(null), property,
                             optBlockStare.orElse(null),
                             optComponent.orElse(null)
             )));
