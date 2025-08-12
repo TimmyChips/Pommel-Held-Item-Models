@@ -1,33 +1,43 @@
 package timmychips.pommelheldmodels.property.resolver.selectcase;
 
 import com.mojang.logging.LogUtils;
+import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.component.ComponentType;
-import net.minecraft.component.DataComponentTypes;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
+import timmychips.pommelheldmodels.property.handler.SelectPropertyHandler;
+import timmychips.pommelheldmodels.property.type.SelectDefinition;
 
 import java.util.Objects;
 
-public class ComponentCase {
+/**
+ * Returns a string for specified component's value
+ * <p>{@code component:} ID of the component type
+ */
+public class ComponentCase implements SelectPropertyHandler {
 
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    public static String test(String component, ItemStack stack) {
-        Identifier componentId = Identifier.tryParse(component);
+    @Override
+    public String getValue(ItemStack stack, LivingEntity entity, ModelTransformationMode mode, SelectDefinition.Definition definition) {
+        String component = definition.component(); // Retrieve specified component to check for
+        if (component == null) return null;
+
+        Identifier componentId = Identifier.tryParse(component); // Parse string to id
         if (componentId == null) {
             LOGGER.warn("Invalid component predicate ID '{}'", component);
             return null;
         }
 
-        ComponentType<?> componentType = Registries.DATA_COMPONENT_TYPE.get(componentId);
+        ComponentType<?> componentType = Registries.DATA_COMPONENT_TYPE.get(componentId); // Retrieve component type from id
         if (componentType == null) {
             LOGGER.warn("Unknown component predicate componentType '{}'", componentId);
             return null;
         }
 
-//        LOGGER.info(Objects.requireNonNull(stack.get(componentType)).toString());
-        return Objects.requireNonNull(stack.get(componentType)).toString().toLowerCase();
+        return Objects.requireNonNull(stack.get(componentType)).toString().toLowerCase(); // Return component value as lower case string
     }
 }

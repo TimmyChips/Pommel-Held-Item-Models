@@ -1,5 +1,6 @@
 package timmychips.pommelheldmodels.property.resolver.selectcase;
 
+import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ChargedProjectilesComponent;
 import net.minecraft.entity.LivingEntity;
@@ -27,7 +28,7 @@ import timmychips.pommelheldmodels.property.type.SelectDefinition;
  */
 public class ChargeTypeCase implements SelectPropertyHandler {
     @Override
-    public String getValue(ItemStack stack, LivingEntity entity, SelectDefinition.Definition definition) {
+    public String getValue(ItemStack stack, LivingEntity entity, ModelTransformationMode mode, SelectDefinition.Definition definition) {
         // Safely extract the first charged projectile type
         ChargedProjectilesComponent charged = stack.get(DataComponentTypes.CHARGED_PROJECTILES);
 

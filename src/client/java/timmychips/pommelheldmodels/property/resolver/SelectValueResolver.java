@@ -22,7 +22,7 @@ public class SelectValueResolver {
             ItemStack stack,
             LivingEntity entity) {
 
-        return SelectPropertyRegistry.resolve(property, stack, entity, def);
+        return SelectPropertyRegistry.resolve(property, stack, entity, renderMode, def);
 
         /*
         String propertyStr = property.toString();
