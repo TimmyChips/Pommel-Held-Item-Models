@@ -1,0 +1,10 @@
+package timmychips.pommelheldmodels.property.handler;
+
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.item.ItemStack;
+import timmychips.pommelheldmodels.property.type.SelectDefinition;
+
+@FunctionalInterface
+public interface SelectPropertyHandler {
+    String getValue(ItemStack stack, LivingEntity entity, SelectDefinition.Definition definition);
+}

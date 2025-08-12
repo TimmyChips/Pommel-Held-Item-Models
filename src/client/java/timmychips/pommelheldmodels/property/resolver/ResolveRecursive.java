@@ -32,8 +32,7 @@ public class ResolveRecursive {
             String propertyValue = SelectValueResolver.evaluate(
                     select.property(),
                     renderMode,
-                    select.block_state_property(),
-                    select.component(),
+                    select,
                     stack,
                     entity);
 

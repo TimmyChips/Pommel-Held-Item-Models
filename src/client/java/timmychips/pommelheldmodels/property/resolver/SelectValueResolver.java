@@ -7,7 +7,9 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
+import timmychips.pommelheldmodels.property.registry.SelectPropertyRegistry;
 import timmychips.pommelheldmodels.property.resolver.selectcase.*;
+import timmychips.pommelheldmodels.property.type.SelectDefinition;
 
 public class SelectValueResolver {
 
@@ -16,11 +18,13 @@ public class SelectValueResolver {
     public static String evaluate(
             Identifier property,
             ModelTransformationMode renderMode,
-            @Nullable String block_state_property,
-            @Nullable String component,
+            SelectDefinition.Definition def,
             ItemStack stack,
             LivingEntity entity) {
 
+        return SelectPropertyRegistry.resolve(property, stack, entity, def);
+
+        /*
         String propertyStr = property.toString();
 
             return switch (propertyStr) {
@@ -38,5 +42,7 @@ public class SelectValueResolver {
             // Add more custom properties here as needed
             default -> null;
         };
+
+         */
     }
 }

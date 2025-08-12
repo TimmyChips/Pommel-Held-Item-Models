@@ -13,6 +13,7 @@ import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import timmychips.pommelheldmodels.property.registry.ConditionPropertyRegistry;
 import timmychips.pommelheldmodels.property.registry.RangePropertyRegistry;
+import timmychips.pommelheldmodels.property.registry.SelectPropertyRegistry;
 import timmychips.pommelheldmodels.property.type.ItemModelDefinition;
 
 import java.io.InputStream;
@@ -46,9 +47,9 @@ public class ClientInitializer implements ClientModInitializer {
 			LOGGER.info("Pommel: Reloading Resource Manager");
 
 			ItemModelRegistry.clear();
-//			RangePropertyRegistry.register("minecraft:compass", new CompassFloat());
 			RangePropertyRegistry.init();
 			ConditionPropertyRegistry.init();
+			SelectPropertyRegistry.init();
 
 			for (Identifier id : manager.findResources("items", path -> path.getPath().endsWith(".json")).keySet()) {
 				try (InputStream stream = manager.getResource(id).get().getInputStream()) {

@@ -9,7 +9,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.Optional;
 
-public class SelectDefinition {
+public final class SelectDefinition {
     public record Definition(
             Identifier type,
             List<Case> cases,
@@ -26,12 +26,12 @@ public class SelectDefinition {
                     Case.codec(selfCodec).listOf().fieldOf("cases").forGetter(Definition::cases),
                     selfCodec.optionalFieldOf("fallback").forGetter(range -> Optional.ofNullable(range.fallback)),
                     Identifier.CODEC.fieldOf("property").forGetter(Definition::property),
-                    selfCodec.STRING.optionalFieldOf("block_state_property").forGetter(cd -> Optional.ofNullable(cd.block_state_property())),
+                    Codec.STRING.optionalFieldOf("block_state_property").forGetter(cd -> Optional.ofNullable(cd.block_state_property())),
                     selfCodec.STRING.optionalFieldOf("component").forGetter(cd -> Optional.ofNullable(cd.component()))
-            ).apply(instance, (type, cases, optFallback, property, optBlockStare, optComponent) ->
+            ).apply(instance, (type, cases, optFallback, property, optBlockState, optComponent) ->
                     new Definition(
                             type, cases, optFallback.orElse(null), property,
-                            optBlockStare.orElse(null),
+                            optBlockState.orElse(null),
                             optComponent.orElse(null)
             )));
         }
