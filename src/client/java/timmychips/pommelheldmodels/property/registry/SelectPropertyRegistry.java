@@ -5,6 +5,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
 import timmychips.pommelheldmodels.property.handler.SelectPropertyHandler;
 import timmychips.pommelheldmodels.property.resolver.selectcase.BlockStateCase;
+import timmychips.pommelheldmodels.property.resolver.selectcase.ChargeTypeCase;
 import timmychips.pommelheldmodels.property.type.SelectDefinition;
 
 import java.util.HashMap;
@@ -15,6 +16,7 @@ public class SelectPropertyRegistry {
 
     public static void init() {
         register(Identifier.of("minecraft:block_state"), new BlockStateCase());
+        register(Identifier.of("minecraft:charge_type"), new ChargeTypeCase());
     }
 
     private static void register(Identifier id, SelectPropertyHandler handler) {
