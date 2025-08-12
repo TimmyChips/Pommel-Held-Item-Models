@@ -11,7 +11,7 @@ import timmychips.pommelheldmodels.property.type.SelectDefinition;
 public class BlockStateCase implements SelectPropertyHandler {
     @Override
     public String getValue(ItemStack stack, LivingEntity entity, SelectDefinition.Definition definition) {
-        String block_state_property = definition.block_state_property(); // Get specified block state from items model definition
+        String block_state_property = definition.blockStateProperty(); // Get specified block state from items model definition
 
         BlockStateComponent block_state = stack.get(DataComponentTypes.BLOCK_STATE);
         if (block_state == null) return null;

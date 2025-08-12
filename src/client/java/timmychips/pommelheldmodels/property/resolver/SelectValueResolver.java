@@ -28,7 +28,7 @@ public class SelectValueResolver {
         String propertyStr = property.toString();
 
             return switch (propertyStr) {
-            case "minecraft:block_state" -> BlockStateCase.test(block_state_property, stack);
+            case "minecraft:block_state" -> BlockStateCase.test(blockStateProperty, stack);
             case "minecraft:display_context" -> renderMode.asString().toLowerCase();
             case "minecraft:charge_type" -> ChargeTypeCase.test(stack);
             case "minecraft:component" -> ComponentCase.test(component, stack);

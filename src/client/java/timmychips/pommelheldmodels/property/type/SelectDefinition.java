@@ -15,7 +15,8 @@ public final class SelectDefinition {
             List<Case> cases,
             @Nullable ItemModelDefinition fallback,
             Identifier property,
-            @Nullable String block_state_property,
+            @Nullable String blockStateProperty,
+            boolean chargeIgnoreDefault, boolean chargeIgnoreUnknown, // Custom modded fields for charge_type property
             @Nullable String component
 
     ) implements ItemModelDefinition {
@@ -26,12 +27,15 @@ public final class SelectDefinition {
                     Case.codec(selfCodec).listOf().fieldOf("cases").forGetter(Definition::cases),
                     selfCodec.optionalFieldOf("fallback").forGetter(range -> Optional.ofNullable(range.fallback)),
                     Identifier.CODEC.fieldOf("property").forGetter(Definition::property),
-                    Codec.STRING.optionalFieldOf("block_state_property").forGetter(cd -> Optional.ofNullable(cd.block_state_property())),
+                    selfCodec.STRING.optionalFieldOf("block_state_property").forGetter(cd -> Optional.ofNullable(cd.blockStateProperty())),
+                    selfCodec.BOOL.optionalFieldOf("ignore_default").forGetter(cd -> Optional.of(cd.chargeIgnoreDefault)),
+                    selfCodec.BOOL.optionalFieldOf("ignore_unknown").forGetter(cd -> Optional.of(cd.chargeIgnoreUnknown)),
                     selfCodec.STRING.optionalFieldOf("component").forGetter(cd -> Optional.ofNullable(cd.component()))
-            ).apply(instance, (type, cases, optFallback, property, optBlockState, optComponent) ->
+            ).apply(instance, (type, cases, optFallback, property, optBlockState, optChargeIgnoreDefault, optChargeIgnoreUnknown, optComponent) ->
                     new Definition(
                             type, cases, optFallback.orElse(null), property,
                             optBlockState.orElse(null),
+                            optChargeIgnoreDefault.orElse(false), optChargeIgnoreUnknown.orElse(false),
                             optComponent.orElse(null)
             )));
         }
