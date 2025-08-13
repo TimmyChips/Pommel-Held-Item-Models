@@ -5,9 +5,13 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
-
 import java.util.*;
-import java.util.function.Function;
+
+// Todo
+//  Will technically parse Identifiers into Strings, not alike Vanilla
+//  Example: arrow and minecraft:arrow both work for property, charge_type in the mod.
+//  Technically this example does not work in Vanilla, minecraft:arrow throws an error in Vanilla
+//  Revisit?
 
 public final class SelectDefinition {
     public record Definition(

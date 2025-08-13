@@ -19,6 +19,7 @@ public class SelectPropertyRegistry {
         register(Identifier.of("minecraft:charge_type"), new ChargeTypeCase());
         register(Identifier.of("minecraft:component"), new ComponentCase());
         register(Identifier.of("minecraft:context_dimension"), new ContextDimensionCase());
+        register(Identifier.of("minecraft:context_entity_type"), new ContextEntityTypeCase());
         register(Identifier.of("minecraft:display_context"), new DisplayContextCase());
     }
 
