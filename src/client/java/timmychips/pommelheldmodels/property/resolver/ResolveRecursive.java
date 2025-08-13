@@ -37,8 +37,8 @@ public class ResolveRecursive {
                     entity);
 
             if (propertyValue != null) {
-                for (SelectDefinition.Case c : select.cases()) {
-                    if (c.when().contains(propertyValue)) {
+                for (SelectDefinition.Case<Identifier> c : select.cases()) {
+                    if (c.when().contains(Identifier.of(propertyValue))) {
                         return resolve(c.model(), renderMode, stack, entity);
                     }
                 }

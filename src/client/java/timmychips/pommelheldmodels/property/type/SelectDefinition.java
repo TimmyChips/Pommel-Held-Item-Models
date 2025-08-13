@@ -6,41 +6,42 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.HashSet;
+import java.util.*;
+import java.util.function.Function;
 
 public final class SelectDefinition {
     public record Definition(
             Identifier type,
-            List<Case<String>> cases,
+            List<Case<Identifier>> cases, // Now strictly typed
             @Nullable ItemModelDefinition fallback,
             Identifier property,
             @Nullable String blockStateProperty,
-            boolean chargeIgnoreDefault, boolean chargeIgnoreUnknown, // Custom modded fields for charge_type property
+            boolean chargeIgnoreDefault,
+            boolean chargeIgnoreUnknown,
             @Nullable String component
-
     ) implements ItemModelDefinition {
 
         public static MapCodec<Definition> codec(Codec<ItemModelDefinition> selfCodec) {
             return RecordCodecBuilder.mapCodec(instance -> instance.group(
                     Identifier.CODEC.fieldOf("type").forGetter(Definition::type),
-                    Case.codec(selfCodec, Codec.STRING).listOf().fieldOf("cases").forGetter(Definition::cases),
-                    selfCodec.optionalFieldOf("fallback").forGetter(range -> Optional.ofNullable(range.fallback)),
+                    Case.codec(selfCodec, IdentifierOrStringCodec.INSTANCE) // Now supports short + full IDs
+                            .listOf()
+                            .fieldOf("cases")
+                            .forGetter(Definition::cases),
+                    selfCodec.optionalFieldOf("fallback").forGetter(d -> Optional.ofNullable(d.fallback)),
                     Identifier.CODEC.fieldOf("property").forGetter(Definition::property),
-                    selfCodec.STRING.optionalFieldOf("block_state_property").forGetter(cd -> Optional.ofNullable(cd.blockStateProperty())),
-                    selfCodec.BOOL.optionalFieldOf("ignore_default").forGetter(cd -> Optional.of(cd.chargeIgnoreDefault)),
-                    selfCodec.BOOL.optionalFieldOf("ignore_unknown").forGetter(cd -> Optional.of(cd.chargeIgnoreUnknown)),
-                    selfCodec.STRING.optionalFieldOf("component").forGetter(cd -> Optional.ofNullable(cd.component()))
+                    Codec.STRING.optionalFieldOf("block_state_property").forGetter(d -> Optional.ofNullable(d.blockStateProperty)),
+                    Codec.BOOL.optionalFieldOf("ignore_default").forGetter(d -> Optional.of(d.chargeIgnoreDefault)),
+                    Codec.BOOL.optionalFieldOf("ignore_unknown").forGetter(d -> Optional.of(d.chargeIgnoreUnknown)),
+                    Codec.STRING.optionalFieldOf("component").forGetter(d -> Optional.ofNullable(d.component))
             ).apply(instance, (type, cases, optFallback, property, optBlockState, optChargeIgnoreDefault, optChargeIgnoreUnknown, optComponent) ->
                     new Definition(
-                            type, cases, optFallback.orElse(null), property,
+                            type, cases,
+                            optFallback.orElse(null), property,
                             optBlockState.orElse(null),
                             optChargeIgnoreDefault.orElse(false), optChargeIgnoreUnknown.orElse(false),
                             optComponent.orElse(null)
-            )));
+                    )));
         }
     }
 
@@ -51,13 +52,27 @@ public final class SelectDefinition {
         ) {
             return RecordCodecBuilder.create(instance -> instance.group(
                     selfCodec.fieldOf("model").forGetter((Case<T> c) -> c.model),
-                    CodecUtils.ofValueOrList(valueCodec).xmap(
-                            HashSet::new,
-                            ArrayList::new
-                    ).fieldOf("when").forGetter((Case<T> c) -> c.when)
+                    CodecUtils.ofValueOrList(valueCodec)
+                            .xmap(HashSet::new, ArrayList::new)
+                            .fieldOf("when")
+                            .forGetter((Case<T> c) -> c.when)
             ).apply(instance, Case::new));
         }
     }
 
-
+    /**
+     * Custom Codec that accepts either short form ("arrow") or full form ("minecraft:arrow")
+     * and always converts to an Identifier with a namespace.
+     */
+    public static final class IdentifierOrStringCodec {
+        public static final Codec<Identifier> INSTANCE = Codec.STRING.xmap(
+                str -> {
+                    if (!str.contains(":")) {
+                        return Identifier.of("minecraft", str);
+                    }
+                    return Identifier.of(str);
+                },
+                Identifier::toString
+        );
+    }
 }
