@@ -89,11 +89,6 @@ public class ResolveRecursive {
      * @return Missing Identifier to render missing item model
      */
     private static Optional<Identifier> missingFallbackModel(ItemStack stack, Identifier property) {
-        Set<Identifier> VALID_TYPES = Set.of(
-                Identifier.of("minecraft:condition"),
-                Identifier.of("minecraft:select"),
-                Identifier.of("minecraft:range_threshold"));
-
         Item item = stack.getItem();
         String key = item.toString() + "|" + property;
         if (WARNED_MODELS.add(key)) { // true only the first time, will only print once for each unique item
