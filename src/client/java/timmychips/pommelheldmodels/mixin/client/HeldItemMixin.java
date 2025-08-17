@@ -23,6 +23,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import timmychips.pommelheldmodels.ItemModelRegistry;
 
 import java.util.Optional;
 
@@ -64,6 +65,7 @@ public abstract class HeldItemMixin {
                                         int light, int overlay, int seed, CallbackInfo ci) {
 
         BakedModel model = getCustomModel(item, entity, renderMode);
+
         if (model != null) {
             ItemRenderer self = (ItemRenderer)(Object)this;
             // manually call vanilla rendering method with overridden model
@@ -75,6 +77,16 @@ public abstract class HeldItemMixin {
     // Get custom model from BakedModelManger's getModel from id (which is needed since we loaded the models with ModelLoadingPlugin)
     @Unique
     private static BakedModel getCustomModel(ItemStack stack, LivingEntity entity, ModelTransformationMode mode) {
+
+        BakedModelManager missingModelManager = MinecraftClient.getInstance().getBakedModelManager();
+
+        // If item's items model definition has an invalid model type, returns missing item model
+        for (Identifier id : ItemModelRegistry.INVALID_MODEL_TYPES) {
+            if (Registries.ITEM.getId(stack.getItem()).equals(id)) { // Checks if INVALID_TYPES Set contains item id
+                return missingModelManager.getMissingModel(); // Item renders as Missing Model
+            }
+        }
+
         if (mode == null) mode = ModelTransformationMode.GUI;
 
         Optional<Identifier> maybeModel = resolveModel(Registries.ITEM.getId(stack.getItem()), mode, stack, entity); // Get resolved model specified in items.json for the item
@@ -82,7 +94,6 @@ public abstract class HeldItemMixin {
             Identifier modelId = maybeModel.get();
 
             if (modelId.toString().equals("pommel:missingno")) { // No Fallback Model specified
-                BakedModelManager missingModelManager = MinecraftClient.getInstance().getBakedModelManager();
                 return missingModelManager.getMissingModel(); // Item renders as Missing Model
             }
 
