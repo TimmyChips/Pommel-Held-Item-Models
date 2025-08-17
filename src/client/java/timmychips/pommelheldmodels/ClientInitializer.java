@@ -23,7 +23,6 @@ import java.util.Collection;
 public class ClientInitializer implements ClientModInitializer {
 
 	public static final Logger LOGGER = LogUtils.getLogger();
-	private static Collection<Identifier> ModelCollection;
 	public static Collection<Identifier> modelIds;
 
 	@Override
