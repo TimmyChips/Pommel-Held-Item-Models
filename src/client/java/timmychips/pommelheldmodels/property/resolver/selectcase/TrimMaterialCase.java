@@ -1,16 +1,21 @@
 package timmychips.pommelheldmodels.property.resolver.selectcase;
 
-import com.mojang.logging.LogUtils;
+import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.trim.ArmorTrim;
-import org.slf4j.Logger;
+import timmychips.pommelheldmodels.property.handler.SelectPropertyHandler;
+import timmychips.pommelheldmodels.property.type.SelectDefinition;
 
-public class TrimMaterialCase {
-    private static final Logger LOGGER = LogUtils.getLogger();
-
-    public static String test(ItemStack stack) {
+/**
+ * Return the material id of the armor trim as string
+ */
+public class TrimMaterialCase implements SelectPropertyHandler {
+    @Override
+    public String getValue(ItemStack stack, LivingEntity entity, ModelTransformationMode mode, SelectDefinition.Definition definition) {
         ArmorTrim armorTrim = stack.get(DataComponentTypes.TRIM);
-        return armorTrim == null ? null : armorTrim.getMaterial().getIdAsString();
+        if (armorTrim == null) return null;
+        return armorTrim.getMaterial().getIdAsString();
     }
 }

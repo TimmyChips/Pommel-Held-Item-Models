@@ -20,7 +20,10 @@ public class SelectPropertyRegistry {
         register(Identifier.of("minecraft:component"), new ComponentCase());
         register(Identifier.of("minecraft:context_dimension"), new ContextDimensionCase());
         register(Identifier.of("minecraft:context_entity_type"), new ContextEntityTypeCase());
+        register(Identifier.of("minecraft:custom_model_data"), new CustomModelDataCase());
         register(Identifier.of("minecraft:display_context"), new DisplayContextCase());
+        register(Identifier.of("minecraft:main_hand"), new MainHandCase());
+        register(Identifier.of("minecraft:trim_material"), new TrimMaterialCase());
     }
 
     private static void register(Identifier id, SelectPropertyHandler handler) {
