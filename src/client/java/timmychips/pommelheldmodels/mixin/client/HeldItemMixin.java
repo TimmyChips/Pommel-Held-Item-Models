@@ -12,7 +12,9 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.WitchEntity;
 import net.minecraft.entity.passive.PandaEntity;
 import net.minecraft.entity.passive.VillagerEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.Hand;
 import net.minecraft.world.World;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Mixin;
@@ -21,6 +23,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import timmychips.pommelheldmodels.HeldItemPredicate;
+
+import static timmychips.pommelheldmodels.UseKeyTracker.itemMap;
 
 // Mixin injects into target ItemRenderer vanilla class
 @Environment(EnvType.CLIENT)
@@ -36,6 +40,8 @@ public abstract class HeldItemMixin {
 
         if (entity != null) HeldItemPredicate.itemInOffhand = entity.getOffHandStack() == item; // True if current item in entity's offhand
 
+        validateMatchingUsedItem(entity);
+
         // Replaces the render mode for these entities from using the GROUND render mode to using a third person render mode for rendering held item models
         if (entity instanceof VillagerEntity || entity instanceof WitchEntity || entity instanceof PandaEntity) {
             renderMode = ModelTransformationMode.THIRD_PERSON_RIGHT_HAND;
@@ -49,5 +55,23 @@ public abstract class HeldItemMixin {
     private void pommel$renderBaseItem(ItemStack stack, ModelTransformationMode renderMode, boolean leftHanded, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, BakedModel model, CallbackInfo ci) {
         HeldItemPredicate.currentItemRenderMode = null; // Resets the item predicate so it renders the 2d model
         HeldItemPredicate.isFlyingItem = false; // Resets flying item field
+    }
+
+    // Validates if the player's currently held item matches item used map
+    // If player's current ItemStack doesn't match the ItemStack in that player's key in the map, it removes that player key from map
+    @Unique
+    private void validateMatchingUsedItem(LivingEntity livingEntity) {
+        if (livingEntity instanceof PlayerEntity player) {
+//            Hand hand = player.getActiveHand();
+//            ItemStack currentStack = player.getStackInHand(hand); // Only does it for player's main hand :(
+
+            // copies code from UseKeyTracker
+            ItemStack currentStack = livingEntity.getMainHandStack().isEmpty() ? livingEntity.getOffHandStack() : livingEntity.getMainHandStack();
+            ItemStack defaultedStack = currentStack.getItem().getDefaultStack();
+
+            if (itemMap.containsKey(player) && !ItemStack.areEqual(defaultedStack, itemMap.get(player).lastItem)) {
+                itemMap.remove(player);
+            }
+        }
     }
 }

@@ -8,6 +8,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.component.ComponentMap;
 import net.minecraft.component.DataComponentTypes;
@@ -18,6 +19,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
 import org.slf4j.Logger;
@@ -45,7 +47,8 @@ public class UseKeyTracker {
                 // Adds or removes the client user and the item used to HashMap when pressing the use key or not
                 if (useKeyPressed && !itemUsed.isEmpty()) {
                     // Initialize player with item use data
-                    itemMap.put(user, new PlayerHeldItem(itemUsed));
+                    ItemStack defaultStack = itemUsed.getItem().getDefaultStack();
+                    itemMap.put(user, new PlayerHeldItem(defaultStack));
                 }
             }
         });
@@ -104,9 +107,7 @@ public class UseKeyTracker {
 
             if (itemMap.containsKey(player)) {
                 int intervalTick = itemMap.get(player).checkInterval; // Gets current interval value
-
-                if (!ItemStack.areEqual(itemMap.get(player).lastItem, activeStack)) intervalTick = 0;
-                else if (intervalTick > 0) intervalTick--;
+                if (intervalTick > 0) intervalTick--;
                 if (intervalTick == 0) afterUseCooldown(player); // Does afterUseCooldown method when player stops using item
 
                 else itemMap.get(player).checkInterval = intervalTick; // Update new interval value
@@ -125,6 +126,24 @@ public class UseKeyTracker {
         else itemMap.get(player).lastUsed = useTimer; // Update new cooldown value
     }
 
+    // Returns if the currently rendered ItemStack matches what the player is holding
+    // Intended for the client player, as to prevent non-selected items to not have their models change
+    // Only the actively selected item will change item models
+    // TODO Merge/Cleanup with matchesItemInHand method in HeldItemPredicate.java
+    //  Currently only changes player's main hand item model if two different items are in main/offhand at same time; Fix?
+    //  Also possibly clean/split this class up into other class(es)
+    private static boolean clientHasItemSelected(LivingEntity livingEntity, ItemStack stack) {
+        if (livingEntity instanceof ClientPlayerEntity clientPlayer) {
+//            Hand hand = clientPlayer.getActiveHand();
+//            ItemStack currentStack = clientPlayer.getStackInHand(hand); // Only actually does it for player's main hand :(
+
+            ItemStack currentStack = livingEntity.getMainHandStack().isEmpty() ? livingEntity.getOffHandStack() : livingEntity.getMainHandStack();
+
+            return ItemStack.areEqual(currentStack,stack);
+        }
+        return true;
+    }
+
     // Item Predicate logic to set "is_using" predicate float based on some criteria
     public static float playerUseItemKey(LivingEntity livingEntity, ItemStack usableItem) {
         // Items that you can actually use (food, bow, shield, etc.)
@@ -137,6 +156,8 @@ public class UseKeyTracker {
         float returnFloat = 0.0F;
         if (itemMap.containsKey(player)) {
             ItemStack lastItem = itemMap.get(player).lastItem;
+
+            if (!clientHasItemSelected(player, usableItem)) return 0.0F; // If player is client and not has used item selected, return 0F
 
             if (lastItem != null) {
                 returnFloat = itemMap.get(player).lastUsed / 18.0F; // Get normalized value of last used timer from 0 to 1 for that player

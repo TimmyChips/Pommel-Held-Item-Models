@@ -20,6 +20,7 @@ public class HeldItemPredicate {
 
     private static final String namespace = "pommel";
     private static final String render_held = "is_held";
+    private static final String render_first_thirdperson = "first_third_person"; // 0F means first person, 1F means third person
     private static final String render_offhand = "is_offhand";
     private static final String render_fixed = "is_fixed";
     private static final String render_ground = "is_ground";
@@ -31,6 +32,16 @@ public class HeldItemPredicate {
     private static final List<ModelTransformationMode> renderModeHands = Arrays.asList(
             ModelTransformationMode.FIRST_PERSON_LEFT_HAND,
             ModelTransformationMode.FIRST_PERSON_RIGHT_HAND,
+            ModelTransformationMode.THIRD_PERSON_LEFT_HAND,
+            ModelTransformationMode.THIRD_PERSON_RIGHT_HAND
+    );
+
+    private static final List<ModelTransformationMode> renderModeFirst = Arrays.asList(
+            ModelTransformationMode.FIRST_PERSON_LEFT_HAND,
+            ModelTransformationMode.FIRST_PERSON_RIGHT_HAND
+    );
+
+    private static final List<ModelTransformationMode> renderModeThird = Arrays.asList(
             ModelTransformationMode.THIRD_PERSON_LEFT_HAND,
             ModelTransformationMode.THIRD_PERSON_RIGHT_HAND
     );
@@ -47,32 +58,24 @@ public class HeldItemPredicate {
     );
 
     private static HashMap<Identifier, List<ModelTransformationMode>> renderTypeWhitelist;
+    public static PredicateRenderModeMap predicateMap = new PredicateRenderModeMap(namespace);
+
+    public static void predicateWhitelistMap() {
+        predicateMap.addToMap(render_held, renderModeHands);
+        predicateMap.addToMap(render_offhand, renderModeHands);
+        predicateMap.addToMap(render_using, renderAny);
+        predicateMap.addToMap(render_submerged, renderModeHands);
+        predicateMap.addToMap(render_fixed, ModelTransformationMode.FIXED);
+        predicateMap.addToMap(render_ground, ModelTransformationMode.GROUND);
+        predicateMap.addToMap(render_head, ModelTransformationMode.HEAD);
+    }
 
     public static void registerHeldModelPredicate() {
         // Creates association to render type and transformation modes
         // HashMap contains Identifiers (held, on ground) with several mode types linked to each identifier
-        renderTypeWhitelist = new HashMap<Identifier, List<ModelTransformationMode>>() {{
-            put(Identifier.of(namespace, render_held), renderModeHands ); // Held render modes
+        predicateWhitelistMap();
 
-            put(Identifier.of(namespace, render_offhand), renderModeHands ); // Held render modes for the offhand;
-
-            put(Identifier.of(namespace, render_using), renderAny ); // Register for any modes for item used;
-            put(Identifier.of(namespace, render_submerged), renderAny );
-
-            put(Identifier.of(namespace, render_fixed), Arrays.asList( // Item Frame, Fixed render mode
-                    ModelTransformationMode.FIXED));
-
-            put(Identifier.of(namespace, render_ground), Arrays.asList( // Ground item entity
-                    ModelTransformationMode.GROUND));
-
-            put(Identifier.of(namespace, render_thrown), Arrays.asList( // Thrown item entity
-                    ModelTransformationMode.GROUND));
-
-            put(Identifier.of(namespace, render_head), Arrays.asList( // When worn on head armor slot
-                    ModelTransformationMode.HEAD));
-        }};
-
-        for (var entry:renderTypeWhitelist.entrySet()) { // Performs for each key-value pair
+        for (var entry:PredicateRenderModeMap.PREDICATE_RENDER_MODE_MAP.entrySet()) { // Performs for each key-value pair
             // Performs for each Identifier and associated List items
             ModelPredicateProviderRegistry.register(entry.getKey(), (itemStack, world, livingEntity, i) -> { // Registers Identifier key
 
