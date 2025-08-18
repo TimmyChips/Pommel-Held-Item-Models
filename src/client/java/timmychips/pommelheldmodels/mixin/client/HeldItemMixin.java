@@ -14,7 +14,6 @@ import net.minecraft.entity.passive.PandaEntity;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.Hand;
 import net.minecraft.world.World;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Mixin;

@@ -1,38 +1,29 @@
 package timmychips.pommelheldmodels;
 
-import com.google.gson.JsonElement;
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.JsonOps;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.KeyBinding;
-import net.minecraft.component.ComponentMap;
-import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
 import org.slf4j.Logger;
+import timmychips.pommelheldmodels.objects.PlayerHeldItem;
 
 import java.util.HashMap;
-import java.util.Optional;
 import java.util.UUID;
 
 public class UseKeyTracker {
     private static final Logger LOGGER = LogUtils.getLogger();
     private static ItemStack itemUsed = ItemStack.EMPTY;
     private static boolean useKeyPressed = false;
-    public static HashMap<PlayerEntity, PlayerHeldItem> itemMap = new HashMap<>();
+    public static final HashMap<PlayerEntity, PlayerHeldItem> itemMap = new HashMap<>();
 
     // When client player/user presses the use key; occurs every client tick
     public static void clientUseKey() {
@@ -103,8 +94,6 @@ public class UseKeyTracker {
     // Since UseItemCallback event doesn't occur every tick, we have a countdown before we update that the other player is no longer using an item
     public static void useTickInterval(LivingEntity entity) {
         if (entity instanceof PlayerEntity player) {
-            ItemStack activeStack = player.getActiveItem();
-
             if (itemMap.containsKey(player)) {
                 int intervalTick = itemMap.get(player).checkInterval; // Gets current interval value
                 if (intervalTick > 0) intervalTick--;
@@ -137,7 +126,7 @@ public class UseKeyTracker {
 //            Hand hand = clientPlayer.getActiveHand();
 //            ItemStack currentStack = clientPlayer.getStackInHand(hand); // Only actually does it for player's main hand :(
 
-            ItemStack currentStack = livingEntity.getMainHandStack().isEmpty() ? livingEntity.getOffHandStack() : livingEntity.getMainHandStack();
+            ItemStack currentStack = clientPlayer.getMainHandStack().isEmpty() ? clientPlayer.getOffHandStack() : clientPlayer.getMainHandStack();
 
             return ItemStack.areEqual(currentStack,stack);
         }

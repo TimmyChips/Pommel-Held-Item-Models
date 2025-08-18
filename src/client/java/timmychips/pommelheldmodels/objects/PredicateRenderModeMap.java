@@ -1,4 +1,4 @@
-package timmychips.pommelheldmodels;
+package timmychips.pommelheldmodels.objects;
 
 import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.util.Identifier;
@@ -7,8 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 
 public class PredicateRenderModeMap {
-    String namespace;
-    public static HashMap<Identifier, List<ModelTransformationMode>> PREDICATE_RENDER_MODE_MAP = new HashMap<>();
+    final String namespace;
+    public static final HashMap<Identifier, List<ModelTransformationMode>> PREDICATE_RENDER_MODE_MAP = new HashMap<>();
 
     public PredicateRenderModeMap(String identifierNamespace) {
         this.namespace = identifierNamespace;

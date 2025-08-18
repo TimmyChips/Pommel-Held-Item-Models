@@ -1,11 +1,11 @@
-package timmychips.pommelheldmodels;
+package timmychips.pommelheldmodels.objects;
 
 import net.minecraft.item.ItemStack;
 
 public class PlayerHeldItem {
-    public ItemStack lastItem;
-    float lastUsed = 20.0F;
-    int checkInterval = 6;
+    public final ItemStack lastItem;
+    public float lastUsed = 20.0F;
+    public int checkInterval = 6;
 
     public PlayerHeldItem(ItemStack stack) {
         this.lastItem = stack;
