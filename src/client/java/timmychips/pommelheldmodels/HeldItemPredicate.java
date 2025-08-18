@@ -16,6 +16,7 @@ public class HeldItemPredicate {
     public static ModelTransformationMode currentItemRenderMode;
     public static boolean itemInOffhand = false;
     public static boolean isFlyingItem = false;
+    public static boolean groundItemEntitySubmerged = false;
     private static final Logger LOGGER = LogUtils.getLogger();
 
     private static final String namespace = "pommel";
@@ -52,6 +53,8 @@ public class HeldItemPredicate {
             ModelTransformationMode.GUI
     );
 
+    private static GroundItemSubmerged groundItemSubmerged;
+
     private static HashMap<Identifier, List<ModelTransformationMode>> renderTypeWhitelist;
     public static PredicateRenderModeMap predicateMap = new PredicateRenderModeMap(namespace);
 
@@ -85,12 +88,15 @@ public class HeldItemPredicate {
                 String predicate = entry.getKey().getPath();
 
                 if (livingEntity != null) {
-                    // Predicate when player presses the use key for the using item predicate + item is in hand
+                    // Predicate when living entity presses the use key for the using item predicate + item is in hand
                     if (predicate.equals(render_using) && matchesItemInHand(livingEntity, itemStack)) return UseKeyTracker.playerUseItemKey(livingEntity, itemStack);
 
-                    // Predicate when player is in water
+                    // Predicate when living entity is in water
                     if (predicate.equals(render_submerged)) return livingEntity.isSubmergedInWater() ? 1.0F : 0.0F;
                 }
+
+                // For when ItemEntity stack is in map
+                if (predicate.equals(render_submerged)) return GroundItemSubmerged.SUBMERGED_MAP.contains(itemStack) ? 1.0F : 0.0F;
 
                 if (currentItemRenderMode == null) return 0.0F; // Return 0 if render mode is null
                 // Do this after those other predicates so that those can render in the gui
@@ -100,6 +106,7 @@ public class HeldItemPredicate {
                     case render_first_thirdperson -> firstThirdPersonCheck();
                     case render_thrown -> isFlyingItem && entry.getValue().contains(currentItemRenderMode) ? 1.0F : 0.0F;
                     case render_ground -> !isFlyingItem && entry.getValue().contains(currentItemRenderMode) ? 1.0F : 0.0F;
+                    case render_submerged -> groundItemEntitySubmerged ? 1.0F : 0.0F;
                     default -> entry.getValue().contains(currentItemRenderMode) ? 1.0F : 0.0F;
                 };
 
