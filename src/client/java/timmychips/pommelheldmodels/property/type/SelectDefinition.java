@@ -28,7 +28,7 @@ public final class SelectDefinition {
         public static MapCodec<Definition> codec(Codec<ItemModelDefinition> selfCodec) {
             return RecordCodecBuilder.mapCodec(instance -> instance.group(
                     Identifier.CODEC.fieldOf("type").forGetter(Definition::type),
-                    Case.codec(selfCodec, IdentifierOrStringCodec.INSTANCE) // Now supports short + full IDs
+                    Case.codec(selfCodec, CodecUtils.IdentifierOrStringCodec.INSTANCE) // Accepts short string, or full id
                             .listOf()
                             .fieldOf("cases")
                             .forGetter(Definition::cases),
@@ -49,6 +49,13 @@ public final class SelectDefinition {
         }
     }
 
+    // TODO - case could probably be String object
+    /**
+     * Renders item models based on a property
+     * @param model the model to render "when" a certain property is met
+     * @param when the property to match for
+     * @param <T> type is either String or Identifier object
+     */
     public record Case<T>(ItemModelDefinition model, HashSet<T> when) {
         public static <T> Codec<Case<T>> codec(
                 Codec<ItemModelDefinition> selfCodec,
@@ -62,21 +69,5 @@ public final class SelectDefinition {
                             .forGetter((Case<T> c) -> c.when)
             ).apply(instance, Case::new));
         }
-    }
-
-    /**
-     * Custom Codec that accepts either short form ("arrow") or full form ("minecraft:arrow")
-     * and always converts to an Identifier with a namespace.
-     */
-    public static final class IdentifierOrStringCodec {
-        public static final Codec<Identifier> INSTANCE = Codec.STRING.xmap(
-                str -> {
-                    if (!str.contains(":")) {
-                        return Identifier.of("minecraft", str);
-                    }
-                    return Identifier.of(str);
-                },
-                Identifier::toString
-        );
     }
 }

@@ -5,7 +5,7 @@ import com.mojang.serialization.Codec;
 
 // Entry point to item model definition types
 public sealed interface ItemModelDefinition
-        permits ConditionDefinition, ModelDefinition, RangeDispatchDefinition.Definition, SelectDefinition.Definition {
+        permits CompositeModelDefinition, ConditionDefinition, ModelDefinition, RangeDispatchDefinition.Definition, SelectDefinition.Definition {
 
     Codec<ItemModelDefinition> CODEC = createCodec();
 

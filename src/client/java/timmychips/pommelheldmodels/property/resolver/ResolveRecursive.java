@@ -1,6 +1,7 @@
 package timmychips.pommelheldmodels.property.resolver;
 
 import com.mojang.logging.LogUtils;
+import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.Item;
@@ -10,6 +11,7 @@ import org.slf4j.Logger;
 import timmychips.pommelheldmodels.property.type.*;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -22,6 +24,11 @@ public class ResolveRecursive {
         if (def instanceof ModelDefinition model) {
             return Optional.of(model.model());
         }
+
+//        if (def instanceof CompositeModelDefinition composite) {
+//            List<BakedModel> unbakedModels = ((CompositeModelDefinition) def).models().stream()
+//                    .map(mapper -> ???)
+//        }
 
         if (def instanceof SelectDefinition.Definition select) {
             String propertyValue = SelectValueResolver.evaluate(
