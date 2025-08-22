@@ -23,6 +23,7 @@ public class GroundItemMixin {
     @Inject(method = "render(Lnet/minecraft/entity/ItemEntity;FFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V", at = @At(value = "HEAD"))
     public void renderGround(ItemEntity itemEntity, float f, float g, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, CallbackInfo ci) {
         HeldItemPredicate.currentItemRenderMode = ModelTransformationMode.GROUND; // Set predicate to ground since it'll always be on the ground
+        HeldItemPredicate.GROUND_ITEM_MAP.add(itemEntity.getStack());
         submergedInFluidCheck(itemEntity);
     }
 

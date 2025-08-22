@@ -7,18 +7,22 @@ import net.minecraft.item.ItemStack;
 import timmychips.pommelheldmodels.objects.GroundItemSubmerged;
 import timmychips.pommelheldmodels.objects.PredicateRenderModeMap;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Arrays;
+import java.util.Set;
 
 public class HeldItemPredicate {
     public static ModelTransformationMode currentItemRenderMode;
     public static boolean itemInOffhand = false;
     public static boolean isFlyingItem = false;
+    public static Set<ItemStack> GROUND_ITEM_MAP = new HashSet<>(); // Only used for misc_entity_holding predicate so ItemEntity doesn't also change with this predicate
 //    private static final Logger LOGGER = LogUtils.getLogger();
 
     private static final String namespace = "pommel";
     private static final String render_held = "is_held";
     private static final String render_first_thirdperson = "first_third_person"; // 0.5F means first person, 1F means third person
+    private static final String render_misc_entity_holding = "is_misc_entity_holding"; // For Villagers, Witches, Pandas, and Foxes
     private static final String render_offhand = "is_offhand";
     private static final String render_fixed = "is_fixed";
     private static final String render_ground = "is_ground";
@@ -26,6 +30,8 @@ public class HeldItemPredicate {
     private static final String render_head = "is_head";
     private static final String render_using = "is_using";
     private static final String render_submerged = "is_submerged";
+
+    // TODO placing is_ground predicate in item.json below render_misc_entity_holding will make is_ground model show for villager, witch, fox, etc. (aka BAD)
 
     private static final List<ModelTransformationMode> renderModeHands = Arrays.asList(
             ModelTransformationMode.FIRST_PERSON_LEFT_HAND,
@@ -58,8 +64,10 @@ public class HeldItemPredicate {
         predicateMap.addToMap(render_submerged, renderModeHands);
         predicateMap.addToMap(render_fixed, ModelTransformationMode.FIXED);
         predicateMap.addToMap(render_ground, ModelTransformationMode.GROUND);
+        predicateMap.addToMap(render_thrown, ModelTransformationMode.GROUND);
         predicateMap.addToMap(render_head, ModelTransformationMode.HEAD);
         predicateMap.addToMap(render_first_thirdperson, renderModeHands);
+        predicateMap.addToMap(render_misc_entity_holding, ModelTransformationMode.GROUND);
     }
 
     public static void registerHeldModelPredicate() {
@@ -75,7 +83,9 @@ public class HeldItemPredicate {
 
                 if (livingEntity != null) {
                     // Predicate when living entity presses the use key for the using item predicate + item is in hand
-                    if (predicate.equals(render_using) && matchesItemInHand(livingEntity, itemStack)) return UseKeyTracker.playerUseItemKey(livingEntity, itemStack);
+                    if (predicate.equals(render_using)) {
+                        return matchesItemInHand(livingEntity, itemStack) ? UseKeyTracker.playerUseItemKey(livingEntity, itemStack) : 0.0F;
+                    }
                     // Predicate when living entity is in water
                     if (predicate.equals(render_submerged)) return livingEntity.isSubmergedInWater() ? 1.0F : 0.0F;
                 }
@@ -90,8 +100,9 @@ public class HeldItemPredicate {
                     case render_offhand -> itemInOffhand && entry.getValue().contains(currentItemRenderMode) ? 1.0F : 0.0F; // If in offhand, return 1 for the offhand predicate
                                                                                                                             // Note that this makes is_held and is_offhand both return 1
                     case render_first_thirdperson -> firstThirdPersonCheck(); // Return float based for first_thirdperson predicate if render mode is first or third person
+                    case render_misc_entity_holding -> !GROUND_ITEM_MAP.contains(itemStack) && entry.getValue().contains(currentItemRenderMode) ? 1.0F : 0.0F;
                     case render_thrown -> isFlyingItem && entry.getValue().contains(currentItemRenderMode) ? 1.0F : 0.0F; // For flying/thrown items
-                    case render_ground -> !isFlyingItem && entry.getValue().contains(currentItemRenderMode) ? 1.0F : 0.0F; // Makes it so thrown items don't use the is_ground model
+                    case render_ground -> !isFlyingItem && livingEntity == null && entry.getValue().contains(currentItemRenderMode) ? 1.0F : 0.0F; // Makes it so thrown items don't use the is_ground model
                     default -> entry.getValue().contains(currentItemRenderMode) ? 1.0F : 0.0F; // Return 1 if whitelisted for all other predicates
                 };
             });

@@ -41,10 +41,12 @@ public abstract class HeldItemMixin {
 
         validateMatchingUsedItem(entity);
 
+        /*
         // Replaces the render mode for these entities from using the GROUND render mode to using a third person render mode for rendering held item models
         if (entity instanceof VillagerEntity || entity instanceof WitchEntity || entity instanceof PandaEntity) {
             renderMode = ModelTransformationMode.THIRD_PERSON_RIGHT_HAND;
         }
+         */
 
         HeldItemPredicate.currentItemRenderMode = renderMode; // Sets the item model's "is_held" and other item predicates based on renderMode
     }
