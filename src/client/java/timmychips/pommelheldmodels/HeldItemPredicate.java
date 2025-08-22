@@ -31,8 +31,6 @@ public class HeldItemPredicate {
     private static final String render_using = "is_using";
     private static final String render_submerged = "is_submerged";
 
-    // TODO placing is_ground predicate in item.json below render_misc_entity_holding will make is_ground model show for villager, witch, fox, etc. (aka BAD)
-
     private static final List<ModelTransformationMode> renderModeHands = Arrays.asList(
             ModelTransformationMode.FIRST_PERSON_LEFT_HAND,
             ModelTransformationMode.FIRST_PERSON_RIGHT_HAND,
