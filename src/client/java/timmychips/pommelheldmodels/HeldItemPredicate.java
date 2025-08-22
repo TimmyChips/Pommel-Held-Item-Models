@@ -6,17 +6,13 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import timmychips.pommelheldmodels.objects.GroundItemSubmerged;
 import timmychips.pommelheldmodels.objects.PredicateRenderModeMap;
-
-import java.util.HashSet;
 import java.util.List;
 import java.util.Arrays;
-import java.util.Set;
 
 public class HeldItemPredicate {
     public static ModelTransformationMode currentItemRenderMode;
     public static boolean itemInOffhand = false;
     public static boolean isFlyingItem = false;
-    public static Set<ItemStack> GROUND_ITEM_MAP = new HashSet<>(); // Only used for misc_entity_holding predicate so ItemEntity doesn't also change with this predicate
 //    private static final Logger LOGGER = LogUtils.getLogger();
 
     private static final String namespace = "pommel";
@@ -98,7 +94,7 @@ public class HeldItemPredicate {
                     case render_offhand -> itemInOffhand && entry.getValue().contains(currentItemRenderMode) ? 1.0F : 0.0F; // If in offhand, return 1 for the offhand predicate
                                                                                                                             // Note that this makes is_held and is_offhand both return 1
                     case render_first_thirdperson -> firstThirdPersonCheck(); // Return float based for first_thirdperson predicate if render mode is first or third person
-                    case render_misc_entity_holding -> !GROUND_ITEM_MAP.contains(itemStack) && entry.getValue().contains(currentItemRenderMode) ? 1.0F : 0.0F;
+                    case render_misc_entity_holding -> livingEntity != null && entry.getValue().contains(currentItemRenderMode) ? 1.0F : 0.0F;
                     case render_thrown -> isFlyingItem && entry.getValue().contains(currentItemRenderMode) ? 1.0F : 0.0F; // For flying/thrown items
                     case render_ground -> !isFlyingItem && livingEntity == null && entry.getValue().contains(currentItemRenderMode) ? 1.0F : 0.0F; // Makes it so thrown items don't use the is_ground model
                     default -> entry.getValue().contains(currentItemRenderMode) ? 1.0F : 0.0F; // Return 1 if whitelisted for all other predicates
