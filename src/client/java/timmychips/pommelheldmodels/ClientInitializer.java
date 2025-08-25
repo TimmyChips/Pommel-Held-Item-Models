@@ -58,7 +58,7 @@ public class ClientInitializer implements ClientModInitializer {
 					JsonElement modelElement = root.get("model");
 
 					if (modelElement != null && modelElement.isJsonObject()) {
-						ItemModelDefinition.CODEC.decode(JsonOps.INSTANCE, modelElement)
+//						ItemModelDefinition.CODEC.decode(JsonOps.INSTANCE, modelElement)
 								.resultOrPartial(error -> LOGGER.warn("[Pommel] Failed to decode model definition for {}: {}", id, error))
 								.ifPresent(pair -> {
 									// Clean up path to match item ID (remove "items/" and ".json")
@@ -66,7 +66,7 @@ public class ClientInitializer implements ClientModInitializer {
 									Identifier itemId = Identifier.of(id.getNamespace(), cleanPath);
 
 									// Store in registry
-									ItemModelRegistry.put(itemId, pair.getFirst());
+//									ItemModelRegistry.put(itemId, pair.getFirst());
 									LOGGER.info("[Pommel] Successfully decoded item model definition for: {}", itemId);
 								});
 					} else {

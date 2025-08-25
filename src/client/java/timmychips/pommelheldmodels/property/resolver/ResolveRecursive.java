@@ -1,6 +1,8 @@
 package timmychips.pommelheldmodels.property.resolver;
 
 import com.mojang.logging.LogUtils;
+import net.fabricmc.fabric.api.client.model.loading.v1.FabricBakedModelManager;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.entity.LivingEntity;
@@ -19,16 +21,20 @@ public class ResolveRecursive {
 
     public static final Logger LOGGER = LogUtils.getLogger();
     public static final Set<String> WARNED_MODELS = new HashSet<>();
+    private static final FabricBakedModelManager bakedModelManager = MinecraftClient.getInstance().getBakedModelManager();
 
-    public static Optional<Identifier> resolve(ItemModelDefinition def, ModelTransformationMode renderMode, ItemStack stack, LivingEntity entity) {
+    public static Optional<List<Identifier>> resolve(ItemModelDefinition def, ModelTransformationMode renderMode, ItemStack stack, LivingEntity entity) {
         if (def instanceof ModelDefinition model) {
-            return Optional.of(model.model());
+            return Optional.of(List.of(model.model()));
+//            return Optional.of(bakedModelManager.getModel(model.model()));
         }
 
-//        if (def instanceof CompositeModelDefinition composite) {
-//            List<BakedModel> unbakedModels = ((CompositeModelDefinition) def).models().stream()
-//                    .map(mapper -> ???)
-//        }
+        if (def instanceof CompositeModelDefinition composite) {
+//            List<BakedModel> unbakedModels = composite.models().stream()
+//                    .map(bakedModelManager::getModel)
+//                    .toList();
+            return Optional.of(composite.models());
+        }
 
         if (def instanceof SelectDefinition.Definition select) {
             String propertyValue = SelectValueResolver.evaluate(
@@ -88,6 +94,7 @@ public class ResolveRecursive {
     }
 
     private static final Identifier MISSING_MODEL = Identifier.of("pommel:missingno");
+//    private static final BakedModel MISSING_MODEL = bakedModelManager.getModel(Identifier.of("pommel:missingno"));
 
     /**
      *
@@ -95,12 +102,12 @@ public class ResolveRecursive {
      * @param property the property trying to fetch
      * @return Missing Identifier to render missing item model
      */
-    private static Optional<Identifier> missingFallbackModel(ItemStack stack, Identifier property) {
+    private static Optional<List<Identifier>> missingFallbackModel(ItemStack stack, Identifier property) {
         Item item = stack.getItem();
         String key = item.toString() + "|" + property;
         if (WARNED_MODELS.add(key)) { // true only the first time, will only print once for each unique item
             LOGGER.warn("No matching range threshold and no fallback model for property '{}', for item: '{}'", property, item);
         }
-        return Optional.of(MISSING_MODEL); // Return identifier for RenderItem mixin to use to render missing model (name doesn't matter)
+        return Optional.of(List.of(MISSING_MODEL)); // Return identifier for RenderItem mixin to use to render missing model (name doesn't matter)
     }
 }
