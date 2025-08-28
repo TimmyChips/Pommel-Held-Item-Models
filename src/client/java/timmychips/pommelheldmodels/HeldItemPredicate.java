@@ -26,7 +26,7 @@ public class HeldItemPredicate {
     private static final String render_head = "is_head";
     private static final String render_using = "is_using";
     private static final String render_submerged = "is_submerged";
-    private static final String eat = "eat";
+    private static final String render_use = "item_use";
 
     private static final List<ModelTransformationMode> renderModeHands = Arrays.asList(
             ModelTransformationMode.FIRST_PERSON_LEFT_HAND,
@@ -63,7 +63,7 @@ public class HeldItemPredicate {
         predicateMap.addToMap(render_head, ModelTransformationMode.HEAD);
         predicateMap.addToMap(render_first_thirdperson, renderModeHands);
         predicateMap.addToMap(render_misc_entity_holding, ModelTransformationMode.GROUND);
-        predicateMap.addToMap(eat, renderAny);
+        predicateMap.addToMap(render_use, renderAny);
     }
 
     public static void registerHeldModelPredicate() {
@@ -78,12 +78,11 @@ public class HeldItemPredicate {
                 String predicate = entry.getKey().getPath();
 
                 if (livingEntity != null) {
-                    // Predicate when living entity presses the use key for the using item predicate + item is in hand
-                    if (predicate.equals(render_using)) {
-                        return matchesItemInHand(livingEntity, itemStack) ? UseKeyTracker.playerUseItemKey(livingEntity, itemStack) : 0.0F;
+                    switch (predicate) {
+                        case render_using -> { return matchesItemInHand(livingEntity, itemStack) ? UseKeyTracker.playerUseItemKey(livingEntity, itemStack) : 0.0F; }
+                        case render_submerged -> { return livingEntity.isSubmergedInWater() ? 1.0F : 0.0F; }
+                        case render_use -> { return UseDurationRemaining.getTicksUsed(itemStack, livingEntity); }
                     }
-                    // Predicate when living entity is in water
-                    if (predicate.equals(render_submerged)) return livingEntity.isSubmergedInWater() ? 1.0F : 0.0F;
                 }
 
                 // For when ItemEntity stack is in map
@@ -99,7 +98,6 @@ public class HeldItemPredicate {
                     case render_misc_entity_holding -> livingEntity != null && entry.getValue().contains(currentItemRenderMode) ? 1.0F : 0.0F;
                     case render_thrown -> isFlyingItem && entry.getValue().contains(currentItemRenderMode) ? 1.0F : 0.0F; // For flying/thrown items
                     case render_ground -> !isFlyingItem && livingEntity == null && entry.getValue().contains(currentItemRenderMode) ? 1.0F : 0.0F; // Makes it so thrown items don't use the is_ground model
-                    case eat -> UseDurationRemaining.getTicksUsed(itemStack, livingEntity);
                     default -> entry.getValue().contains(currentItemRenderMode) ? 1.0F : 0.0F; // Return 1 if whitelisted for all other predicates
                 };
             });
