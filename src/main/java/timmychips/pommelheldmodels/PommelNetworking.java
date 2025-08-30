@@ -18,8 +18,6 @@ public class PommelNetworking {
             ItemStack stack = buf.readItemStack();
             boolean isUsing = buf.readBoolean();
 
-            System.out.println("[Pommel] Player " + senderUuid + " is using: " + stack + ", lastUsed: " + isUsing);
-
             // Now send to other players
             PacketByteBuf sendBuf = new PacketByteBuf(io.netty.buffer.Unpooled.buffer());
             sendBuf.writeUuid(senderUuid);
