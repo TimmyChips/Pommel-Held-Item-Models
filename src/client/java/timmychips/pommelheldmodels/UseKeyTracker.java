@@ -65,7 +65,7 @@ public class UseKeyTracker {
                 ItemStack defaultStack = itemUsed.getDefaultStack();
 
                 PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-                buf.writeUuid(user.getUuid());
+                buf.writeUuid(playerUuid);
                 buf.writeItemStack(defaultStack);
                 buf.writeBoolean(true);
 
