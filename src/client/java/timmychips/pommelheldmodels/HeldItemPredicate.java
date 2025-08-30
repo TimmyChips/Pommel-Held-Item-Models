@@ -81,7 +81,7 @@ public class HeldItemPredicate {
                     switch (predicate) {
                         case render_using -> { return matchesItemInHand(livingEntity, itemStack) ? UseKeyTracker.playerUseItemKey(livingEntity, itemStack) : 0.0F; }
                         case render_submerged -> { return livingEntity.isSubmergedInWater() ? 1.0F : 0.0F; }
-                        case render_use -> { return UseDurationRemaining.getTicksUsed(itemStack, livingEntity); }
+                        case render_use -> { return itemUseRemaining(itemStack, livingEntity); }
                     }
                 }
 
@@ -112,6 +112,15 @@ public class HeldItemPredicate {
     private static float firstThirdPersonCheck() {
         if (currentItemRenderMode.isFirstPerson()) return 0.5F;
         else if (renderModeThird.contains(currentItemRenderMode)) return 1F;
+        else return 0F;
+    }
+
+    private static float itemUseRemaining(ItemStack stack, LivingEntity user) {
+        if (user != null && ItemStack.areEqual(stack, user.getActiveItem())) {
+
+            int maxUseTime = stack.getMaxUseTime(user);
+            return (float) (maxUseTime - user.getItemUseTimeLeft()) / maxUseTime; // returns item use normalized from 0 to 1
+        }
         else return 0F;
     }
 }
