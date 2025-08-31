@@ -27,6 +27,7 @@ public class HeldItemPredicate {
     private static final String render_using = "is_using";
     private static final String render_submerged = "is_submerged";
     private static final String render_use = "item_use";
+    private static final String render_enchanted = "is_enchanted";
 
     private static final List<ModelTransformationMode> renderModeHands = Arrays.asList(
             ModelTransformationMode.FIRST_PERSON_LEFT_HAND,
@@ -64,6 +65,7 @@ public class HeldItemPredicate {
         predicateMap.addToMap(render_first_thirdperson, renderModeHands);
         predicateMap.addToMap(render_misc_entity_holding, ModelTransformationMode.GROUND);
         predicateMap.addToMap(render_use, renderAny);
+        predicateMap.addToMap(render_enchanted, renderAny);
     }
 
     public static void registerHeldModelPredicate() {
@@ -77,6 +79,10 @@ public class HeldItemPredicate {
 
                 String predicate = entry.getKey().getPath();
 
+            // Predicate effects all entities (such as item entities) in any render mode (e.g. gui)
+                if (predicate.equals(render_enchanted)) return StackIsEnchanted.getValue(itemStack);
+
+            // Predicate only affects living entities in any render mode (e.g. gui)
                 if (livingEntity != null) {
                     switch (predicate) {
                         case render_using -> { return matchesItemInHand(livingEntity, itemStack) ? UseKeyTracker.playerUseItemKey(livingEntity, itemStack) : 0.0F; }
@@ -85,9 +91,11 @@ public class HeldItemPredicate {
                     }
                 }
 
-                // For when ItemEntity stack is in map
+            // For when ItemEntity stack is in submerged map
                 if (predicate.equals(render_submerged)) return GroundItemSubmerged.SUBMERGED_MAP.contains(itemStack) ? 1.0F : 0.0F;
 
+
+            // Predicate effects any render mode that is not gui
                 if (currentItemRenderMode == null) return 0.0F; // Return 0 if render mode is null
                 // Do this after those other predicates so that those can render in the gui
 
