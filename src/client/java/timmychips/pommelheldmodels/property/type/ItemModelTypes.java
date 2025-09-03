@@ -1,24 +1,19 @@
 package timmychips.pommelheldmodels.property.type;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
 import net.minecraft.util.Identifier;
-
-import java.util.function.Function;
+import timmychips.pommelheldmodels.property.helper.PommelIdMapper;
 
 public class ItemModelTypes {
-    public static final CodecUtils.IdMapper<Identifier, MapCodec<? extends ItemModelDefinition>> DEFINITIONS =
-            new CodecUtils.IdMapper<>();
-    public static final Codec<ItemModelDefinition> CODEC;
-
-    public static void bootstrap() {
-        DEFINITIONS.put(Identifier.of("pommel", "select"), SelectDefinition.Definition.codec(CODEC));
-        DEFINITIONS.put(Identifier.of("pommel", "condition"), ConditionDefinition.codec(CODEC));
-        DEFINITIONS.put(Identifier.of("pommel", "range_dispatch"), RangeDispatchDefinition.Definition.codec(CODEC));
-        // … add more as you define them
-    }
+    public static final PommelIdMapper ID_MAPPER = new PommelIdMapper();
+    public static final Codec<ItemModelDefinition> CODEC = Codec.lazyInitialized(() -> ID_MAPPER.getCodec(Identifier.CODEC));
 
     static {
-        CODEC = DEFINITIONS.getCodec(Identifier.CODEC).dispatch(ItemModelDefinition::getCodec, (codec -> codec));
+        // Register all your types here
+        ID_MAPPER.put(Identifier.of("minecraft:select"), SelectDefinition.Definition.codec(CODEC));
+        ID_MAPPER.put(Identifier.of("minecraft:condition"), ConditionDefinition.codec(CODEC));
+        ID_MAPPER.put(Identifier.of("minecraft:range_dispatch"), RangeDispatchDefinition.Definition.codec(CODEC));
+        ID_MAPPER.put(Identifier.of("minecraft:composite"), CompositeModelDefinition.CODEC);
+        ID_MAPPER.put(Identifier.of("minecraft:model"), ModelDefinition.CODEC);
     }
 }

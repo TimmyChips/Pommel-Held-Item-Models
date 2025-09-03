@@ -15,6 +15,7 @@ import timmychips.pommelheldmodels.property.registry.ConditionPropertyRegistry;
 import timmychips.pommelheldmodels.property.registry.RangePropertyRegistry;
 import timmychips.pommelheldmodels.property.registry.SelectPropertyRegistry;
 import timmychips.pommelheldmodels.property.type.ItemModelDefinition;
+import timmychips.pommelheldmodels.property.type.ItemModelTypes;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -58,7 +59,7 @@ public class ClientInitializer implements ClientModInitializer {
 					JsonElement modelElement = root.get("model");
 
 					if (modelElement != null && modelElement.isJsonObject()) {
-//						ItemModelDefinition.CODEC.decode(JsonOps.INSTANCE, modelElement)
+						ItemModelTypes.CODEC.decode(JsonOps.INSTANCE, modelElement)
 								.resultOrPartial(error -> LOGGER.warn("[Pommel] Failed to decode model definition for {}: {}", id, error))
 								.ifPresent(pair -> {
 									// Clean up path to match item ID (remove "items/" and ".json")

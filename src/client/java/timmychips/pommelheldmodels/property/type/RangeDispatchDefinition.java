@@ -52,6 +52,11 @@ public final class RangeDispatchDefinition {
                             scale.orElse(1F))
             ));
         }
+
+        @Override
+        public MapCodec<? extends ItemModelDefinition> getCodec() {
+            return codec(ItemModelTypes.CODEC);
+        }
     }
 
     public record ThresholdEntry(ItemModelDefinition model, float threshold) {

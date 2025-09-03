@@ -15,4 +15,9 @@ public record CompositeModelDefinition(Identifier type, List<Identifier> models)
                     .fieldOf("models")
                     .forGetter(CompositeModelDefinition::models)
     ).apply(instance, CompositeModelDefinition::new));
+
+    @Override
+    public MapCodec<? extends ItemModelDefinition> getCodec() {
+        return CODEC;
+    }
 }

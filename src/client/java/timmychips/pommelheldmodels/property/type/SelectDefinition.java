@@ -47,6 +47,11 @@ public final class SelectDefinition {
                             optComponent.orElse(null)
                     )));
         }
+
+        @Override
+        public MapCodec<? extends ItemModelDefinition> getCodec() {
+            return codec(ItemModelTypes.CODEC);
+        }
     }
 
     // TODO - case could probably be String object

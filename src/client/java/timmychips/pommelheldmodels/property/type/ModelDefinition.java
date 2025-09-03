@@ -9,4 +9,9 @@ public record ModelDefinition(Identifier type, Identifier model) implements Item
             Identifier.CODEC.fieldOf("type").forGetter(ModelDefinition::type),
             Identifier.CODEC.fieldOf("model").forGetter(ModelDefinition::model)
     ).apply(instance, ModelDefinition::new));
+
+    @Override
+    public MapCodec<? extends ItemModelDefinition> getCodec() {
+        return CODEC;
+    }
 }

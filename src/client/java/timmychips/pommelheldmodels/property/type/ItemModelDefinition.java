@@ -8,6 +8,11 @@ import net.minecraft.util.Identifier;
 import java.util.Map;
 
 // Entry point to item model definition types
-public interface ItemModelDefinition {
+public sealed interface ItemModelDefinition
+        permits ConditionDefinition, SelectDefinition.Definition, RangeDispatchDefinition.Definition, CompositeModelDefinition, ModelDefinition {
+
+    /**
+     * Every subtype must return its own codec.
+     */
     MapCodec<? extends ItemModelDefinition> getCodec();
 }

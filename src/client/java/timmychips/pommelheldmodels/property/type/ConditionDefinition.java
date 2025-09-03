@@ -64,4 +64,9 @@ public record ConditionDefinition(
                         onTrue, onFalse)
         ));
     }
+
+    @Override
+    public MapCodec<? extends ItemModelDefinition> getCodec() {
+        return codec(ItemModelTypes.CODEC);
+    }
 }
