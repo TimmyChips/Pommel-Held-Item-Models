@@ -11,11 +11,11 @@ import timmychips.pommelheldmodels.property.type.ItemModelDefinition;
 import java.util.List;
 import java.util.Optional;
 
-public class ItemModelResolver {
-    public static Optional<List<Identifier>> resolveModel(Identifier itemId, ModelTransformationMode renderMode, ItemStack stack, LivingEntity entity) {
-        ItemModelDefinition def = ItemModelRegistry.get(itemId);
-        if (def == null) return Optional.empty();
+    public class ItemModelResolver {
+        public static Optional<List<Identifier>> resolveModel(Identifier itemId, ModelTransformationMode renderMode, ItemStack stack, LivingEntity entity) {
+            ItemModelDefinition def = ItemModelRegistry.get(itemId);
+            if (def == null) return Optional.empty();
 
-        return ResolveRecursive.resolve(def, renderMode, stack, entity);
+            return ResolveRecursive.resolve(def, renderMode, stack, entity);
+        }
     }
-}
