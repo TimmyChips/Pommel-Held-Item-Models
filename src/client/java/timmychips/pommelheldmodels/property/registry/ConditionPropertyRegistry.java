@@ -5,6 +5,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
 import timmychips.pommelheldmodels.property.handler.ConditionPropertyHandler;
 import timmychips.pommelheldmodels.property.resolver.condition.*;
+import timmychips.pommelheldmodels.property.resolver.condition.custom.HoveredItemBool;
 import timmychips.pommelheldmodels.property.resolver.condition.custom.SubmergedBool;
 import timmychips.pommelheldmodels.property.type.ConditionDefinition;
 
@@ -29,7 +30,7 @@ public class ConditionPropertyRegistry {
         register(Identifier.of("minecraft:view_entity"), new ViewEntityBool());
 
         // Custom, modded Properties
-        register(Identifier.of("pommel:hovered_item"), new UsingItemBool());
+        register(Identifier.of("pommel:hovered_item"), new HoveredItemBool());
         register(Identifier.of("pommel:submerged"), new SubmergedBool());
     }
 

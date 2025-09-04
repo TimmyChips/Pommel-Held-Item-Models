@@ -6,43 +6,57 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import timmychips.pommelheldmodels.property.type.*;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ResolveRecursive {
 
-    public static final Logger LOGGER = LogUtils.getLogger();
-    public static final Set<String> WARNED_MODELS = new HashSet<>();
-    private static final FabricBakedModelManager bakedModelManager = MinecraftClient.getInstance().getBakedModelManager();
+    private static final Logger LOGGER = LogUtils.getLogger();
+    public static final Set<String> WARNED_MODELS = ConcurrentHashMap.newKeySet();
+    private static final Identifier MISSING_MODEL_ID = Identifier.of("pommel:missingno");
 
-    public static Optional<List<Identifier>> resolve(ItemModelDefinition def, ModelTransformationMode renderMode, ItemStack stack, LivingEntity entity) {
+    /** Lazily fetch the baked model manager */
+    private static FabricBakedModelManager getBakedModelManager() {
+        return MinecraftClient.getInstance().getBakedModelManager();
+    }
+
+    /** Fetch missing model safely */
+    public static BakedModel getMissingModel() {
+        return getBakedModelManager().getModel(MISSING_MODEL_ID);
+    }
+
+    /**
+     * Resolves a definition recursively into a baked model.
+     */
+    public static Optional<BakedModel> resolve(ItemModelDefinition def, ModelTransformationMode renderMode, ItemStack stack, LivingEntity entity) {
+        if (def == null) return Optional.empty();
+        if (renderMode == null) renderMode = ModelTransformationMode.GUI;
+
+        FabricBakedModelManager manager = getBakedModelManager();
+
         if (def instanceof ModelDefinition model) {
-            return Optional.of(List.of(model.model()));
-//            return Optional.of(bakedModelManager.getModel(model.model()));
+            return Optional.of(manager.getModel(model.model()));
         }
 
         if (def instanceof CompositeModelDefinition composite) {
-//            List<BakedModel> unbakedModels = composite.models().stream()
-//                    .map(bakedModelManager::getModel)
+            return Optional.of(composite.bake(manager));
+
+//            List<BakedModel> bakedParts = composite.models().stream()
+//                    .map(manager::getModel)
 //                    .toList();
-            return Optional.of(composite.models());
+//            if (bakedParts != null) return Optional.of(new CompositeItemModel(bakedParts));
+//            return Optional.of(new CompositeItemModel(bakedParts));
         }
 
         if (def instanceof SelectDefinition.Definition select) {
-            String propertyValue = SelectValueResolver.evaluate(
-                    select.property(),
-                    renderMode,
-                    select,
-                    stack,
-                    entity);
+            String propertyValue = SelectValueResolver.evaluate(select.property(), renderMode, select, stack, entity);
 
             if (propertyValue != null) {
                 for (SelectDefinition.Case<Identifier> c : select.cases()) {
@@ -52,62 +66,41 @@ public class ResolveRecursive {
                 }
             }
 
-            if (select.fallback() == null) return missingFallbackModel(stack, select.property()); // Return warning + missing model identifier
-
-            return resolve(select.fallback(), renderMode, stack, entity);
+            return select.fallback() != null
+                    ? resolve(select.fallback(), renderMode, stack, entity)
+                    : missingFallbackModel(stack, select.property());
         }
 
         if (def instanceof ConditionDefinition cond) {
-            boolean result = ConditionValueResolver.evaluate(
-                    cond.property(),
-                    stack,
-                    entity,
-                    cond);
-
+            boolean result = ConditionValueResolver.evaluate(cond.property(), stack, entity, cond);
             return result
                     ? resolve(cond.on_true(), renderMode, stack, entity)
                     : resolve(cond.on_false(), renderMode, stack, entity);
         }
 
         if (def instanceof RangeDispatchDefinition.Definition range) {
-            float value = RangeDispatchValueResolver.evaluate(
-                    range.property(),
-                    range.scale(),
-                    stack,
-                    entity,
-                    range);
+            float value = RangeDispatchValueResolver.evaluate(range.property(), range.scale(), stack, entity, range);
 
-            // Sort entries descending by threshold so highest matches first
+            ModelTransformationMode finalRenderMode = renderMode;
             return range.entries().stream()
-                    .sorted((a, b) -> Float.compare(b.threshold(), a.threshold()))
+                    .sorted((a, b) -> Float.compare(b.threshold(), a.threshold())) // highest threshold first
                     .filter(entry -> value >= entry.threshold())
                     .findFirst()
-                    .map(entry -> resolve(entry.model(), renderMode, stack, entity))
-                    .orElseGet(() -> {
-                        if (range.fallback() != null) {
-                            return resolve(range.fallback(), renderMode, stack, entity);
-                        } else return missingFallbackModel(stack, range.property()); // Return warning + missing model identifier
-                    });
+                    .map(entry -> resolve(entry.model(), finalRenderMode, stack, entity))
+                    .orElseGet(() -> range.fallback() != null
+                            ? resolve(range.fallback(), finalRenderMode, stack, entity)
+                            : missingFallbackModel(stack, range.property()));
         }
 
-        return Optional.empty();
+        return missingFallbackModel(stack, null);
     }
 
-    private static final Identifier MISSING_MODEL = Identifier.of("pommel:missingno");
-//    private static final BakedModel MISSING_MODEL = bakedModelManager.getModel(Identifier.of("pommel:missingno"));
-
-    /**
-     *
-     * @param stack the item stack
-     * @param property the property trying to fetch
-     * @return Missing Identifier to render missing item model
-     */
-    private static Optional<List<Identifier>> missingFallbackModel(ItemStack stack, Identifier property) {
-        Item item = stack.getItem();
-        String key = item.toString() + "|" + property;
-        if (WARNED_MODELS.add(key)) { // true only the first time, will only print once for each unique item
-            LOGGER.warn("No matching range threshold and no fallback model for property '{}', for item: '{}'", property, item);
+    /** Warn once and return missing model if no match found */
+    private static Optional<BakedModel> missingFallbackModel(ItemStack stack, Identifier property) {
+        String key = stack.getItem().toString() + "|" + property;
+        if (WARNED_MODELS.add(key)) {
+            LOGGER.warn("No matching model found for property '{}', item: '{}'", property, stack.getItem());
         }
-        return Optional.of(List.of(MISSING_MODEL)); // Return identifier for RenderItem mixin to use to render missing model (name doesn't matter)
+        return Optional.of(getMissingModel());
     }
 }

@@ -24,9 +24,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import timmychips.pommelheldmodels.ItemModelRegistry;
-import timmychips.pommelheldmodels.property.type.CompositeItemModel;
 
-import java.util.List;
 import java.util.Optional;
 
 import static timmychips.pommelheldmodels.property.resolver.ItemModelResolver.resolveModel;
@@ -81,7 +79,6 @@ public abstract class HeldItemMixin {
     private static BakedModel getCustomModel(ItemStack stack, LivingEntity entity, ModelTransformationMode mode) {
 
         BakedModelManager missingModelManager = MinecraftClient.getInstance().getBakedModelManager();
-        FabricBakedModelManager manager = MinecraftClient.getInstance().getBakedModelManager();
 
         // If item's items model definition has an invalid model type, returns missing item model
         for (Identifier id : ItemModelRegistry.INVALID_MODEL_TYPES) {
@@ -93,27 +90,22 @@ public abstract class HeldItemMixin {
         if (mode == null) mode = ModelTransformationMode.GUI;
 
 //        Optional<Identifier> maybeModel = resolveModel(Registries.ITEM.getId(stack.getItem()), mode, stack, entity); // Get resolved model specified in items.json for the item
-        Optional<List<Identifier>> maybeModel = resolveModel(Registries.ITEM.getId(stack.getItem()), mode, stack, entity);
-        if (maybeModel.isPresent()) {
-            List<Identifier> modelIdList = maybeModel.get();
-
-            if (modelIdList.size() > 1) {
-                List<BakedModel> unbakedModels = modelIdList.stream()
-                    .map(manager::getModel)
-                    .toList();
-                return new CompositeItemModel(unbakedModels);
-            }
-
-            else {
-                Identifier modelId = modelIdList.getFirst();
-
-                if (modelId.toString().equals("pommel:missingno")) { // No Fallback Model specified
-                    return missingModelManager.getMissingModel(); // Item renders as Missing Model
-                }
-
+//        if (maybeModel.isPresent()) {
+//            Identifier modelId = maybeModel.get();
+//
+//            if (modelId.toString().equals("pommel:missingno")) { // No Fallback Model specified
+//                return missingModelManager.getMissingModel(); // Item renders as Missing Model
+//            }
+//
 //            FabricBakedModelManager manager = MinecraftClient.getInstance().getBakedModelManager();
-                return manager.getModel(modelId); // Use Identifier; Can't use ModelIdentifier since our loaded models don't have corresponding ModelIdentifiers
-            }
+//            return manager.getModel(modelId); // Use Identifier; Can't use ModelIdentifier since our loaded models don't have corresponding ModelIdentifiers
+//        }
+
+        Optional<BakedModel> maybeModel = resolveModel(Registries.ITEM.getId(stack.getItem()), mode, stack, entity);
+        if (maybeModel != null && maybeModel.isPresent()) {
+            BakedModel bakedModel = maybeModel.get();
+
+            return bakedModel;
         }
         return null;
     }
