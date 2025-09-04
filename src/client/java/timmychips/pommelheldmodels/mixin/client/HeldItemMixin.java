@@ -6,18 +6,23 @@ import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.model.loading.v1.FabricBakedModelManager;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.item.ItemModels;
 import net.minecraft.client.render.item.ItemRenderer;
 import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.client.render.model.BakedModelManager;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
+import net.minecraft.client.util.ModelIdentifier;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import org.slf4j.Logger;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -34,6 +39,9 @@ import static timmychips.pommelheldmodels.property.resolver.ItemModelResolver.re
 @Mixin(ItemRenderer.class)
 public abstract class HeldItemMixin {
 
+    @Shadow
+    @Final
+    private ItemModels models;
     @Unique
     private static final Logger LOGGER = LogUtils.getLogger();
 
@@ -51,8 +59,11 @@ public abstract class HeldItemMixin {
             cancellable = true)
     private void pommel$overrideGUIModel(ItemStack stack, World world, LivingEntity entity, int seed, CallbackInfoReturnable<BakedModel> cir) {
         BakedModel gui_model = getCustomModel(stack, entity, ModelTransformationMode.GUI);
+        BakedModel gui_model1 = this.models.getModel(Items.SALMON);
         if (gui_model != null) {
             cir.setReturnValue(gui_model);
+            // How render gui_model1??
+            // TODO: render composite item model by calling render model twice for each item/model
         }
     }
 
@@ -65,11 +76,13 @@ public abstract class HeldItemMixin {
                                         int light, int overlay, int seed, CallbackInfo ci) {
 
         BakedModel model = getCustomModel(item, entity, renderMode);
+        BakedModel model1 = this.models.getModel(Items.SALMON);
 
         if (model != null) {
             ItemRenderer self = (ItemRenderer)(Object)this;
             // manually call vanilla rendering method with overridden model
             self.renderItem(item, renderMode, leftHanded, matrices, vertexConsumers, light, overlay, model);
+            self.renderItem(item, renderMode, leftHanded, matrices, vertexConsumers, light, overlay, model1);
             ci.cancel(); // skip original call
         }
     }
