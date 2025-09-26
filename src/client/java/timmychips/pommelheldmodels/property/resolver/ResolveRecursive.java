@@ -29,7 +29,8 @@ public class ResolveRecursive {
 
     /** Fetch missing model safely */
     public static BakedModel getMissingModel() {
-        return getBakedModelManager().getModel(MISSING_MODEL_ID);
+//        return getBakedModelManager().getModel(MISSING_MODEL_ID);
+        return MinecraftClient.getInstance().getBakedModelManager().getMissingModel();
     }
 
     /**
@@ -48,15 +49,24 @@ public class ResolveRecursive {
         if (def instanceof CompositeModelDefinition composite) {
 //            return Optional.of(composite.bake(manager));
 
+            // TODO: Only works loading item models that are registered with FabricModelLoadingPlugin and are Identifiers
+            //  I.e., loading "potato" works since it registers that. However, blaze_powder doesn't (even though the vanilla model is registered)
+            //  Probably need to modify ClientInitializer or ItemModelRegistry classes since they are only registering whatever is in the standard "model" type
+            //  Although, on the wiki it states that 'models' field in the json is "List of Items model objects to render". So perhaps instead of rendering the
+            //      item model, it needs to instead get the items model file? idk im so confused
+            //      Or maybe pasting the code is the solution? Again there's no example I can find
+            //      https://www.reddit.com/r/MinecraftCommands/comments/1iwknnc/multilayered_item_models/
             List<BakedModel> bakedParts = composite.models().stream()
                     .map(manager::getModel)
                     .toList();
+
 //            if (bakedParts != null) return Optional.of(new CompositeItemModel(bakedParts));
 //            return Optional.of(new CompositeItemModel(bakedParts));
             LOGGER.info("Composite models loaded: {}", bakedParts);
 
-            return Optional.of(manager.getModel(composite.models().getFirst())); // works but will only show first item
-//            return Optional.of(manager.getModel(composite.models().getLast()));
+            if (bakedParts.contains(null)) return missingFallbackModel(stack, composite.type()); // If one bakedPart is null, return missing model
+
+            return Optional.of(new CompositeItemModel(bakedParts)); // Returns combined item models
         }
 
         if (def instanceof SelectDefinition.Definition select) {
@@ -96,7 +106,7 @@ public class ResolveRecursive {
                             : missingFallbackModel(stack, range.property()));
         }
 
-        return missingFallbackModel(stack, null);
+        return Optional.empty();
     }
 
     /** Warn once and return missing model if no match found */
@@ -107,4 +117,6 @@ public class ResolveRecursive {
         }
         return Optional.of(getMissingModel());
     }
+
+//    private static Optional<BakedModel> nullCompositeModel(ItemStack stack, )
 }

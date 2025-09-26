@@ -66,13 +66,11 @@ public abstract class HeldItemMixin {
                                         int light, int overlay, int seed, CallbackInfo ci) {
 
         BakedModel model = getCustomModel(item, entity, renderMode);
-        BakedModel model1 = MinecraftClient.getInstance().getBakedModelManager().getModel(Identifier.of("minecraft:stick"));
 
         if (model != null) {
             ItemRenderer self = (ItemRenderer)(Object)this;
             // manually call vanilla rendering method with overridden model
             self.renderItem(item, renderMode, leftHanded, matrices, vertexConsumers, light, overlay, model);
-            self.renderItem(item, renderMode, leftHanded, matrices, vertexConsumers, light, overlay, model1);
             ci.cancel(); // skip original call
         }
     }

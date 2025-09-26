@@ -12,16 +12,21 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.random.Random;
 import org.jetbrains.annotations.Nullable;
+import timmychips.pommelheldmodels.property.resolver.ResolveRecursive;
 
 import java.util.List;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 public record CompositeItemModel(List<BakedModel> modelParts) implements BakedModel {
 
     @Override
     public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction face, Random random) {
         return modelParts.stream()
-                .flatMap(bakedModel -> bakedModel.getQuads(state, face, random).stream())
+                .flatMap(bakedModel -> {
+                        List<BakedQuad> quads = bakedModel.getQuads(state, face, random);
+                        return quads != null ? quads.stream() : ResolveRecursive.getMissingModel().getQuads(state, face, random).stream(); // Stream quads if not null; else return empty
+                })
                 .toList();
     }
 
