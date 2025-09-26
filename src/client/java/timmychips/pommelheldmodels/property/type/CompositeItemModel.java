@@ -1,16 +1,20 @@
 package timmychips.pommelheldmodels.property.type;
 
+import net.fabricmc.fabric.api.renderer.v1.render.RenderContext;
 import net.minecraft.block.BlockState;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.client.render.model.BakedQuad;
 import net.minecraft.client.render.model.json.ModelOverrideList;
 import net.minecraft.client.render.model.json.ModelTransformation;
 import net.minecraft.client.texture.Sprite;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.random.Random;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 public record CompositeItemModel(List<BakedModel> modelParts) implements BakedModel {
 
@@ -38,22 +42,34 @@ public record CompositeItemModel(List<BakedModel> modelParts) implements BakedMo
 
     @Override
     public boolean isBuiltin() {
-        return false;
+        return modelParts.stream().anyMatch(BakedModel::isBuiltin);
     }
 
     @Override
     public Sprite getParticleSprite() {
-        // Use first child for particles
-        return modelParts.getFirst().getParticleSprite();
+        return modelParts.isEmpty()
+                ? MinecraftClient.getInstance().getBakedModelManager().getMissingModel().getParticleSprite()
+                : modelParts.getFirst().getParticleSprite();
     }
 
     @Override
     public ModelTransformation getTransformation() {
-        return modelParts.isEmpty() ? ModelTransformation.NONE : modelParts.getFirst().getTransformation();
+        return modelParts.isEmpty()
+                ? ModelTransformation.NONE
+                : modelParts.getFirst().getTransformation();
     }
 
     @Override
     public ModelOverrideList getOverrides() {
-        return modelParts.isEmpty() ? ModelOverrideList.EMPTY : modelParts.getFirst().getOverrides();
+        return modelParts.isEmpty()
+                ? ModelOverrideList.EMPTY
+                : modelParts.getFirst().getOverrides();
+    }
+
+    @Override
+    public void emitItemQuads(ItemStack stack, Supplier<Random> randomSupplier, RenderContext context) {
+        modelParts.getFirst().emitItemQuads(stack, randomSupplier, context);
+        modelParts.getLast().emitItemQuads(stack, randomSupplier, context);
+        context.popTransform();
     }
 }

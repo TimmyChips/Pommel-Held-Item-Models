@@ -5,7 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.fabricmc.fabric.api.client.model.loading.v1.FabricBakedModelManager;
 import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.util.Identifier;
-import org.spongepowered.asm.mixin.Unique;
+import timmychips.pommelheldmodels.property.resolver.ResolveRecursive;
 
 import java.util.List;
 
@@ -24,9 +24,11 @@ public record CompositeModelDefinition(Identifier type, List<Identifier> models)
     }
 
     public BakedModel bake(FabricBakedModelManager manager) {
-        List<BakedModel> bakedParts = models.stream()
-                .map(manager::getModel)
-                .toList();
-        return new CompositeItemModel(bakedParts);
+//        List<BakedModel> bakedParts = models.stream()
+//                .map(manager::getModel)
+//                .toList();
+//        CompositeItemModel compositeItemModel = new CompositeItemModel(bakedParts);
+//        if (compositeItemModel != null) return compositeItemModel;
+        return ResolveRecursive.getMissingModel();
     }
 }

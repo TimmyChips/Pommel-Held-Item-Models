@@ -46,13 +46,17 @@ public class ResolveRecursive {
         }
 
         if (def instanceof CompositeModelDefinition composite) {
-            return Optional.of(composite.bake(manager));
+//            return Optional.of(composite.bake(manager));
 
-//            List<BakedModel> bakedParts = composite.models().stream()
-//                    .map(manager::getModel)
-//                    .toList();
+            List<BakedModel> bakedParts = composite.models().stream()
+                    .map(manager::getModel)
+                    .toList();
 //            if (bakedParts != null) return Optional.of(new CompositeItemModel(bakedParts));
 //            return Optional.of(new CompositeItemModel(bakedParts));
+            LOGGER.info("Composite models loaded: {}", bakedParts);
+
+            return Optional.of(manager.getModel(composite.models().getFirst())); // works but will only show first item
+//            return Optional.of(manager.getModel(composite.models().getLast()));
         }
 
         if (def instanceof SelectDefinition.Definition select) {

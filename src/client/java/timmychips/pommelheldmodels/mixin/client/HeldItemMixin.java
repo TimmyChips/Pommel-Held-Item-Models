@@ -13,6 +13,7 @@ import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
@@ -65,11 +66,13 @@ public abstract class HeldItemMixin {
                                         int light, int overlay, int seed, CallbackInfo ci) {
 
         BakedModel model = getCustomModel(item, entity, renderMode);
+        BakedModel model1 = MinecraftClient.getInstance().getBakedModelManager().getModel(Identifier.of("minecraft:stick"));
 
         if (model != null) {
             ItemRenderer self = (ItemRenderer)(Object)this;
             // manually call vanilla rendering method with overridden model
             self.renderItem(item, renderMode, leftHanded, matrices, vertexConsumers, light, overlay, model);
+            self.renderItem(item, renderMode, leftHanded, matrices, vertexConsumers, light, overlay, model1);
             ci.cancel(); // skip original call
         }
     }
