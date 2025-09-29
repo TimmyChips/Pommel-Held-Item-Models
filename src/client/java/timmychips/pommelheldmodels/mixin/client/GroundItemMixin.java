@@ -16,7 +16,7 @@ import timmychips.pommelheldmodels.objects.GroundItemSubmerged;
 import timmychips.pommelheldmodels.HeldItemPredicate;
 
 @Environment(EnvType.CLIENT)
-@Mixin(ItemEntityRenderer.class)
+@Mixin(value = ItemEntityRenderer.class, priority = 1)
 public class GroundItemMixin {
 
     // Affects item render predicate to item entities dropped onto the ground (i.e. not THROWN entities)
