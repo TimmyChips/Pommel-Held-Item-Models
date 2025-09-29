@@ -3,6 +3,7 @@ package timmychips.pommelheldmodels.mixin.client;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.entity.ItemEntityRenderer;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.client.util.math.MatrixStack;
@@ -16,7 +17,7 @@ import timmychips.pommelheldmodels.objects.GroundItemSubmerged;
 import timmychips.pommelheldmodels.HeldItemPredicate;
 
 @Environment(EnvType.CLIENT)
-@Mixin(ItemEntityRenderer.class)
+@Mixin(value = ItemEntityRenderer.class, priority = 1)
 public class GroundItemMixin {
 
     // Affects item render predicate to item entities dropped onto the ground (i.e. not THROWN entities)

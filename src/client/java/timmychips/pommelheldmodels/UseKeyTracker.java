@@ -5,6 +5,7 @@ import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.KeyBinding;
@@ -13,6 +14,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
 import org.slf4j.Logger;
@@ -70,7 +72,11 @@ public class UseKeyTracker {
                 buf.writeBoolean(true);
 
                 if (!defaultStack.isEmpty()) {
-                    ClientPlayNetworking.send(PommelNetworking.USE_KEY_C2S_ID, buf); // send packet to server
+                    for (PlayerEntity otherPlayer : world.getPlayers()) {
+                        if (!otherPlayer.getUuid().equals(playerUuid)) {
+                            ServerPlayNetworking.send((ServerPlayerEntity) otherPlayer, PommelNetworking.USE_KEY_S2C_ID, buf);
+                        }
+                    }
                 }
             }
 
