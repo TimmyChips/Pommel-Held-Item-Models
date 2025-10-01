@@ -52,21 +52,25 @@ public class ResolveRecursive {
             // TODO: Only works loading item models that are registered with FabricModelLoadingPlugin and are Identifiers
             //  I.e., loading "potato" works since it registers that. However, blaze_powder doesn't (even though the vanilla model is registered)
             //  Probably need to modify ClientInitializer or ItemModelRegistry classes since they are only registering whatever is in the standard "model" type
-            //  Although, on the wiki it states that 'models' field in the json is "List of Items model objects to render". So perhaps instead of rendering the
-            //      item model, it needs to instead get the items model file? idk im so confused
-            //      Or maybe pasting the code is the solution? Again there's no example I can find
+            //  Need to switch it so it can handle item models definition json. I.e. you don't specify the model file, but rather put the json code of the model(s)
+            //  and it will combine them into one model
             //      https://www.reddit.com/r/MinecraftCommands/comments/1iwknnc/multilayered_item_models/
-            List<BakedModel> bakedParts = composite.models().stream()
-                    .map(manager::getModel)
-                    .toList();
+//            List<BakedModel> bakedParts = composite.models().stream()
+//                    .map(manager::getModel)
+//                    .toList();
+//            List<BakedModel> bakedParts = composite.models().stream()
+//                    .map(childDefiniton -> childDefiniton)
+//                    .toList();
+//
+//
+////            if (bakedParts != null) return Optional.of(new CompositeItemModel(bakedParts));
+////            return Optional.of(new CompositeItemModel(bakedParts));
+//            LOGGER.info("Composite models loaded: {}", bakedParts);
+//
+//            if (bakedParts.isEmpty()) return missingFallbackModel(stack, composite.type()); // If one bakedPart is null, return missing model
+            if (composite.models().isEmpty()) return missingFallbackModel(stack, composite.type());
 
-//            if (bakedParts != null) return Optional.of(new CompositeItemModel(bakedParts));
-//            return Optional.of(new CompositeItemModel(bakedParts));
-            LOGGER.info("Composite models loaded: {}", bakedParts);
-
-            if (bakedParts.contains(null)) return missingFallbackModel(stack, composite.type()); // If one bakedPart is null, return missing model
-
-            return Optional.of(new CompositeItemModel(bakedParts)); // Returns combined item models
+            return Optional.of(new CompositeItemModel(composite.models(), renderMode, stack, entity)); // Returns combined item models
         }
 
         if (def instanceof SelectDefinition.Definition select) {
