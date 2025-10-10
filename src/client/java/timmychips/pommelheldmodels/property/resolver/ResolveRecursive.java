@@ -43,7 +43,8 @@ public class ResolveRecursive {
         FabricBakedModelManager manager = getBakedModelManager();
 
         if (def instanceof ModelDefinition model) {
-            return Optional.of(manager.getModel(model.model()));
+            BakedModel bakedModel = manager.getModel(model.model());
+            return bakedModel == null ? Optional.empty() : Optional.of(bakedModel);
         }
 
         if (def instanceof CompositeModelDefinition composite) {
@@ -70,6 +71,7 @@ public class ResolveRecursive {
 //            if (bakedParts.isEmpty()) return missingFallbackModel(stack, composite.type()); // If one bakedPart is null, return missing model
             if (composite.models().isEmpty()) return missingFallbackModel(stack, composite.type());
 
+//            return missingFallbackModel(stack, composite.type());
             return Optional.of(new CompositeItemModel(composite.models(), renderMode, stack, entity)); // Returns combined item models
         }
 

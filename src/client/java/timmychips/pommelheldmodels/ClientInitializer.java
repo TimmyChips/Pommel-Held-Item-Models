@@ -26,6 +26,35 @@ public class ClientInitializer implements ClientModInitializer {
 	public static final Logger LOGGER = LogUtils.getLogger();
 	public static Collection<Identifier> modelIds;
 
+    private static void registerResources(String folderName, ResourceManager manager) {
+        for (Identifier id : manager.findResources(folderName, path -> path.getPath().endsWith(".json")).keySet()) {
+            try (InputStream stream = manager.getResource(id).get().getInputStream()) {
+                JsonElement json = JsonParser.parseReader(new InputStreamReader(stream));
+
+                JsonObject root = json.getAsJsonObject();
+                JsonElement modelElement = root.get("model");
+
+                if (modelElement != null && modelElement.isJsonObject()) {
+                    ItemModelTypes.CODEC.decode(JsonOps.INSTANCE, modelElement)
+                            .resultOrPartial(error -> LOGGER.warn("[Pommel] Failed to decode model definition for {}: {}", id, error))
+                            .ifPresent(pair -> {
+                                // Clean up path to match item ID (remove "items/" and ".json")
+                                String cleanPath = id.getPath().substring((folderName + "/").length(), id.getPath().length() - ".json".length());
+                                Identifier itemId = Identifier.of(id.getNamespace(), cleanPath);
+
+                                ItemModelRegistry.put(itemId, pair.getFirst()); // don’t forget to store it!
+                                LOGGER.info("[Pommel] Successfully decoded item model definition for: {}", itemId);
+                            });
+                } else {
+                    LOGGER.warn("[Pommel] No 'model' field found in item JSON for {}", id);
+                }
+
+            } catch (Exception e) {
+                LOGGER.warn("[Pommel] Failed to parse item definition for {}", id, e);
+            }
+        }
+    }
+
 	@Override
 	public void onInitializeClient() {
 		// Mod's Client Entrypoint
@@ -51,32 +80,8 @@ public class ClientInitializer implements ClientModInitializer {
 			ConditionPropertyRegistry.init();
 			SelectPropertyRegistry.init();
 
-			for (Identifier id : manager.findResources("items", path -> path.getPath().endsWith(".json")).keySet()) {
-				try (InputStream stream = manager.getResource(id).get().getInputStream()) {
-					JsonElement json = JsonParser.parseReader(new InputStreamReader(stream));
-
-                    JsonObject root = json.getAsJsonObject();
-                    JsonElement modelElement = root.get("model");
-
-                    if (modelElement != null && modelElement.isJsonObject()) {
-                        ItemModelTypes.CODEC.decode(JsonOps.INSTANCE, modelElement)
-                                .resultOrPartial(error -> LOGGER.warn("[Pommel] Failed to decode model definition for {}: {}", id, error))
-                                .ifPresent(pair -> {
-                                    // Clean up path to match item ID (remove "items/" and ".json")
-                                    String cleanPath = id.getPath().substring("items/".length(), id.getPath().length() - ".json".length());
-                                    Identifier itemId = Identifier.of(id.getNamespace(), cleanPath);
-
-                                    ItemModelRegistry.put(itemId, pair.getFirst()); // don’t forget to store it!
-                                    LOGGER.info("[Pommel] Successfully decoded item model definition for: {}", itemId);
-                                });
-                    } else {
-                        LOGGER.warn("[Pommel] No 'model' field found in item JSON for {}", id);
-                    }
-
-				} catch (Exception e) {
-					LOGGER.warn("[Pommel] Failed to parse item definition for {}", id, e);
-				}
-			}
+			registerResources("items", manager);
+            registerResources("pommel_items_override", manager); // The resource folder where you should use modded properties
 
 			modelIds = ItemModelRegistry.getAllModelDependencies();
 //			modelIds.forEach(id -> LOGGER.info("[Pommel] Registering model dependency: {}", id));
