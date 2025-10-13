@@ -5,6 +5,7 @@ import net.fabricmc.fabric.api.client.model.loading.v1.FabricBakedModelManager;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
@@ -44,6 +45,7 @@ public class ResolveRecursive {
 
         if (def instanceof ModelDefinition model) {
             BakedModel bakedModel = manager.getModel(model.model());
+            if (bakedModel != null) bakedModel.getTransformation().getTransformation(renderMode).apply(false, new MatrixStack());
             return bakedModel == null ? Optional.empty() : Optional.of(bakedModel);
         }
 

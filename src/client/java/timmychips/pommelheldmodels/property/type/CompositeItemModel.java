@@ -110,80 +110,15 @@ public record CompositeItemModel(List<ItemModelDefinition> modelParts, ModelTran
     // TODO only gets transformations from the first model, need to do per-part transformations
     @Override
     public ModelTransformation getTransformation() {
-        List<BakedModel> childTransforms = modelParts.stream()
+        List<BakedModel> children = modelParts.stream()
                 .map(part -> ResolveRecursive.resolve(part, renderMode, stack, entity)
                         .orElse(ResolveRecursive.getMissingModel()))
                 .toList();
 
-//        return copyTransformations(childTransforms.getFirst());
-//        return ModelTransformation.NONE;
-
-//        for (BakedModel bakedModel : childTransforms) {
-//            return copyTransformations(bakedModel);
-//        }
-
-        return ModelTransformation.NONE;
-
-        /*
-        for (BakedModel bakedModel : childTransforms) {
-                ClientInitializer.LOGGER.info("MODEL TRANSFORM POSITION: {}", bakedModel.getTransformation().firstPersonLeftHand.translation);
-                MatrixStack matrixStack = new MatrixStack();
-                bakedModel.getTransformation().firstPersonLeftHand.apply(false, matrixStack);
-                return bakedModel.getTransformation();
+        for (BakedModel part : children) {
+            return copyTransformations(part);
         }
-
-        if (childTransforms.isEmpty()) {
-            ClientInitializer.LOGGER.info("childTransforms is empty!");
-            return ModelTransformation.NONE;
-        }
-
         return ModelTransformation.NONE;
-
-         */
-
-
-
-//        childTransforms.getFirst().getTransformation();
-//        // Helper: pick the first non-identity transform across all children
-//        java.util.function.Function<ModelTransformationMode, Transformation> merge = mode -> {
-//            Transformation result = Transformation.IDENTITY;
-//            for (BakedModel baked : childTransforms) {
-//                Transformation next = baked.getTransformation().getTransformation(mode);
-//                if (next != Transformation.IDENTITY) {
-//                    result = result.compose(next);
-//                    // or next.compose(result) depending on desired order
-//                }
-//            }
-//            return result;
-//        };
-
-//        // worksKinda
-//        return childTransforms.getFirst().getTransformation();
-
-//        return modelParts.stream()
-//                .map(part -> ResolveRecursive.resolve(part, renderMode, stack, entity)
-//                        .orElse(ResolveRecursive.getMissingModel()))
-//                .map(bakedModel -> copyTransformations(bakedModel));
-
-        //return copyTransformations(this);
-
-
-//        ClientInitializer.LOGGER.info("Child Transforms:" + copyTransformations(childTransforms));
-//        for (BakedModel bakedModel : childTransforms) {
-//            return copyTransformations(bakedModel);
-//        }
-
-//        return new ModelTransformation(
-//                pick.apply(ModelTransformationMode.THIRD_PERSON_LEFT_HAND),
-//                pick.apply(ModelTransformationMode.THIRD_PERSON_RIGHT_HAND),
-//                pick.apply(ModelTransformationMode.FIRST_PERSON_LEFT_HAND),
-//                pick.apply(ModelTransformationMode.FIRST_PERSON_RIGHT_HAND),
-//                pick.apply(ModelTransformationMode.HEAD),
-//                pick.apply(ModelTransformationMode.GUI),
-//                pick.apply(ModelTransformationMode.GROUND),
-//                pick.apply(ModelTransformationMode.FIXED)
-//        );
-//        return ModelTransformation.NONE;
     }
 
     @Override
@@ -330,58 +265,41 @@ public record CompositeItemModel(List<ItemModelDefinition> modelParts, ModelTran
 
     @Override
     public void emitItemQuads(ItemStack stack, Supplier<Random> randomSupplier, RenderContext context) {
-        List<Transformation> transforms = new ArrayList<>();
         List<BakedModel> bakedModels = modelParts.stream()
                 .map(part -> ResolveRecursive.resolve(part, renderMode, stack, entity)
                         .orElse(ResolveRecursive.getMissingModel()))
                 .toList();
 
-        MatrixStack matrixStack = new MatrixStack();
-
-        // Merge Transformation test
-        Matrix4f result = new Matrix4f();
-        result.identity();
-
+        List<Transformation> transforms = new ArrayList<>();
         for (BakedModel part : bakedModels) {
-            Transformation partTransform = part.getTransformation().getTransformation(renderMode);
-            transforms.add(partTransform);
-            // Testing with copy transforms; doesnt do anything different
-//            ModelTransformation modelTransformation = copyTransformations(part);
-//            transforms.add(modelTransformation.getTransformation(renderMode));
-
-            Matrix4f merged = mergeTransformations(transforms);
-//            boolean leftHanded =  MinecraftClient.getInstance().options.getSyncedOptions().mainArm().toString().contains("left");
-            boolean leftHanded = entity.getOffHandStack().equals(stack);
-            if (renderMode.isFirstPerson() && leftHanded) {
-                merged.scale(-1.0F, 1.0F, 1.0F); // mirror X
-            }
-
-            matrixStack.push();
-//            partTransform.apply(false, matrixStack);
-            Matrix4f matrix4f = matrixStack.peek().getPositionMatrix();
-//            matrix4f.translate(0.25F, -0.1F, -1.5F);
-
-            context.pushTransform(quad -> {
-                for (int i = 0; i < 4; i++) {
-                    Vector4f pos = new Vector4f(quad.x(i), quad.y(i), quad.z(i), 1.0F);
-//                    pos.mul(matrix4f);
-                    pos.mul(merged);
-                    quad.pos(i, pos.x(), pos.y(), pos.z());
-//                    quad.pos(i, partTransform.translation.x, partTransform.translation.y, partTransform.translation.z);
-                }
-                return true;
-            });
-
-            part.emitItemQuads(stack, randomSupplier, context);
-
-            context.popTransform();
-            matrixStack.pop();
+            ModelTransformation childTx = part.getTransformation();
+            Transformation t = childTx.getTransformation(renderMode);
+            transforms.add(t);
         }
 
-//        for (BakedModel part : bakedModels) {
-//            part.emitItemQuads(stack, randomSupplier, context);
-//            context.popTransform();
-//        }
+        // Merge all transformations into a single matrix
+        Matrix4f merged = mergeTransformations(transforms);
 
+        // Apply it once to the context
+//        context.pushTransform(quad -> {
+//            for (int i = 0; i < 4; i++) {
+//                Vector4f pos = new Vector4f(quad.x(i), quad.y(i), quad.z(i), 1.0f);
+//                pos.mul(merged);
+//                quad.pos(i, pos.x(), pos.y(), pos.z());
+//            }
+//            return true;
+//        });
+        MatrixStack matrixStack = new MatrixStack();
+        MatrixStack.Entry entry = matrixStack.peek().copy();
+
+        // test pushTransform
+
+        // Emit all quads
+        for (BakedModel part : bakedModels) {
+            part.emitItemQuads(stack, randomSupplier, context);
+        }
+
+        // Needs to be here if you push the transform
+//        context.popTransform();
     }
 }
