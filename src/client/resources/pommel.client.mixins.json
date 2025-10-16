@@ -5,7 +5,8 @@
   "client": [
     "FlyingItemMixin",
     "GroundItemMixin",
-    "HeldItemMixin"
+    "HeldItemMixin",
+    "ProjectileEntity2DProjMixin"
   ],
   "injectors": {
     "defaultRequire": 1

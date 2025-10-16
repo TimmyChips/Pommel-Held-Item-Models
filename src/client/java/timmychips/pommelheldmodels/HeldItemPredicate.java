@@ -2,6 +2,7 @@ package timmychips.pommelheldmodels;
 
 import net.minecraft.client.item.ModelPredicateProviderRegistry;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import timmychips.pommelheldmodels.objects.GroundItemSubmerged;
@@ -12,7 +13,7 @@ import java.util.Arrays;
 public class HeldItemPredicate {
     public static ModelTransformationMode currentItemRenderMode;
     public static boolean itemInOffhand = false;
-    public static boolean isFlyingItem = false;
+    public static boolean isProjectile = false; // for thrown eggs, snowballs, and projectiles like arrows
 //    private static final Logger LOGGER = LogUtils.getLogger();
 
     private static final String namespace = "pommel";
@@ -22,12 +23,13 @@ public class HeldItemPredicate {
     private static final String render_offhand = "is_offhand";
     private static final String render_fixed = "is_fixed";
     private static final String render_ground = "is_ground";
-    private static final String render_thrown = "is_thrown";
+    private static final String render_projectile = "is_projectile";
     private static final String render_head = "is_head";
     private static final String render_using = "is_using";
     private static final String render_submerged = "is_submerged";
     private static final String render_use = "item_use";
     private static final String render_enchanted = "is_enchanted";
+    private static final String render_shield_banner = "shield_has_banner"; // If shield has a banner pattern or base color component
 
     private static final List<ModelTransformationMode> renderModeHands = Arrays.asList(
             ModelTransformationMode.FIRST_PERSON_LEFT_HAND,
@@ -60,12 +62,13 @@ public class HeldItemPredicate {
         predicateMap.addToMap(render_submerged, renderModeHands);
         predicateMap.addToMap(render_fixed, ModelTransformationMode.FIXED);
         predicateMap.addToMap(render_ground, ModelTransformationMode.GROUND);
-        predicateMap.addToMap(render_thrown, ModelTransformationMode.GROUND);
+        predicateMap.addToMap(render_projectile, ModelTransformationMode.GROUND);
         predicateMap.addToMap(render_head, ModelTransformationMode.HEAD);
         predicateMap.addToMap(render_first_thirdperson, renderModeHands);
         predicateMap.addToMap(render_misc_entity_holding, ModelTransformationMode.GROUND);
         predicateMap.addToMap(render_use, renderAny);
         predicateMap.addToMap(render_enchanted, renderAny);
+        predicateMap.addToMap(render_shield_banner, renderAny);
     }
 
     public static void registerHeldModelPredicate() {
@@ -79,8 +82,11 @@ public class HeldItemPredicate {
 
                 String predicate = entry.getKey().getPath();
 
+        /// For all render modes for LivingEntities and Entities
             // Predicate effects all entities (such as item entities) in any render mode (e.g. gui)
                 if (predicate.equals(render_enchanted)) return StackIsEnchanted.getValue(itemStack);
+            // Predicate if shield has banner attached to it
+                if (predicate.equals(render_shield_banner)) return ShieldHasBanner.getValue(itemStack);
 
             // Predicate only affects living entities in any render mode (e.g. gui)
                 if (livingEntity != null) {
@@ -93,8 +99,11 @@ public class HeldItemPredicate {
 
             // For when ItemEntity stack is in submerged map
                 if (predicate.equals(render_submerged)) return GroundItemSubmerged.SUBMERGED_MAP.contains(itemStack) ? 1.0F : 0.0F;
+            // Compat with 2D Projectiles mod; Makes projectiles like arrows use specified item model
+                if (isProjectile && currentItemRenderMode == null
+                        || currentItemRenderMode == ModelTransformationMode.GROUND) return predicate.equals(render_projectile) ? 1.0F : 0.0F;
 
-
+        /// For all non-gui render modes
             // Predicate effects any render mode that is not gui
                 if (currentItemRenderMode == null) return 0.0F; // Return 0 if render mode is null
                 // Do this after those other predicates so that those can render in the gui
@@ -104,8 +113,8 @@ public class HeldItemPredicate {
                                                                                                                             // Note that this makes is_held and is_offhand both return 1
                     case render_first_thirdperson -> firstThirdPersonCheck(); // Return float based for first_thirdperson predicate if render mode is first or third person
                     case render_misc_entity_holding -> livingEntity != null && entry.getValue().contains(currentItemRenderMode) ? 1.0F : 0.0F;
-                    case render_thrown -> isFlyingItem && entry.getValue().contains(currentItemRenderMode) ? 1.0F : 0.0F; // For flying/thrown items
-                    case render_ground -> !isFlyingItem && livingEntity == null && entry.getValue().contains(currentItemRenderMode) ? 1.0F : 0.0F; // Makes it so thrown items don't use the is_ground model
+                    case render_projectile -> isProjectile && entry.getValue().contains(currentItemRenderMode) ? 1.0F : 0.0F; // For flying/thrown items that use Ground/valid render mode
+                    case render_ground -> !isProjectile && livingEntity == null && entry.getValue().contains(currentItemRenderMode) ? 1.0F : 0.0F; // Makes it so thrown items don't use the is_ground model
                     default -> entry.getValue().contains(currentItemRenderMode) ? 1.0F : 0.0F; // Return 1 if whitelisted for all other predicates
                 };
             });
