@@ -19,6 +19,6 @@ public class FlyingItemMixin<T extends Entity & FlyingItemEntity> {
 
     @Inject(method = "render(Lnet/minecraft/entity/Entity;FFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V", at = @At(value = "HEAD"))
     public void renderFlying(T entity, float yaw, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, CallbackInfo ci) {
-        HeldItemPredicate.isFlyingItem = true;
+        HeldItemPredicate.isProjectile = true;
     }
 }

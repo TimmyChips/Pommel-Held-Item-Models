@@ -1,6 +1,5 @@
 package timmychips.pommelheldmodels;
 
-import net.minecraft.component.ComponentChanges;
 import net.minecraft.component.ComponentType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ItemEnchantmentsComponent;
@@ -18,17 +17,9 @@ public class StackIsEnchanted {
 
         // Checks if stack enchantment component has changed from default, or if enchanted book has stored enchantment component
         if (stack.contains(enchantments) || hasStoredEnchantments) {
-            return componentHasChanged(enchantments, stack) ||
+            return ComponentHelper.componentHasChanged(enchantments, stack) ||
                     hasStoredEnchantments ? 1F : 0F;
         }
         else return 0F;
-    }
-
-    // Needed since all items technically have enchantment component, so need to check if component has changed
-    private static boolean componentHasChanged(ComponentType<?> componentType, ItemStack stack) {
-        ComponentChanges componentChanges = stack.getComponentChanges();
-
-        return componentChanges.entrySet().stream()
-                .anyMatch(entry -> entry.getKey().equals(componentType));
     }
 }
