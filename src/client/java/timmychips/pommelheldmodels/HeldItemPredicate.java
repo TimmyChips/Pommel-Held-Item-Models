@@ -1,10 +1,12 @@
 package timmychips.pommelheldmodels;
 
+import com.mojang.logging.LogUtils;
 import net.minecraft.client.item.ModelPredicateProviderRegistry;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
-import net.minecraft.client.world.ClientWorld;
+import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
+import org.slf4j.Logger;
 import timmychips.pommelheldmodels.objects.GroundItemSubmerged;
 import timmychips.pommelheldmodels.objects.PredicateRenderModeMap;
 import java.util.List;
@@ -14,7 +16,7 @@ public class HeldItemPredicate {
     public static ModelTransformationMode currentItemRenderMode;
     public static boolean itemInOffhand = false;
     public static boolean isProjectile = false; // for thrown eggs, snowballs, and projectiles like arrows
-//    private static final Logger LOGGER = LogUtils.getLogger();
+    public static final Logger LOGGER = LogUtils.getLogger();
 
     private static final String namespace = "pommel";
     private static final String render_held = "is_held";
@@ -99,39 +101,64 @@ public class HeldItemPredicate {
 
             // For when ItemEntity stack is in submerged map
                 if (predicate.equals(render_submerged)) return GroundItemSubmerged.SUBMERGED_MAP.contains(itemStack) ? 1.0F : 0.0F;
-            // Compat with 2D Projectiles mod; Makes projectiles like arrows use specified item model
-                if (isProjectile && currentItemRenderMode == null
-                        || currentItemRenderMode == ModelTransformationMode.GROUND) return predicate.equals(render_projectile) ? 1.0F : 0.0F;
 
         /// For all non-gui render modes
             // Predicate effects any render mode that is not gui
                 if (currentItemRenderMode == null) return 0.0F; // Return 0 if render mode is null
                 // Do this after those other predicates so that those can render in the gui
 
+                boolean isItemEntity = itemStack.getHolder() instanceof ItemEntity; // Gets stack holder entity and checks if it's the holder is an item entity
+
                 return switch (predicate) {
                     case render_offhand -> itemInOffhand && entry.getValue().contains(currentItemRenderMode) ? 1.0F : 0.0F; // If in offhand, return 1 for the offhand predicate
                                                                                                                             // Note that this makes is_held and is_offhand both return 1
                     case render_first_thirdperson -> firstThirdPersonCheck(); // Return float based for first_thirdperson predicate if render mode is first or third person
                     case render_misc_entity_holding -> livingEntity != null && entry.getValue().contains(currentItemRenderMode) ? 1.0F : 0.0F;
-                    case render_projectile -> isProjectile && entry.getValue().contains(currentItemRenderMode) ? 1.0F : 0.0F; // For flying/thrown items that use Ground/valid render mode
-                    case render_ground -> !isProjectile && livingEntity == null && entry.getValue().contains(currentItemRenderMode) ? 1.0F : 0.0F; // Makes it so thrown items don't use the is_ground model
+                    // Compat with 2D Projectiles mod; Makes projectiles like arrows use specified item model as well
+                    case render_projectile -> {
+                        if (isProjectile && !isItemEntity && livingEntity == null) { // For non- LivingEntity's nor an ItemEntity's to make sure its only projectiles
+                            isProjectile = false; // Reset variable
+                            yield 1F;
+                        }
+                        else yield 0F;
+                    } // For thrown item entities and projectiles
+                    case render_ground -> isItemEntity && livingEntity == null && entry.getValue().contains(currentItemRenderMode) ? 1.0F : 0.0F; // Makes it so thrown items don't use the is_ground model
                     default -> entry.getValue().contains(currentItemRenderMode) ? 1.0F : 0.0F; // Return 1 if whitelisted for all other predicates
                 };
             });
         }
     }
 
+    /**
+     *
+     * @param entity Current LivingEntity
+     * @param stack Current ItemStack
+     * @return True/False if the ItemStack field is actively held in main hand or offhand
+     */
     public static boolean matchesItemInHand(LivingEntity entity, ItemStack stack) {
         ItemStack currentItem = entity.getMainHandStack().isEmpty() ? entity.getOffHandStack() : entity.getMainHandStack();
         return stack.toString().equals(currentItem.toString());
     }
 
+    /**
+     * Predicate for if item model is in first person or third person
+     *
+     * @return 0.5F if current render mode is first person, or 1F if in third person. 0F if neither.
+     */
     private static float firstThirdPersonCheck() {
         if (currentItemRenderMode.isFirstPerson()) return 0.5F;
         else if (renderModeThird.contains(currentItemRenderMode)) return 1F;
         else return 0F;
     }
 
+    /**
+     *
+     * Change predicate if entity is using an interactable item that has a use time (shield, food, bow, etc.)
+     *
+     * @param stack Current ItemStack
+     * @param user The LivingEntity who is holding the item
+     * @return Current ItemStack use normalized from 0 to 1
+     */
     private static float itemUseRemaining(ItemStack stack, LivingEntity user) {
         if (user != null && ItemStack.areEqual(stack, user.getActiveItem())) {
 

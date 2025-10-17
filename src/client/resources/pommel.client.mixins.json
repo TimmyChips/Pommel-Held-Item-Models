@@ -3,10 +3,9 @@
   "package": "timmychips.pommelheldmodels.mixin.client",
   "compatibilityLevel": "JAVA_21",
   "client": [
-    "FlyingItemMixin",
     "GroundItemMixin",
     "HeldItemMixin",
-    "ProjectileEntity2DProjMixin"
+    "ProjectileEntityMixin"
   ],
   "injectors": {
     "defaultRequire": 1

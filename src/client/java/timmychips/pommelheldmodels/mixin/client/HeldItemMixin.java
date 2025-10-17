@@ -52,7 +52,6 @@ public abstract class HeldItemMixin {
     @Inject(method = "renderItem(Lnet/minecraft/item/ItemStack;Lnet/minecraft/client/render/model/json/ModelTransformationMode;ZLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;IILnet/minecraft/client/render/model/BakedModel;)V", at = @At(value = "HEAD"))
     private void pommel$renderBaseItem(ItemStack stack, ModelTransformationMode renderMode, boolean leftHanded, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, BakedModel model, CallbackInfo ci) {
         HeldItemPredicate.currentItemRenderMode = null; // Resets the item predicate so it renders the 2d model
-        HeldItemPredicate.isProjectile = false; // Resets flying item field
     }
 
     // Validates if the player's currently held item matches item used map
