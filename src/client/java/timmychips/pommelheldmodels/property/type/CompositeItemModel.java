@@ -22,6 +22,7 @@ import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
+import org.spongepowered.asm.mixin.Unique;
 import timmychips.pommelheldmodels.ClientInitializer;
 import timmychips.pommelheldmodels.property.resolver.ResolveRecursive;
 
@@ -30,7 +31,27 @@ import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-public record CompositeItemModel(List<ItemModelDefinition> modelParts, ModelTransformationMode renderMode, ItemStack stack, LivingEntity entity) implements BakedModel {
+public class CompositeItemModel implements BakedModel {
+
+    private final List<ItemModelDefinition> modelParts;
+    private final ModelTransformationMode renderMode;
+    private final ItemStack stack;
+    private final LivingEntity entity;
+    public static ArrayList<BakedModel> models;
+
+    public CompositeItemModel(List<ItemModelDefinition> modelDefinitions, ModelTransformationMode renderMode, ItemStack stack, LivingEntity entity) {
+        this.modelParts = modelDefinitions;
+        this.renderMode = renderMode;
+        this.stack = stack;
+        this.entity = entity;
+    }
+
+    public List<BakedModel> getModels() {
+        return modelParts.stream()
+                .map(part -> ResolveRecursive.resolve(part, renderMode, stack, entity)
+                        .orElse(ResolveRecursive.getMissingModel()))
+                .toList();
+    }
 
     @Override
     public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction face, Random random) {
