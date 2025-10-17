@@ -1,24 +1,15 @@
 package timmychips.pommelheldmodels;
 
-import net.minecraft.component.ComponentType;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.BannerPatternsComponent;
+import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.DyeColor;
+import net.minecraft.nbt.NbtCompound;
 
 public class ShieldHasBanner {
     static float getValue(ItemStack stack) {
-        ComponentType<BannerPatternsComponent> bannerPatterns = DataComponentTypes.BANNER_PATTERNS; // Banner patterns on shield
-        ComponentType<DyeColor> baseColor = DataComponentTypes.BASE_COLOR; // Base dye color on shield
-
-        boolean hasBannerPatterns = stack.contains(bannerPatterns);
-        boolean hasBaseColor = stack.contains(baseColor);
-
-        if (hasBannerPatterns || hasBaseColor) {
-            return ComponentHelper.componentHasChanged(bannerPatterns, stack) ||
-                    ComponentHelper.componentHasChanged(baseColor, stack) ? 1F : 0F;
+        NbtCompound nbt = BlockItem.getBlockEntityNbt(stack);
+        if (nbt != null) {
+            return nbt.contains("Patterns") || nbt.contains("Base") ? 1F : 0F;
         }
-
         else return 0F;
     }
 }
