@@ -42,17 +42,6 @@ import static timmychips.pommelheldmodels.property.resolver.ItemModelResolver.re
 @Mixin(ItemRenderer.class)
 public abstract class HeldItemMixin {
 
-    @Unique
-    private static final Logger LOGGER = LogUtils.getLogger();
-
-    // TODO
-    //  Add a second items folder maybe called "mymod_items_override" to allow modded properties while having the resource pack still work seamlessly w/ vanilla
-    //  Refactor other properties and types to follow what was done with the compass instead of using switches
-
-    // TODO
-    //  Make if no fallback field is specified for minecraft:select or minecraft:range_dispatch types in items.json, make it return a missing model
-    //  If there's any error with the model, also show a missing model
-
     // Gets custom model for GUI model mode so the item model changes for the GUI
     @Inject(method = "getModel(Lnet/minecraft/item/ItemStack;Lnet/minecraft/world/World;Lnet/minecraft/entity/LivingEntity;I)Lnet/minecraft/client/render/model/BakedModel;",
             at = @At("HEAD"),
@@ -82,18 +71,22 @@ public abstract class HeldItemMixin {
                 : provider.getBuffer(layer);
     }
 
+    /**
+     * Performs item renderer methods for each baked model if baked model is a composite item model
+     * <p> Code is mostly from vanilla target method with the major difference being it performs the method for each modelPart of the composite item model
+     */
     @Inject(method = "renderItem(Lnet/minecraft/item/ItemStack;Lnet/minecraft/client/render/model/json/ModelTransformationMode;ZLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;IILnet/minecraft/client/render/model/BakedModel;)V",
             at = @At(value = "HEAD"),
             cancellable = true)
     private void renderCompositeModel(ItemStack stack, ModelTransformationMode renderMode, boolean leftHanded, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, BakedModel model, CallbackInfo ci) {
         if (!stack.isEmpty()) {
             if (model instanceof CompositeItemModel compositeModel) {
-
+                // Retrieve list of baked models from CompositeItemModel object
                 List<BakedModel> models = compositeModel.getModels();
+
                 if (models != null) {
                     for (BakedModel modelPart : models) {
-                        ClientInitializer.LOGGER.info(modelPart.toString());
-
+                        // Code is from vanilla method with minor tweaks
                         matrices.push();
 
                         boolean bl = renderMode == ModelTransformationMode.GUI || renderMode == ModelTransformationMode.GROUND || renderMode == ModelTransformationMode.FIXED;
@@ -118,10 +111,10 @@ public abstract class HeldItemMixin {
                         else {
                             this.builtinModelItemRenderer.render(stack, renderMode, matrices, vertexConsumers, light, overlay);
                         }
-                        matrices.pop();
+                        matrices.pop(); // Pop matrix to prevent render errors for next element in list
                     }
                 }
-                ci.cancel();
+                ci.cancel(); // Cancel rest of method for composite item models
             }
         }
     }
@@ -135,9 +128,6 @@ public abstract class HeldItemMixin {
                                         int light, int overlay, int seed, CallbackInfo ci) {
 
         BakedModel model = getCustomModel(item, entity, renderMode);
-        if (model instanceof CompositeItemModel compositeItemModel) {
-            ClientInitializer.LOGGER.info("Composite model: {}", compositeItemModel);
-        }
 
         if (model != null) {
             ItemRenderer self = (ItemRenderer)(Object)this;
@@ -162,23 +152,9 @@ public abstract class HeldItemMixin {
 
         if (mode == null) mode = ModelTransformationMode.GUI;
 
-//        Optional<Identifier> maybeModel = resolveModel(Registries.ITEM.getId(stack.getItem()), mode, stack, entity); // Get resolved model specified in items.json for the item
-//        if (maybeModel.isPresent()) {
-//            Identifier modelId = maybeModel.get();
-//
-//            if (modelId.toString().equals("pommel:missingno")) { // No Fallback Model specified
-//                return missingModelManager.getMissingModel(); // Item renders as Missing Model
-//            }
-//
-//            FabricBakedModelManager manager = MinecraftClient.getInstance().getBakedModelManager();
-//            return manager.getModel(modelId); // Use Identifier; Can't use ModelIdentifier since our loaded models don't have corresponding ModelIdentifiers
-//        }
-
         Optional<BakedModel> maybeModel = resolveModel(Registries.ITEM.getId(stack.getItem()), mode, stack, entity);
         if (maybeModel != null && maybeModel.isPresent()) {
-            BakedModel bakedModel = maybeModel.get();
-
-            return bakedModel;
+            return maybeModel.get();
         }
         return null;
     }

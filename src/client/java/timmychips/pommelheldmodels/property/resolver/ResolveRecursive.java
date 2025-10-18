@@ -5,9 +5,11 @@ import net.fabricmc.fabric.api.client.model.loading.v1.FabricBakedModelManager;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import timmychips.pommelheldmodels.property.type.*;
 
@@ -20,7 +22,6 @@ public class ResolveRecursive {
 
     private static final Logger LOGGER = LogUtils.getLogger();
     public static final Set<String> WARNED_MODELS = ConcurrentHashMap.newKeySet();
-    private static final Identifier MISSING_MODEL_ID = Identifier.of("pommel:missingno");
 
     /** Lazily fetch the baked model manager */
     private static FabricBakedModelManager getBakedModelManager() {
@@ -29,7 +30,6 @@ public class ResolveRecursive {
 
     /** Fetch missing model safely */
     public static BakedModel getMissingModel() {
-//        return getBakedModelManager().getModel(MISSING_MODEL_ID);
         return MinecraftClient.getInstance().getBakedModelManager().getMissingModel();
     }
 
@@ -44,34 +44,12 @@ public class ResolveRecursive {
 
         if (def instanceof ModelDefinition model) {
             BakedModel bakedModel = manager.getModel(model.model());
-            if (bakedModel != null) bakedModel.getTransformation().getTransformation(renderMode).apply(false, new MatrixStack());
             return bakedModel == null ? Optional.empty() : Optional.of(bakedModel);
         }
 
         if (def instanceof CompositeModelDefinition composite) {
-//            return Optional.of(composite.bake(manager));
 
-            // TODO: Only works loading item models that are registered with FabricModelLoadingPlugin and are Identifiers
-            //  I.e., loading "potato" works since it registers that. However, blaze_powder doesn't (even though the vanilla model is registered)
-            //  Probably need to modify ClientInitializer or ItemModelRegistry classes since they are only registering whatever is in the standard "model" type
-            //  Need to switch it so it can handle item models definition json. I.e. you don't specify the model file, but rather put the json code of the model(s)
-            //  and it will combine them into one model
-            //      https://www.reddit.com/r/MinecraftCommands/comments/1iwknnc/multilayered_item_models/
-//            List<BakedModel> bakedParts = composite.models().stream()
-//                    .map(manager::getModel)
-//                    .toList();
-//            List<BakedModel> bakedParts = composite.models().stream()
-//                    .map(childDefiniton -> childDefiniton)
-//                    .toList();
-//
-//
-////            if (bakedParts != null) return Optional.of(new CompositeItemModel(bakedParts));
-////            return Optional.of(new CompositeItemModel(bakedParts));
-//            LOGGER.info("Composite models loaded: {}", bakedParts);
-//
-//            if (bakedParts.isEmpty()) return missingFallbackModel(stack, composite.type()); // If one bakedPart is null, return missing model
-            if (composite.models().isEmpty()) return missingFallbackModel(stack, composite.type());
-
+            if (composite.models().isEmpty()) return missingFallbackModel(stack, null, composite.type());
             return Optional.of(new CompositeItemModel(composite.models(), renderMode, stack, entity)); // Returns combined item models
         }
 
@@ -88,7 +66,7 @@ public class ResolveRecursive {
 
             return select.fallback() != null
                     ? resolve(select.fallback(), renderMode, stack, entity)
-                    : missingFallbackModel(stack, select.property());
+                    : missingFallbackModel(stack, select.property(), select.type());
         }
 
         if (def instanceof ConditionDefinition cond) {
@@ -109,17 +87,28 @@ public class ResolveRecursive {
                     .map(entry -> resolve(entry.model(), finalRenderMode, stack, entity))
                     .orElseGet(() -> range.fallback() != null
                             ? resolve(range.fallback(), finalRenderMode, stack, entity)
-                            : missingFallbackModel(stack, range.property()));
+                            : missingFallbackModel(stack, range.property(), range.type()));
         }
 
         return Optional.empty();
     }
 
     /** Warn once and return missing model if no match found */
-    private static Optional<BakedModel> missingFallbackModel(ItemStack stack, Identifier property) {
-        String key = stack.getItem().toString() + "|" + property;
-        if (WARNED_MODELS.add(key)) {
-            LOGGER.warn("No matching model found for property '{}', item: '{}'", property, stack.getItem());
+    private static Optional<BakedModel> missingFallbackModel(ItemStack stack, Identifier property, @Nullable Identifier type) {
+        /// For properties of condition, select, range_dispatch types
+        if (property != null) {
+            String key = stack.getItem().toString() + "|" + property;
+            if (WARNED_MODELS.add(key)) {
+                LOGGER.warn("No matching model found for property '{}', item: '{}'", property, stack.getItem());
+            }
+        }
+
+        ///  For composite model type
+        if (type.getPath().equals("composite")) {
+            String key = stack.getItem().toString() + "|" + type;
+            if (WARNED_MODELS.add(key)) {
+                LOGGER.warn("Composite model has no valid models defined '{}', item: '{}'", type, stack.getItem());
+            }
         }
         return Optional.of(getMissingModel());
     }
