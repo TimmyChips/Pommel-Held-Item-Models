@@ -5,17 +5,16 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.KeyBinding;
-import net.minecraft.component.type.NbtComponent;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
 import org.slf4j.Logger;
+import timmychips.pommelheldmodels.objects.PlayerHeldItem;
 
 import java.util.HashMap;
 import java.util.UUID;
@@ -24,9 +23,7 @@ public class UseKeyTracker {
     private static final Logger LOGGER = LogUtils.getLogger();
     private static ItemStack itemUsed = ItemStack.EMPTY;
     private static boolean useKeyPressed = false;
-    public static HashMap<PlayerEntity, ItemStack> player_usedItem = new HashMap<PlayerEntity, ItemStack>();
-    public static HashMap<PlayerEntity, Integer> player_useCooldown = new HashMap<PlayerEntity, Integer>();
-    public static int useTicks = 0;
+    public static final HashMap<PlayerEntity, PlayerHeldItem> itemMap = new HashMap<>();
 
     // When client player/user presses the use key; occurs every client tick
     public static void clientUseKey() {
@@ -39,8 +36,19 @@ public class UseKeyTracker {
                 if (user != null) itemUsed = user.getMainHandStack().isEmpty() ? user.getOffHandStack() : user.getMainHandStack(); // gets main or offhand ItemStack
 
                 // Adds or removes the client user and the item used to HashMap when pressing the use key or not
-                if (useKeyPressed) player_usedItem.put(user, itemUsed);
-                if (!useKeyPressed) player_usedItem.remove(user);
+                if (useKeyPressed && !itemUsed.isEmpty()) {
+                    // Initialize player with item use data
+                    ItemStack defaultStack = itemUsed.getItem().getDefaultStack();
+                    itemMap.put(user, new PlayerHeldItem(defaultStack));
+                }
+            }
+        });
+
+        // Occurs at every world tick so frame rate is capped to ~20ticks/sec
+        // Updates void methods
+        ClientTickEvents.END_WORLD_TICK.register(world -> {
+            for (var player:world.getPlayers()) {
+                UseKeyTracker.useTickInterval(player); // Tick timer for other (non-client) players to retain item usage
             }
         });
     }
@@ -49,13 +57,16 @@ public class UseKeyTracker {
     public static void eventUseKeyPacket() {
         UseItemCallback.EVENT.register((PlayerEntity user, World world, net.minecraft.util.Hand hand) -> {
             if (!world.isClient) {
-//                LOGGER.info("Used Item");
                 UUID playerUuid = user.getUuid();
-                ItemStack sendItemUsed = user.getStackInHand(hand);
 
-                UseKeyPayload payload = new UseKeyPayload(playerUuid, sendItemUsed, true);
+                // Get the base item from user and convert to default stack to avoid component map crashes
+                Item itemUsed = user.getStackInHand(hand).getItem();
+                ItemStack defaultStack = itemUsed.getDefaultStack();
 
-                ClientPlayNetworking.send(payload); // Sends payload to server
+                if (!defaultStack.isEmpty()) {
+                    UseKeyC2SPayload payload = new UseKeyC2SPayload(playerUuid, defaultStack, true);
+                    ClientPlayNetworking.send(payload); // Sends payload to server
+                }
             }
 
 			return TypedActionResult.pass(user.getStackInHand(hand)); // Pass to return that we did the event
@@ -71,9 +82,7 @@ public class UseKeyTracker {
                     PlayerEntity sender = client.world.getPlayerByUuid(payload.playerUuid());
                     if (sender != null) {
                         if (payload.isUsing()) {
-                            UseKeyTracker.player_usedItem.put(sender, payload.itemStack()); // Add the sender player and their item to HashMap
-                            UseKeyTracker.player_useCooldown.put(sender, 70); // Adds sender to second HashMap with a tick countdown timer
-//                            LOGGER.info("Other player: " + sender + " using: " + payload.itemStack());
+                            itemMap.put(sender, new PlayerHeldItem(payload.itemStack().copy()));
                         }
                     }
                 });
@@ -81,47 +90,68 @@ public class UseKeyTracker {
         });
     }
 
-    public static float itemUsingLerp() {
-        int tickMax = 20;
-        float f = (float) useTicks / tickMax;
-        if (useTicks > 0) useTicks -= 1;
-        return f;
-    }
-
     // Countdown tick timer
     // Since UseItemCallback event doesn't occur every tick, we have a countdown before we update that the other player is no longer using an item
-    public static void tickTimer(LivingEntity entity) {
-        if (entity.isPlayer()) {
-            PlayerEntity player = (PlayerEntity) entity; // Cast LivingEntity to PlayerEntity
+    public static void useTickInterval(LivingEntity entity) {
+        if (entity instanceof PlayerEntity player) {
+            if (itemMap.containsKey(player)) {
+                int intervalTick = itemMap.get(player).checkInterval; // Gets current interval value
+                if (intervalTick > 0) intervalTick--;
+                if (intervalTick == 0) afterUseCooldown(player); // Does afterUseCooldown method when player stops using item
 
-            if (player_useCooldown.containsKey(player)) { // Gets player and their current countdown tick
-                int p_tick = player_useCooldown.get(player);
-//                LOGGER.info(String.valueOf(p_tick));
-                if (p_tick > 0) p_tick--; // Get and subtract the player's tick
-
-                if (p_tick == 0) { // Removes the player from both HashMaps when countdown reaches 0; item no longer being used
-                    UseKeyTracker.player_useCooldown.remove(player);
-                    UseKeyTracker.player_usedItem.remove(player);
-                }
-                else player_useCooldown.replace(player, p_tick); // Updates tick timer to new, subtracted value
+                else itemMap.get(player).checkInterval = intervalTick; // Update new interval value
             }
         }
     }
 
+    public static void afterUseCooldown(PlayerEntity player) {
+        float useTimer = itemMap.get(player).lastUsed;
+
+        if (useTimer > 0F) {
+            if (HeldItemPredicate.matchesItemInHand(player, itemMap.get(player).lastItem)) useTimer--; // Item being used is held in hand
+            else useTimer = 0F; // Stops timer if player changes items from what they last used
+        }
+        if (useTimer == 0F) itemMap.remove(player);
+        else itemMap.get(player).lastUsed = useTimer; // Update new cooldown value
+    }
+
+    // Returns if the currently rendered ItemStack matches what the player is holding
+    // Intended for the client player, as to prevent non-selected items to not have their models change
+    // Only the actively selected item will change item models
+    // TODO Merge/Cleanup with matchesItemInHand method in HeldItemPredicate.java
+    //  Currently only changes player's main hand item model if two different items are in main/offhand at same time; Fix?
+    //  Also possibly clean/split this class up into other class(es)
+    private static boolean clientHasItemSelected(LivingEntity livingEntity, ItemStack stack) {
+        if (livingEntity instanceof ClientPlayerEntity clientPlayer) {
+//            Hand hand = clientPlayer.getActiveHand();
+//            ItemStack currentStack = clientPlayer.getStackInHand(hand); // Only actually does it for player's main hand :(
+
+            ItemStack currentStack = clientPlayer.getMainHandStack().isEmpty() ? clientPlayer.getOffHandStack() : clientPlayer.getMainHandStack();
+
+            return ItemStack.areEqual(currentStack,stack);
+        }
+        return true;
+    }
+
     // Item Predicate logic to set "is_using" predicate float based on some criteria
-    public static float player_useItemKey(LivingEntity livingEntity, ItemStack usableItem) {
+    public static float playerUseItemKey(LivingEntity livingEntity, ItemStack usableItem) {
         // Items that you can actually use (food, bow, shield, etc.)
         if (!livingEntity.isPlayer()) return 0.0F;
-        if (livingEntity.isUsingItem() && livingEntity.getActiveItem() == usableItem) return 1.0F;
+        if (livingEntity.isUsingItem() && ItemStack.areEqual(livingEntity.getActiveItem(), usableItem)) return 1.0F;
 
-        // Get items that the player used that may be un-interactable items (pickaxes, materials)
-        ItemStack usedItem = player_usedItem.get((PlayerEntity) livingEntity);
+        // For non-usable items like pickaxes, blocks, materials, etc.
+        PlayerEntity player = (PlayerEntity) livingEntity;
 
-        if (usedItem != null) {
-            if (usedItem.isEmpty()) return 0.0F;
-            return 1.0F;
+        float returnFloat = 0.0F;
+        if (itemMap.containsKey(player)) {
+            ItemStack lastItem = itemMap.get(player).lastItem;
 
+            if (!clientHasItemSelected(player, usableItem)) return 0.0F; // If player is client and not has used item selected, return 0F
+
+            if (lastItem != null) {
+                returnFloat = itemMap.get(player).lastUsed / 18.0F; // Get normalized value of last used timer from 0 to 1 for that player
+            }
         }
-        return 0.0F;
+        return returnFloat;
     }
 }

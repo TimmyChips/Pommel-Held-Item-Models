@@ -90,9 +90,9 @@ public class HeldItemPredicate {
                 if (livingEntity != null) {
                     // Predicate when player presses the use key for the using item predicate
                     if (isUsedPredicate ) return UseKeyTracker.player_useItemKey(livingEntity, itemStack);
-                    if (isSubmergedPredicate) return livingEntity.isSubmergedInWater() ? 1.0F : 0.0F;
+//                    //if (isSubmergedPredicate) return livingEntity.isSubmergedInWater() ? 1.0F : 0.0F;
 //                    if (isSubmergedPredicate) return livingEntity.isSubmergedIn(FluidTags.WATER) || livingEntity.isSubmergedIn(FluidTags.LAVA) ? 1.0F : 0.0F;
-//                    if (isSubmergedPredicate) return submergedInFluidCheck(livingEntity);
+                    if (isSubmergedPredicate) return submergedInFluidCheck(livingEntity);
 //                    if (isFallingPredicate) return livingEntity.isFallFlying() || (!livingEntity.isOnGround() && livingEntity.fallDistance > 0.25) ? 1.0F : 0.0F;
                     double yVelocity = livingEntity.getVelocity().y;
 //                    if (isFallingPredicate) return (!livingEntity.isOnGround() && yVelocity < -0.24) ? 1.0F : 0.0F;
@@ -114,14 +114,15 @@ public class HeldItemPredicate {
             });
         }
 
-//        ModelPredicateProviderRegistry.register(Items.WOODEN_PICKAXE, Identifier.ofVanilla("pull"), (itemStack, world, livingEntity, seed) -> {
-//            LOGGER.info("We in the is_used predicate registry for: " + activeItem);
-//            if (livingEntity == null) {
-//                return 0.0F;
-//            } else {
-//                return livingEntity.getMainHandStack() == itemStack ? 1.0F : 0.0F;
-//            }
-//        });
+    /**
+     *
+     * @param entity Current LivingEntity
+     * @param stack Current ItemStack
+     * @return True/False if the ItemStack field is actively held in main hand or offhand
+     */
+    public static boolean matchesItemInHand(LivingEntity entity, ItemStack stack) {
+        ItemStack currentItem = entity.getMainHandStack().isEmpty() ? entity.getOffHandStack() : entity.getMainHandStack();
+        return stack.toString().equals(currentItem.toString());
     }
 
     private static float submergedInFluidCheck(LivingEntity entity) {
