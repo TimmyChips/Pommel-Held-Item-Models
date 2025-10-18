@@ -16,7 +16,7 @@ import java.util.*;
 public final class SelectDefinition {
     public record Definition(
             Identifier type,
-            List<Case<Identifier>> cases, // Now strictly typed
+            List<Case<String>> cases, // Now strictly typed
             @Nullable ItemModelDefinition fallback,
             Identifier property,
             @Nullable String blockStateProperty,
@@ -28,7 +28,7 @@ public final class SelectDefinition {
         public static MapCodec<Definition> codec(Codec<ItemModelDefinition> selfCodec) {
             return RecordCodecBuilder.mapCodec(instance -> instance.group(
                     Identifier.CODEC.fieldOf("type").forGetter(Definition::type),
-                    Case.codec(selfCodec, CodecUtils.IdentifierOrStringCodec.INSTANCE) // Accepts short string, or full id
+                    Case.codec(selfCodec, CodecUtils.IdentifierOrStringAsStringCodec) // Accepts short string, or full id
                             .listOf()
                             .fieldOf("cases")
                             .forGetter(Definition::cases),
@@ -54,7 +54,7 @@ public final class SelectDefinition {
         }
     }
 
-    // TODO - case could probably be String object
+    // TODO - when case should be converted from shorthand String ("zombie") to Identifier String for certain properties like minecraft:context_entity_type ("minecraft:zombie")
     /**
      * Renders item models based on a property
      * @param model the model to render "when" a certain property is met

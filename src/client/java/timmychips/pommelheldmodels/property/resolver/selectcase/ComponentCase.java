@@ -3,9 +3,11 @@ package timmychips.pommelheldmodels.property.resolver.selectcase;
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.component.ComponentType;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import timmychips.pommelheldmodels.property.handler.SelectPropertyHandler;
@@ -38,6 +40,14 @@ public class ComponentCase implements SelectPropertyHandler {
             return null;
         }
 
-        return Objects.requireNonNull(stack.get(componentType)).toString().toLowerCase(); // Return component value as lower case string
+        String str;
+
+        Object componentValue = stack.get(componentType);
+        if (componentValue instanceof Text textValue) {
+            str = textValue.getString(); // Get the string without the surrounding literal from Text component types, and with string as is
+        }
+        else str = String.valueOf(componentValue).toLowerCase(); // Convert value to lower case string
+
+        return str; // Return component value as string
     }
 }

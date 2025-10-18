@@ -73,7 +73,7 @@ public class ItemModelRegistry {
             out.add(model.model());
 
         } else if (def instanceof SelectDefinition.Definition select) {
-            for (SelectDefinition.Case<Identifier> c : select.cases()) {
+            for (SelectDefinition.Case<String> c : select.cases()) {
                 collectModelsFromDefinition(c.model(), out);
             }
 
