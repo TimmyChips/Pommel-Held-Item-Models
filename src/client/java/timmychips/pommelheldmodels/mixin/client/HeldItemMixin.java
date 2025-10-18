@@ -5,7 +5,8 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.model.loading.v1.FabricBakedModelManager;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.*;
+import net.minecraft.client.render.item.BuiltinModelItemRenderer;
 import net.minecraft.client.render.item.ItemRenderer;
 import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.client.render.model.BakedModelManager;
@@ -15,17 +16,23 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.MatrixUtil;
 import net.minecraft.world.World;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import timmychips.pommelheldmodels.ClientInitializer;
 import timmychips.pommelheldmodels.ItemModelRegistry;
+import timmychips.pommelheldmodels.property.type.CompositeItemModel;
 
+import java.util.List;
 import java.util.Optional;
 
 import static timmychips.pommelheldmodels.property.resolver.ItemModelResolver.resolveModel;
@@ -57,6 +64,68 @@ public abstract class HeldItemMixin {
         }
     }
 
+    @Shadow
+    private void renderBakedItemModel(BakedModel model, ItemStack stack, int light, int overlay, MatrixStack matrices, VertexConsumer vertices) {/*dummy body*/}
+
+    @Shadow
+    private final BuiltinModelItemRenderer builtinModelItemRenderer = this.builtinModelItemRenderer;
+
+    @Shadow
+    private static boolean usesDynamicDisplay(ItemStack stack) {
+        return stack.isIn(ItemTags.COMPASSES) || stack.isOf(Items.CLOCK);
+    }
+
+    @Shadow
+    public static VertexConsumer getDirectItemGlintConsumer(VertexConsumerProvider provider, RenderLayer layer, boolean solid, boolean glint) {
+        return glint
+                ? VertexConsumers.union(provider.getBuffer(solid ? RenderLayer.getGlint() : RenderLayer.getDirectEntityGlint()), provider.getBuffer(layer))
+                : provider.getBuffer(layer);
+    }
+
+    @Inject(method = "renderItem(Lnet/minecraft/item/ItemStack;Lnet/minecraft/client/render/model/json/ModelTransformationMode;ZLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;IILnet/minecraft/client/render/model/BakedModel;)V",
+            at = @At(value = "HEAD"),
+            cancellable = true)
+    private void renderCompositeModel(ItemStack stack, ModelTransformationMode renderMode, boolean leftHanded, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay, BakedModel model, CallbackInfo ci) {
+        if (!stack.isEmpty()) {
+            if (model instanceof CompositeItemModel compositeModel) {
+
+                List<BakedModel> models = compositeModel.getModels();
+                if (models != null) {
+                    for (BakedModel modelPart : models) {
+                        ClientInitializer.LOGGER.info(modelPart.toString());
+
+                        matrices.push();
+
+                        boolean bl = renderMode == ModelTransformationMode.GUI || renderMode == ModelTransformationMode.GROUND || renderMode == ModelTransformationMode.FIXED;
+                        modelPart.getTransformation().getTransformation(renderMode).apply(leftHanded, matrices);
+                        matrices.translate(-0.5F, -0.5F, -0.5F);
+
+                        if (!model.isBuiltin() || bl) {
+                            RenderLayer renderLayer = RenderLayers.getItemLayer(stack, true);
+                            VertexConsumer vertexConsumer;
+
+                            vertexConsumer = getDirectItemGlintConsumer(vertexConsumers, renderLayer, true, stack.hasGlint());
+
+                            MatrixStack.Entry entry = matrices.peek().copy();
+                            if (renderMode == ModelTransformationMode.GUI) {
+                                MatrixUtil.scale(entry.getPositionMatrix(), 0.5F);
+                            } else if (renderMode.isFirstPerson()) {
+                                MatrixUtil.scale(entry.getPositionMatrix(), 0.75F);
+                            }
+
+                            this.renderBakedItemModel(modelPart, stack, light, overlay, matrices, vertexConsumer);
+                        }
+                        else {
+                            this.builtinModelItemRenderer.render(stack, renderMode, matrices, vertexConsumers, light, overlay);
+                        }
+                        matrices.pop();
+                    }
+                }
+                ci.cancel();
+            }
+        }
+    }
+
     // Replaces entity item render with our custom model
     @Inject(method = "renderItem(Lnet/minecraft/entity/LivingEntity;Lnet/minecraft/item/ItemStack;Lnet/minecraft/client/render/model/json/ModelTransformationMode;ZLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;Lnet/minecraft/world/World;III)V",
             at = @At(value = "HEAD"),
@@ -66,6 +135,9 @@ public abstract class HeldItemMixin {
                                         int light, int overlay, int seed, CallbackInfo ci) {
 
         BakedModel model = getCustomModel(item, entity, renderMode);
+        if (model instanceof CompositeItemModel compositeItemModel) {
+            ClientInitializer.LOGGER.info("Composite model: {}", compositeItemModel);
+        }
 
         if (model != null) {
             ItemRenderer self = (ItemRenderer)(Object)this;

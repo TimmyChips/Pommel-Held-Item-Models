@@ -9,8 +9,6 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
-import timmychips.pommelheldmodels.bakedmodels.CompositeItemModel;
-import timmychips.pommelheldmodels.bakedmodels.WrappedBakedModel;
 import timmychips.pommelheldmodels.property.type.*;
 
 import java.util.List;
@@ -45,7 +43,9 @@ public class ResolveRecursive {
         FabricBakedModelManager manager = getBakedModelManager();
 
         if (def instanceof ModelDefinition model) {
-            return Optional.of(manager.getModel(model.model()));
+            BakedModel bakedModel = manager.getModel(model.model());
+            if (bakedModel != null) bakedModel.getTransformation().getTransformation(renderMode).apply(false, new MatrixStack());
+            return bakedModel == null ? Optional.empty() : Optional.of(bakedModel);
         }
 
         if (def instanceof CompositeModelDefinition composite) {
@@ -70,21 +70,9 @@ public class ResolveRecursive {
 //            LOGGER.info("Composite models loaded: {}", bakedParts);
 //
 //            if (bakedParts.isEmpty()) return missingFallbackModel(stack, composite.type()); // If one bakedPart is null, return missing model
-            ModelTransformationMode finalRenderMode1 = renderMode;
-            List<WrappedBakedModel> wrappedParts = composite.models().stream()
-                    .map(childDef -> {
-                        BakedModel baked = ResolveRecursive.resolve(childDef, finalRenderMode1, stack, entity)
-                                .orElse(ResolveRecursive.getMissingModel());
-
-                        return new WrappedBakedModel(baked, childDef); // <- attach definition here
-                    })
-                    .toList();
-
-            /// Need to somehow cast/stream List of ItemModelDefinition(s) to WrappedBakedModel
-
             if (composite.models().isEmpty()) return missingFallbackModel(stack, composite.type());
 
-            return Optional.of(new CompositeItemModel(wrappedParts, renderMode)); // Returns combined item models
+            return Optional.of(new CompositeItemModel(composite.models(), renderMode, stack, entity)); // Returns combined item models
         }
 
         if (def instanceof SelectDefinition.Definition select) {
