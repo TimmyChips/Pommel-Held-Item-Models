@@ -108,7 +108,7 @@ public class UseKeyTracker {
         float useTimer = itemMap.get(player).lastUsed;
 
         if (useTimer > 0F) {
-            if (HeldItemPredicate.matchesItemInHand(player, itemMap.get(player).lastItem)) useTimer--; // Item being used is held in hand
+            if (matchesItemInHand(player, itemMap.get(player).lastItem)) useTimer--; // Item being used is held in hand
             else useTimer = 0F; // Stops timer if player changes items from what they last used
         }
         if (useTimer == 0F) itemMap.remove(player);
@@ -153,5 +153,10 @@ public class UseKeyTracker {
             }
         }
         return returnFloat;
+    }
+
+    public static boolean matchesItemInHand(LivingEntity entity, ItemStack stack) {
+        ItemStack currentItem = entity.getMainHandStack().isEmpty() ? entity.getOffHandStack() : entity.getMainHandStack();
+        return stack.toString().equals(currentItem.toString());
     }
 }

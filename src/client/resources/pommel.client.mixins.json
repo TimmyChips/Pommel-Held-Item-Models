@@ -3,7 +3,6 @@
   "package": "timmychips.pommelheldmodels.mixin.client",
   "compatibilityLevel": "JAVA_21",
   "client": [
-    "GroundItemMixin",
     "HandleSlotAccessor",
     "HeldItemMixin",
     "KeyBindingAccessor"
