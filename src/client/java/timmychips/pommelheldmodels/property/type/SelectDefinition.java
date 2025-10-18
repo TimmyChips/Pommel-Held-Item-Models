@@ -6,6 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 import java.util.*;
+import java.util.stream.Collectors;
 
 // Todo
 //  Will technically parse Identifiers into Strings, not alike Vanilla
@@ -24,6 +25,30 @@ public final class SelectDefinition {
             boolean chargeIgnoreUnknown,
             @Nullable String component
     ) implements ItemModelDefinition {
+
+        /**
+         * List of property identifiers if it should cast the 'when' condition String to an Identifier format.
+         * <p>For example, items model definition files with "minecraft:context_entity_type" will have the 'when' case "zombie" converted to "minecraft:zombie"
+         */
+        private static final List<Identifier> shouldParseToId = List.of(
+                Identifier.of("minecraft:context_dimension"),
+                Identifier.of("minecraft:context_entity_type"),
+                Identifier.of("minecraft:trim_material")
+        );
+
+        // Parses specific property's 'when' conditions to Identifier format.
+        public Definition {
+            if (shouldParseToId.contains(property)) {
+                cases = cases.stream()
+                        .map(c -> new Case<String>(
+                                c.model(),
+                                c.when.stream()
+                                        .map(whenCondition -> String.valueOf(Identifier.tryParse(whenCondition)))
+                                        .collect(Collectors.toCollection(HashSet::new))
+                        ))
+                        .toList();
+            }
+        }
 
         public static MapCodec<Definition> codec(Codec<ItemModelDefinition> selfCodec) {
             return RecordCodecBuilder.mapCodec(instance -> instance.group(
@@ -54,7 +79,6 @@ public final class SelectDefinition {
         }
     }
 
-    // TODO - when case should be converted from shorthand String ("zombie") to Identifier String for certain properties like minecraft:context_entity_type ("minecraft:zombie")
     /**
      * Renders item models based on a property
      * @param model the model to render "when" a certain property is met
