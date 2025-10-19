@@ -15,6 +15,7 @@ import timmychips.pommelheldmodels.property.registry.ConditionPropertyRegistry;
 import timmychips.pommelheldmodels.property.registry.RangePropertyRegistry;
 import timmychips.pommelheldmodels.property.registry.SelectPropertyRegistry;
 import timmychips.pommelheldmodels.property.type.ItemModelDefinition;
+import timmychips.pommelheldmodels.property.type.ItemModelRootDefinition;
 import timmychips.pommelheldmodels.property.type.ItemModelTypes;
 
 import java.io.InputStream;
@@ -31,7 +32,17 @@ public class ClientInitializer implements ClientModInitializer {
             try (InputStream stream = manager.getResource(id).get().getInputStream()) {
                 JsonElement json = JsonParser.parseReader(new InputStreamReader(stream));
 
+                // TODO: load models defined in "models" for composite item model type
                 JsonObject root = json.getAsJsonObject();
+
+                // Optional fields
+                boolean handAnimationOnSwap = root.has("hand_animation_on_swap") && root.get("hand_animation_on_swap").getAsBoolean();
+                boolean oversizedInGui = root.has("oversized_in_gui") && root.get("oversized_in_gui").getAsBoolean();
+                float swapAnimationScale = root.has("swap_animation_scale") ? root.get("swap_animation_scale").getAsFloat() : 1.0f;
+
+                LOGGER.info("[Pommel] Parsed extra fields for {}: hand_animation_on_swap={}, oversized_in_gui={}, swap_animation_scale={}",
+                        id, handAnimationOnSwap, oversizedInGui, swapAnimationScale);
+
                 JsonElement modelElement = root.get("model");
 
                 if (modelElement != null && modelElement.isJsonObject()) {
@@ -42,7 +53,11 @@ public class ClientInitializer implements ClientModInitializer {
                                 String cleanPath = id.getPath().substring((folderName + "/").length(), id.getPath().length() - ".json".length());
                                 Identifier itemId = Identifier.of(id.getNamespace(), cleanPath);
 
-                                ItemModelRegistry.put(itemId, pair.getFirst()); // don’t forget to store it!
+                                ItemModelDefinition definition = pair.getFirst();
+                                ItemModelRootDefinition rootDef = new ItemModelRootDefinition(definition, handAnimationOnSwap, oversizedInGui, swapAnimationScale);
+
+//                                ItemModelRegistry.put(itemId, pair.getFirst()); // don’t forget to store it!
+                                ItemModelRegistry.putRoot(itemId, rootDef);
                                 LOGGER.info("[Pommel] Successfully decoded item model definition for: {}", itemId);
                             });
                 } else {

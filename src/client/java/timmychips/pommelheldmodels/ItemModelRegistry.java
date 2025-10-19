@@ -11,6 +11,8 @@ import java.util.Set;
 
 public class ItemModelRegistry {
     private static final Map<Identifier, ItemModelDefinition> definitions = new HashMap<>();
+    private static final Map<Identifier, ItemModelRootDefinition> rootDefinitions = new HashMap<>();
+
     public static Set<Identifier> INVALID_MODEL_TYPES = new HashSet<>();
 
     // Identifiers for item model types
@@ -25,21 +27,42 @@ public class ItemModelRegistry {
         if (validateType(id, definition)) definitions.put(id, definition);
     }
 
+    public static void putRoot(Identifier id, ItemModelRootDefinition root) {
+        if (root.model() != null && validateType(id, root.model())) {
+            definitions.put(id, root.model()); // Put the id of the item and the ItemModelDefinition into Map
+            rootDefinitions.put(id, root);
+        }
+    }
+
+    // For retrieving the item's root json fields (get_animation_swap, etc.)
+    public static ItemModelRootDefinition getRoot(Identifier id) {
+        return rootDefinitions.get(id);
+    }
+
     public static boolean validateType(Identifier id, ItemModelDefinition definition) {
         Identifier specifiedType = null;
 
-        if (definition instanceof ModelDefinition def) {
-            if (!def.type().equals(MODEL)) specifiedType = def.type();
-        } else if (definition instanceof CompositeModelDefinition def) {
-            if (!def.type().equals(COMPOSITE)) specifiedType = def.type();
-        } else if (definition instanceof EmptyModelDefinition def) {
-            if (!def.type().equals(EMPTY)) specifiedType = def.type();
-        } else if (definition instanceof ConditionDefinition def) {
-            if (!def.type().equals(CONDITION)) specifiedType = def.type();
-        } else if (definition instanceof SelectDefinition.Definition def) {
-            if (!def.type().equals(SELECT)) specifiedType = def.type();
-        } else if (definition instanceof RangeDispatchDefinition.Definition def) {
-            if (!def.type().equals(RANGE)) specifiedType = def.type();
+        switch (definition) {
+            case ModelDefinition def -> {
+                if (!def.type().equals(MODEL)) specifiedType = def.type();
+            }
+            case CompositeModelDefinition def -> {
+                if (!def.type().equals(COMPOSITE)) specifiedType = def.type();
+            }
+            case EmptyModelDefinition def -> {
+                if (!def.type().equals(EMPTY)) specifiedType = def.type();
+            }
+            case ConditionDefinition def -> {
+                if (!def.type().equals(CONDITION)) specifiedType = def.type();
+            }
+            case SelectDefinition.Definition def -> {
+                if (!def.type().equals(SELECT)) specifiedType = def.type();
+            }
+            case RangeDispatchDefinition.Definition def -> {
+                if (!def.type().equals(RANGE)) specifiedType = def.type();
+            }
+            case null, default -> {
+            }
         }
 
         if (specifiedType != null) {
