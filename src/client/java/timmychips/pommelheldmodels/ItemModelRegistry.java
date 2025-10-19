@@ -19,6 +19,7 @@ public class ItemModelRegistry {
     private static final Identifier SELECT = Identifier.of("minecraft:select");
     private static final Identifier RANGE = Identifier.of("minecraft:range_dispatch");
     private static final Identifier COMPOSITE = Identifier.of("minecraft:composite");
+    private static final Identifier EMPTY = Identifier.of("minecraft:empty");
 
     public static void put(Identifier id, ItemModelDefinition definition) {
         if (validateType(id, definition)) definitions.put(id, definition);
@@ -31,6 +32,8 @@ public class ItemModelRegistry {
             if (!def.type().equals(MODEL)) specifiedType = def.type();
         } else if (definition instanceof CompositeModelDefinition def) {
             if (!def.type().equals(COMPOSITE)) specifiedType = def.type();
+        } else if (definition instanceof EmptyModelDefinition def) {
+            if (!def.type().equals(EMPTY)) specifiedType = def.type();
         } else if (definition instanceof ConditionDefinition def) {
             if (!def.type().equals(CONDITION)) specifiedType = def.type();
         } else if (definition instanceof SelectDefinition.Definition def) {

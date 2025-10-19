@@ -9,7 +9,7 @@ import java.util.Map;
 
 // Entry point to item model definition types
 public sealed interface ItemModelDefinition
-        permits ConditionDefinition, SelectDefinition.Definition, RangeDispatchDefinition.Definition, CompositeModelDefinition, ModelDefinition {
+        permits CompositeModelDefinition, ConditionDefinition, EmptyModelDefinition, ModelDefinition, RangeDispatchDefinition.Definition, SelectDefinition.Definition {
 
     /**
      * Every subtype must return its own codec.

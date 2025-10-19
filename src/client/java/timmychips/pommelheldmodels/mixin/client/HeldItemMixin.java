@@ -1,9 +1,7 @@
 package timmychips.pommelheldmodels.mixin.client;
 
-import com.mojang.logging.LogUtils;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.client.model.loading.v1.FabricBakedModelManager;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
 import net.minecraft.client.render.item.BuiltinModelItemRenderer;
@@ -20,7 +18,6 @@ import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MatrixUtil;
 import net.minecraft.world.World;
-import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -28,9 +25,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import timmychips.pommelheldmodels.ClientInitializer;
 import timmychips.pommelheldmodels.ItemModelRegistry;
-import timmychips.pommelheldmodels.property.type.CompositeItemModel;
+import timmychips.pommelheldmodels.bakedmodels.CompositeItemModel;
 
 import java.util.List;
 import java.util.Optional;

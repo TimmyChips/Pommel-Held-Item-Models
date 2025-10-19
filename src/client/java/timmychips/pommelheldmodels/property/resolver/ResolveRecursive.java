@@ -5,15 +5,15 @@ import net.fabricmc.fabric.api.client.model.loading.v1.FabricBakedModelManager;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
+import timmychips.pommelheldmodels.bakedmodels.CompositeItemModel;
+import timmychips.pommelheldmodels.bakedmodels.EmptyItemModel;
 import timmychips.pommelheldmodels.property.type.*;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -47,8 +47,11 @@ public class ResolveRecursive {
             return bakedModel == null ? Optional.empty() : Optional.of(bakedModel);
         }
 
-        if (def instanceof CompositeModelDefinition composite) {
+        if (def instanceof EmptyModelDefinition) {
+            return Optional.of(new EmptyItemModel());
+        }
 
+        if (def instanceof CompositeModelDefinition composite) {
             if (composite.models().isEmpty()) return missingFallbackModel(stack, null, composite.type());
             return Optional.of(new CompositeItemModel(composite.models(), renderMode, stack, entity)); // Returns combined item models
         }
