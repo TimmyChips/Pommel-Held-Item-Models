@@ -28,6 +28,11 @@ public class ClientInitializer implements ClientModInitializer {
 	public static final Logger LOGGER = LogUtils.getLogger();
 	public static Collection<Identifier> modelIds;
 
+    // Extra optional fields in Items Model root
+    private static final String HAND_ANIMATION_SWAP = "hand_animation_on_swap";
+    private static final String OVERSIZED_IN_GUI = "oversized_in_gui";
+    private static final String SWAP_ANIMATION_SCALE = "swap_animation_scale";
+
     private static void registerResources(String folderName, ResourceManager manager) {
         for (Identifier id : manager.findResources(folderName, path -> path.getPath().endsWith(".json")).keySet()) {
             try (InputStream stream = manager.getResource(id).get().getInputStream()) {
@@ -37,9 +42,9 @@ public class ClientInitializer implements ClientModInitializer {
                 JsonObject root = json.getAsJsonObject();
 
                 // Optional fields
-                boolean handAnimationOnSwap = Optional.of(root.get("hand_animation_on_swap").getAsBoolean()).orElse(true);
-                boolean oversizedInGui = Optional.of(root.get("oversized_in_gui").getAsBoolean()).orElse(false);
-                float swapAnimationScale = Optional.of(root.get("swap_animation_scale").getAsFloat()).orElse(1F);
+                boolean handAnimationOnSwap = !root.has(HAND_ANIMATION_SWAP) || root.get(HAND_ANIMATION_SWAP).getAsBoolean(); // True if not specified
+                boolean oversizedInGui = root.has(OVERSIZED_IN_GUI) && root.get(OVERSIZED_IN_GUI).getAsBoolean();
+                float swapAnimationScale = root.has(SWAP_ANIMATION_SCALE) ? root.get(SWAP_ANIMATION_SCALE).getAsFloat() : 1F; // 1.0 if not specified
 
                 LOGGER.info("[Pommel] Parsed extra fields for {}: hand_animation_on_swap={}, oversized_in_gui={}, swap_animation_scale={}",
                         id, handAnimationOnSwap, oversizedInGui, swapAnimationScale);
