@@ -26,7 +26,7 @@ public class HeldItemPredicate {
     private static final String render_fixed = "is_fixed";
     private static final String render_ground = "is_ground";
     private static final String render_projectile = "is_projectile";
-    private static final String render_projectile_backwardsCompat = "is_flying"; // Old is_flying projectile predicate backwards compatibility
+    private static final String render_projectile_backwardsCompat = "is_thrown"; // Old is_thrown projectile predicate backwards compatibility
     private static final String render_head = "is_head";
     private static final String render_using = "is_using";
     private static final String render_submerged = "is_submerged";
@@ -127,7 +127,7 @@ public class HeldItemPredicate {
                         }
                         else yield 0F;
                     } // For thrown item entities and projectiles
-                    case render_ground -> isItemEntity && livingEntity == null && entry.getValue().contains(currentItemRenderMode) ? 1.0F : 0.0F; // Makes it so thrown items don't use the is_ground model
+                    case render_ground -> isItemEntity && !isProjectile && livingEntity == null && entry.getValue().contains(currentItemRenderMode) ? 1.0F : 0.0F; // Makes it so thrown items don't use the is_ground model
                     default -> entry.getValue().contains(currentItemRenderMode) ? 1.0F : 0.0F; // Return 1 if whitelisted for all other predicates
                 };
             });
