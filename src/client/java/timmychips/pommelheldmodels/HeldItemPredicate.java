@@ -26,6 +26,7 @@ public class HeldItemPredicate {
     private static final String render_fixed = "is_fixed";
     private static final String render_ground = "is_ground";
     private static final String render_projectile = "is_projectile";
+    private static final String render_projectile_backwardsCompat = "is_flying"; // Old is_flying projectile predicate backwards compatibility
     private static final String render_head = "is_head";
     private static final String render_using = "is_using";
     private static final String render_submerged = "is_submerged";
@@ -65,6 +66,7 @@ public class HeldItemPredicate {
         predicateMap.addToMap(render_fixed, ModelTransformationMode.FIXED);
         predicateMap.addToMap(render_ground, ModelTransformationMode.GROUND);
         predicateMap.addToMap(render_projectile, ModelTransformationMode.GROUND);
+        predicateMap.addToMap(render_projectile_backwardsCompat, ModelTransformationMode.GROUND);
         predicateMap.addToMap(render_head, ModelTransformationMode.HEAD);
         predicateMap.addToMap(render_first_thirdperson, renderModeHands);
         predicateMap.addToMap(render_misc_entity_holding, ModelTransformationMode.GROUND);
@@ -83,6 +85,9 @@ public class HeldItemPredicate {
             ModelPredicateProviderRegistry.register(entry.getKey(), (itemStack, world, livingEntity, i) -> { // Registers Identifier key
 
                 String predicate = entry.getKey().getPath();
+
+                // Backwards compatibility with old 'is_flying' predicate, sets it to new predicate name
+                if (predicate.equals(render_projectile_backwardsCompat)) predicate = render_projectile;
 
         /// For all render modes for LivingEntities and Entities
             // Predicate effects all entities (such as item entities) in any render mode (e.g. gui)
