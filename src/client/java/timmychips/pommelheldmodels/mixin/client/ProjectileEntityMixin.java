@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import timmychips.pommelheldmodels.HeldItemPredicate;
 
 @Environment(EnvType.CLIENT)
-@Mixin(EntityRenderer.class)
+@Mixin(value = EntityRenderer.class, priority = 1)
 public abstract class ProjectileEntityMixin<T extends Entity> {
 
     /**
