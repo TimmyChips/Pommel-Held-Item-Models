@@ -2,6 +2,8 @@ package timmychips.pommelheldmodels.mixin.client;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.item.HeldItemRenderer;
 import net.minecraft.client.render.item.ItemRenderer;
@@ -11,57 +13,44 @@ import net.minecraft.registry.Registries;
 import net.minecraft.util.Arm;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import timmychips.pommelheldmodels.ClientInitializer;
 import timmychips.pommelheldmodels.ItemModelRegistry;
+import timmychips.pommelheldmodels.property.type.ItemModelDefinition;
 import timmychips.pommelheldmodels.property.type.ItemModelRootDefinition;
 
 @Environment(EnvType.CLIENT)
 @Mixin(HeldItemRenderer.class)
 public abstract class HeldItemSwapMixin {
-    @Shadow
-    private ItemStack mainHand;
 
-    @Shadow
-    private ItemStack offHand;
+    @Unique
+    private float doModelHandSwap(float equipProgress) {
+        ClientPlayerEntity clientPlayer = MinecraftClient.getInstance().player;
+        if (clientPlayer == null) ClientInitializer.LOGGER.info("Player is null");
+        if (clientPlayer != null) {
+            ItemStack heldItem = !clientPlayer.getMainHandStack().isEmpty() ? clientPlayer.getMainHandStack() : clientPlayer.getOffHandStack();
+            Identifier heldId = Registries.ITEM.getId(heldItem.getItem());
+            ItemModelRootDefinition def = ItemModelRegistry.getRoot(heldId);
 
-    @Shadow
-    protected abstract void renderArmHoldingItem(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, float equipProgress, float swingProgress, Arm arm);
+            String strDef = null;
+            String strDefHandAnim = null;
+            if (def != null) {
+                strDef = String.valueOf(def);
+                strDefHandAnim = String.valueOf(def.handAnimationSwap());
+            }
+            ClientInitializer.LOGGER.info("Held item: {} Held item id: {} Root Definition: {} Hand Animation Swap for Model: {}", heldItem, heldId, strDef, strDefHandAnim);
 
-    /*
-    @Inject(method = "renderArmHoldingItem", at = @At("HEAD"))
-    private void armHoldingItemOverrideSwap(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, float equipProgress, float swingProgress, Arm arm, CallbackInfo ci) {
-        float newEquipProgress = equipProgress;
-
-//        if (mainHand != null) {
-//            Identifier handItemId = mainHand.isEmpty() ? Registries.ITEM.getId(offHand.getItem()) : Registries.ITEM.getId(mainHand.getItem());
-//            ItemModelRootDefinition handDef = ItemModelRegistry.getRoot(handItemId);
-//
-//            boolean itemHandAnimationSwap = true;
-//            if (handDef != null) itemHandAnimationSwap = handDef.handAnimationSwap();
-//
-//            if (!itemHandAnimationSwap) newEquipProgress = 1F;
-//        }
-
-        newEquipProgress = 1F;
-
-        HeldItemRenderer self = (HeldItemRenderer)(Object)this;
-        self.renderArmHoldingItem(matrices, vertexConsumers, light, newEquipProgress, swingProgress, arm);
-        ci.cancel();
+            if (def != null && !def.handAnimationSwap()) return 0F; // Disable hand animation swap if current held item model has hand swap set to false
+        }
+        return equipProgress;
     }
-
-     */
-
-    @Shadow
-    private float equipProgressOffHand;
-
-    @Shadow
-    private float equipProgressMainHand;
 
     @ModifyArg(
             method = "renderFirstPersonItem",
@@ -72,7 +61,7 @@ public abstract class HeldItemSwapMixin {
             index = 3 // equipProgress
     )
     private float disableEmptyHandEquipProgress(float equipProgress) {
-        return 0.0F;
+        return doModelHandSwap(equipProgress);
     }
 
     @ModifyArg(
@@ -84,6 +73,6 @@ public abstract class HeldItemSwapMixin {
             index = 2 // the equipProgress parameter
     )
     private float disableItemEquipProgress(float equipProgress) {
-        return 0.0F;
+        return doModelHandSwap(equipProgress);
     }
 }

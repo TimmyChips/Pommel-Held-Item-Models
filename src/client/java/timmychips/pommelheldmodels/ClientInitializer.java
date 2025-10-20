@@ -21,6 +21,7 @@ import timmychips.pommelheldmodels.property.type.ItemModelTypes;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Collection;
+import java.util.Optional;
 
 public class ClientInitializer implements ClientModInitializer {
 
@@ -36,9 +37,9 @@ public class ClientInitializer implements ClientModInitializer {
                 JsonObject root = json.getAsJsonObject();
 
                 // Optional fields
-                boolean handAnimationOnSwap = root.has("hand_animation_on_swap") && root.get("hand_animation_on_swap").getAsBoolean();
-                boolean oversizedInGui = root.has("oversized_in_gui") && root.get("oversized_in_gui").getAsBoolean();
-                float swapAnimationScale = root.has("swap_animation_scale") ? root.get("swap_animation_scale").getAsFloat() : 1.0f;
+                boolean handAnimationOnSwap = Optional.of(root.get("hand_animation_on_swap").getAsBoolean()).orElse(true);
+                boolean oversizedInGui = Optional.of(root.get("oversized_in_gui").getAsBoolean()).orElse(false);
+                float swapAnimationScale = Optional.of(root.get("swap_animation_scale").getAsFloat()).orElse(1F);
 
                 LOGGER.info("[Pommel] Parsed extra fields for {}: hand_animation_on_swap={}, oversized_in_gui={}, swap_animation_scale={}",
                         id, handAnimationOnSwap, oversizedInGui, swapAnimationScale);
