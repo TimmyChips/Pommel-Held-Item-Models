@@ -5,7 +5,9 @@
   "client": [
     "HandleSlotAccessor",
     "HeldItemMixin",
-    "KeyBindingAccessor"
+    "HeldItemSwapMixin",
+    "KeyBindingAccessor",
+    "UnlockedModelRotationDeserializerMixin"
   ],
   "injectors": {
     "defaultRequire": 1
