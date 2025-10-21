@@ -19,11 +19,11 @@ import timmychips.pommelheldmodels.property.type.ItemModelRootDefinition;
 /**
  * Lets the JSON boolean, "hand_animation_on_swap" disable the equipment animation when swapping items
  */
-// TODO: add swap_animation_scale float to affect this
 @Environment(EnvType.CLIENT)
 @Mixin(HeldItemRenderer.class)
 public abstract class HeldItemSwapMixin {
 
+    ///  Not accurate to vanilla, simply disables any swapping animation for item models (both for main hand and offhand)
     @Unique
     private float doModelHandSwap(float equipProgress) {
         ClientPlayerEntity clientPlayer = MinecraftClient.getInstance().player;
@@ -37,6 +37,20 @@ public abstract class HeldItemSwapMixin {
         return equipProgress; // Normal hand animation swap
     }
 
+    /// Accurate to vanilla, disables the main hand to offhand animation swap
+    @Unique
+    private float doModelOffHandSwap(float equipProgress) {
+        ClientPlayerEntity clientPlayer = MinecraftClient.getInstance().player;
+        if (clientPlayer != null) {
+            ItemStack offhandItem = clientPlayer.getOffHandStack();
+            Identifier offhandId = Registries.ITEM.getId(offhandItem.getItem());
+            ItemModelRootDefinition def = ItemModelRegistry.getRoot(offhandId); // Get items model definition for item model
+
+            if (def != null && !def.handAnimationSwap()) return 0F; // Disable offhand animation swap if current held item model has hand swap set to false
+        }
+        return equipProgress; // Normal hand animation swap
+    }
+
     @ModifyArg(
             method = "renderFirstPersonItem",
             at = @At(
@@ -46,7 +60,7 @@ public abstract class HeldItemSwapMixin {
             index = 3 // equipProgress parameter index
     )
     private float disableEmptyHandEquipProgress(float equipProgress) {
-        return doModelHandSwap(equipProgress);
+        return doModelOffHandSwap(equipProgress);
     }
 
     @ModifyArg(
@@ -58,6 +72,6 @@ public abstract class HeldItemSwapMixin {
             index = 2 // equipProgress parameter index
     )
     private float disableItemEquipProgress(float equipProgress) {
-        return doModelHandSwap(equipProgress);
+        return doModelOffHandSwap(equipProgress);
     }
 }

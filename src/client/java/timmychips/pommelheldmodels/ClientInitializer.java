@@ -30,8 +30,8 @@ public class ClientInitializer implements ClientModInitializer {
 
     // Extra optional fields in Items Model root
     private static final String HAND_ANIMATION_SWAP = "hand_animation_on_swap";
-    private static final String OVERSIZED_IN_GUI = "oversized_in_gui";
-    private static final String SWAP_ANIMATION_SCALE = "swap_animation_scale";
+    private static final String OVERSIZED_IN_GUI = "oversized_in_gui"; // Not currently used/functioning
+    private static final String SWAP_ANIMATION_SCALE = "swap_animation_scale"; // Not currently used/functioning
 
     private static void registerResources(String folderName, ResourceManager manager) {
         for (Identifier id : manager.findResources(folderName, path -> path.getPath().endsWith(".json")).keySet()) {
