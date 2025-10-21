@@ -132,8 +132,8 @@ public class HeldItemPredicate {
                     } // For thrown item entities and projectiles
                      */
                     case render_projectile -> {
-                        boolean isProjectileStack = ProjectileModelMap.isProjectileStack(itemStack) && !isItemEntity;
-                        LOGGER.info("Projectile HashMap: {}", ProjectileModelMap.PROJECTILE_MAP);
+                        boolean isProjectileStack = ProjectileModelMap.isProjectileStack(itemStack) && !isItemEntity && livingEntity == null;
+//                        LOGGER.info("Projectile HashMap: {}", ProjectileModelMap.PROJECTILE_MAP);
                         yield isProjectileStack && currentItemRenderMode == ModelTransformationMode.GROUND
                                 || currentItemRenderMode == null ? 1F : 0F;
                     }
