@@ -9,6 +9,8 @@ import net.minecraft.item.ItemStack;
 import org.slf4j.Logger;
 import timmychips.pommelheldmodels.objects.GroundItemSubmerged;
 import timmychips.pommelheldmodels.objects.PredicateRenderModeMap;
+import timmychips.pommelheldmodels.objects.ProjectileModelMap;
+
 import java.util.List;
 import java.util.Arrays;
 
@@ -120,6 +122,7 @@ public class HeldItemPredicate {
                     case render_first_thirdperson -> firstThirdPersonCheck(); // Return float based for first_thirdperson predicate if render mode is first or third person
                     case render_misc_entity_holding -> livingEntity != null && entry.getValue().contains(currentItemRenderMode) ? 1.0F : 0.0F;
                     // Compat with 2D Projectiles mod; Makes projectiles like arrows use specified item model as well
+                    /*
                     case render_projectile -> {
                         if (isProjectile && !isItemEntity && livingEntity == null) { // For non- LivingEntity's nor an ItemEntity's to make sure its only projectiles
                             isProjectile = false; // Reset variable
@@ -127,6 +130,22 @@ public class HeldItemPredicate {
                         }
                         else yield 0F;
                     } // For thrown item entities and projectiles
+                     */
+                    case render_projectile -> {
+                        boolean isProjectileStack = ProjectileModelMap.isProjectileStack(itemStack) && !isItemEntity;
+                        LOGGER.info("Projectile HashMap: {}", ProjectileModelMap.PROJECTILE_MAP);
+                        yield isProjectileStack && currentItemRenderMode == ModelTransformationMode.GROUND
+                                || currentItemRenderMode == null ? 1F : 0F;
+                    }
+                    /*
+                    case render_projectile -> {
+                        if (!isItemEntity && livingEntity == null) { // For non- LivingEntity's nor an ItemEntity's to make sure its only projectiles
+                            yield 1F;
+                        }
+                        else yield 0F;
+                    } // For thrown item entities and projectiles
+
+                     */
                     case render_ground -> isItemEntity && !isProjectile && livingEntity == null && entry.getValue().contains(currentItemRenderMode) ? 1.0F : 0.0F; // Makes it so thrown items don't use the is_ground model
                     default -> entry.getValue().contains(currentItemRenderMode) ? 1.0F : 0.0F; // Return 1 if whitelisted for all other predicates
                 };

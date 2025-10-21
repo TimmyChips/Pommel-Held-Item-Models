@@ -2,6 +2,7 @@ package timmychips.pommelheldmodels;
 
 import com.mojang.logging.LogUtils;
 import net.fabricmc.api.ClientModInitializer;
+import net.minecraft.client.MinecraftClient;
 import org.slf4j.Logger;
 
 public class ClientInitializer implements ClientModInitializer {
