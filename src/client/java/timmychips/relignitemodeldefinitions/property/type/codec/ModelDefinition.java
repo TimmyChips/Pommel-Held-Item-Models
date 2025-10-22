@@ -1,4 +1,4 @@
-package timmychips.relignitemodeldefinitions.property.type;
+package timmychips.relignitemodeldefinitions.property.type.codec;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -17,7 +17,8 @@ public record ModelDefinition(Identifier type, Identifier model) implements Item
         return CODEC;
     }
 
-    public BakedModel bake(FabricBakedModelManager manager) {
-        return manager.getModel(model());
+    @Override
+    public Identifier getType() {
+        return Identifier.of("minecraft:model");
     }
 }

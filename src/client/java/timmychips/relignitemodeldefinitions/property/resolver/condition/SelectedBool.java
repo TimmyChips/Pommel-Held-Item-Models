@@ -5,7 +5,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
 import timmychips.relignitemodeldefinitions.property.handler.ConditionPropertyHandler;
-import timmychips.relignitemodeldefinitions.property.type.ConditionDefinition;
+import timmychips.relignitemodeldefinitions.property.type.codec.ConditionDefinition;
 
 // Return if item is selected in player's hand
 public class SelectedBool implements ConditionPropertyHandler {

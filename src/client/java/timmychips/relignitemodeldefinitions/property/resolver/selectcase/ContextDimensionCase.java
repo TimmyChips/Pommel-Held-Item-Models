@@ -6,7 +6,7 @@ import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import timmychips.relignitemodeldefinitions.property.handler.SelectPropertyHandler;
-import timmychips.relignitemodeldefinitions.property.type.SelectDefinition;
+import timmychips.relignitemodeldefinitions.property.type.codec.SelectDefinition;
 
 /**
  * Returns dimension id entity is in as string

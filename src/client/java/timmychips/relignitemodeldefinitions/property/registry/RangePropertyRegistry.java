@@ -5,7 +5,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
 import timmychips.relignitemodeldefinitions.property.handler.RangePropertyHandler;
 import timmychips.relignitemodeldefinitions.property.resolver.rangeentry.*;
-import timmychips.relignitemodeldefinitions.property.type.RangeDispatchDefinition;
+import timmychips.relignitemodeldefinitions.property.type.codec.RangeDispatchDefinition;
 
 import java.util.HashMap;
 import java.util.Map;

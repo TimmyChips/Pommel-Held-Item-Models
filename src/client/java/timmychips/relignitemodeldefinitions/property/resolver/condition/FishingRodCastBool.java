@@ -4,7 +4,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import timmychips.relignitemodeldefinitions.property.handler.ConditionPropertyHandler;
-import timmychips.relignitemodeldefinitions.property.type.ConditionDefinition;
+import timmychips.relignitemodeldefinitions.property.type.codec.ConditionDefinition;
 
 // Returns if player has a valid fishhook entity associated to them
 public class FishingRodCastBool implements ConditionPropertyHandler {

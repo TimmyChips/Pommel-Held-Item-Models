@@ -9,7 +9,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import timmychips.relignitemodeldefinitions.property.handler.ConditionPropertyHandler;
-import timmychips.relignitemodeldefinitions.property.type.ConditionDefinition;
+import timmychips.relignitemodeldefinitions.property.type.codec.ConditionDefinition;
 
 // Returns if player is in matching "fluid" field in items model definition
 // "fluid" json field - optional; is id minecraft:water by default

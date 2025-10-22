@@ -14,7 +14,7 @@ import net.minecraft.registry.RegistryOps;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import timmychips.relignitemodeldefinitions.property.handler.ConditionPropertyHandler;
-import timmychips.relignitemodeldefinitions.property.type.ConditionDefinition;
+import timmychips.relignitemodeldefinitions.property.type.codec.ConditionDefinition;
 
 import java.util.Objects;
 import java.util.Optional;

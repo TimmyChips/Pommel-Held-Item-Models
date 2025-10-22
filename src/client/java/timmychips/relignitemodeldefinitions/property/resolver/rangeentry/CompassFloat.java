@@ -19,7 +19,7 @@ import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import timmychips.relignitemodeldefinitions.property.handler.RangePropertyHandler;
-import timmychips.relignitemodeldefinitions.property.type.RangeDispatchDefinition;
+import timmychips.relignitemodeldefinitions.property.type.codec.RangeDispatchDefinition;
 
 public class CompassFloat implements RangePropertyHandler {
 

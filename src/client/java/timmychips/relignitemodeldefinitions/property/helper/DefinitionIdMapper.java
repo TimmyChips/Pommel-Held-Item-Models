@@ -5,11 +5,11 @@ import com.google.common.collect.HashBiMap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.util.Identifier;
-import timmychips.relignitemodeldefinitions.property.type.ItemModelDefinition;
+import timmychips.relignitemodeldefinitions.property.type.codec.ItemModelDefinition;
 
 import java.util.Objects;
 
-public class PommelIdMapper {
+public class DefinitionIdMapper {
     private final BiMap<Identifier, MapCodec<? extends ItemModelDefinition>> idToCodec = HashBiMap.create();
 
     public Codec<ItemModelDefinition> getCodec(Codec<Identifier> idCodec) {
@@ -34,9 +34,8 @@ public class PommelIdMapper {
         );
     }
 
-    public PommelIdMapper put(Identifier id, MapCodec<? extends ItemModelDefinition> value) {
+    public void put(Identifier id, MapCodec<? extends ItemModelDefinition> value) {
         Objects.requireNonNull(value, () -> "Value for " + id + " is null");
         idToCodec.put(id, value);
-        return this;
     }
 }

@@ -17,16 +17,16 @@
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"timmychips.pommelheldmodels.ServerInitializer"
+			"timmychips.relignitemodeldefinitions.ServerInitializer"
 		],
 		"client": [
-			"timmychips.pommelheldmodels.ClientInitializer"
+			"timmychips.relignitemodeldefinitions.ClientInitializer"
 		]
 	},
 	"mixins": [
 		"pommel.mixins.json",
 		{
-			"config": "pommel.client.mixins.json",
+			"config": "relignite.client.mixins.json",
 			"environment": "client"
 		}
 	],

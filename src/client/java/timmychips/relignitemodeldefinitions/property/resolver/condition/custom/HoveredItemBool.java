@@ -5,7 +5,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import timmychips.relignitemodeldefinitions.property.handler.ConditionPropertyHandler;
 import timmychips.relignitemodeldefinitions.property.helper.MouseHelper;
-import timmychips.relignitemodeldefinitions.property.type.ConditionDefinition;
+import timmychips.relignitemodeldefinitions.property.type.codec.ConditionDefinition;
 
 // Custom Property
 // Returns if item is hovered over in the inventory

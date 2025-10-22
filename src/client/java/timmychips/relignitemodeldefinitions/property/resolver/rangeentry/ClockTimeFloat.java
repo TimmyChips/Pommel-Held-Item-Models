@@ -11,7 +11,7 @@ import net.minecraft.util.StringIdentifiable;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.random.Random;
 import timmychips.relignitemodeldefinitions.property.handler.RangePropertyHandler;
-import timmychips.relignitemodeldefinitions.property.type.RangeDispatchDefinition;
+import timmychips.relignitemodeldefinitions.property.type.codec.RangeDispatchDefinition;
 
 public class ClockTimeFloat implements RangePropertyHandler {
     private final Random random = Random.create();

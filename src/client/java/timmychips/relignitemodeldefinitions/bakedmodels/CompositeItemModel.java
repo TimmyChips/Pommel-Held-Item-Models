@@ -16,7 +16,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.random.Random;
 import org.jetbrains.annotations.Nullable;
 import timmychips.relignitemodeldefinitions.property.resolver.ResolveRecursive;
-import timmychips.relignitemodeldefinitions.property.type.ItemModelDefinition;
+import timmychips.relignitemodeldefinitions.property.type.codec.ItemModelDefinition;
 
 import java.util.List;
 import java.util.function.Supplier;

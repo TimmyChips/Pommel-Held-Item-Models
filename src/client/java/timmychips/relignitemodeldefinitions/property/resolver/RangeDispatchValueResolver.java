@@ -4,7 +4,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
 import timmychips.relignitemodeldefinitions.property.registry.RangePropertyRegistry;
-import timmychips.relignitemodeldefinitions.property.type.RangeDispatchDefinition;
+import timmychips.relignitemodeldefinitions.property.type.codec.RangeDispatchDefinition;
 
 public class RangeDispatchValueResolver {
     public static float evaluate(

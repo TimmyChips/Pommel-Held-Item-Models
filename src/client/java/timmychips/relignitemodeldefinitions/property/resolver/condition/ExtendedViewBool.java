@@ -4,7 +4,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import timmychips.relignitemodeldefinitions.property.handler.ConditionPropertyHandler;
-import timmychips.relignitemodeldefinitions.property.type.ConditionDefinition;
+import timmychips.relignitemodeldefinitions.property.type.codec.ConditionDefinition;
 
 // Returns if player is holding shift down (i.e. showing extended details in the UI)
 public class ExtendedViewBool implements ConditionPropertyHandler {

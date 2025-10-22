@@ -4,7 +4,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import timmychips.relignitemodeldefinitions.property.handler.RangePropertyHandler;
-import timmychips.relignitemodeldefinitions.property.type.RangeDispatchDefinition;
+import timmychips.relignitemodeldefinitions.property.type.codec.RangeDispatchDefinition;
 
 public class CooldownFloat implements RangePropertyHandler {
     @Override

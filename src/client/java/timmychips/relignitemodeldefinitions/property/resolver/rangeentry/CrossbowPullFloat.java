@@ -4,7 +4,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.CrossbowItem;
 import net.minecraft.item.ItemStack;
 import timmychips.relignitemodeldefinitions.property.handler.RangePropertyHandler;
-import timmychips.relignitemodeldefinitions.property.type.RangeDispatchDefinition;
+import timmychips.relignitemodeldefinitions.property.type.codec.RangeDispatchDefinition;
 
 // Return the pull use-time of the crossbow
 public class CrossbowPullFloat implements RangePropertyHandler {

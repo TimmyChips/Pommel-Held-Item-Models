@@ -7,7 +7,7 @@ import net.minecraft.item.ItemStack;
 import org.slf4j.Logger;
 import timmychips.relignitemodeldefinitions.property.handler.ConditionPropertyHandler;
 import timmychips.relignitemodeldefinitions.property.resolver.ResolveRecursive;
-import timmychips.relignitemodeldefinitions.property.type.ConditionDefinition;
+import timmychips.relignitemodeldefinitions.property.type.codec.ConditionDefinition;
 
 import java.util.Set;
 

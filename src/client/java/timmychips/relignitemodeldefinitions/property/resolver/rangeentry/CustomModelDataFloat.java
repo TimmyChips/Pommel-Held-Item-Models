@@ -8,7 +8,7 @@ import net.minecraft.item.ItemStack;
 import org.slf4j.Logger;
 import timmychips.relignitemodeldefinitions.property.handler.RangePropertyHandler;
 import timmychips.relignitemodeldefinitions.property.resolver.ResolveRecursive;
-import timmychips.relignitemodeldefinitions.property.type.RangeDispatchDefinition;
+import timmychips.relignitemodeldefinitions.property.type.codec.RangeDispatchDefinition;
 
 import java.util.Set;
 

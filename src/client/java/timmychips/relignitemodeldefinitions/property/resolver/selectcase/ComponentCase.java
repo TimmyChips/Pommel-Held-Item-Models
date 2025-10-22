@@ -10,7 +10,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import timmychips.relignitemodeldefinitions.property.handler.SelectPropertyHandler;
-import timmychips.relignitemodeldefinitions.property.type.SelectDefinition;
+import timmychips.relignitemodeldefinitions.property.type.codec.SelectDefinition;
 
 /**
  * Returns a string for specified component's value

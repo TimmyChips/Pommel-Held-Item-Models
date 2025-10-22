@@ -6,7 +6,7 @@ import net.minecraft.component.type.CustomModelDataComponent;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import timmychips.relignitemodeldefinitions.property.handler.SelectPropertyHandler;
-import timmychips.relignitemodeldefinitions.property.type.SelectDefinition;
+import timmychips.relignitemodeldefinitions.property.type.codec.SelectDefinition;
 
 /**
  * Return custom model data int component value on item as string

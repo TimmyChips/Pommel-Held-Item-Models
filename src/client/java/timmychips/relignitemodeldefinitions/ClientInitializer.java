@@ -14,8 +14,8 @@ import org.slf4j.Logger;
 import timmychips.relignitemodeldefinitions.property.registry.ConditionPropertyRegistry;
 import timmychips.relignitemodeldefinitions.property.registry.RangePropertyRegistry;
 import timmychips.relignitemodeldefinitions.property.registry.SelectPropertyRegistry;
-import timmychips.relignitemodeldefinitions.property.type.ItemModelDefinition;
-import timmychips.relignitemodeldefinitions.property.type.ItemModelRootDefinition;
+import timmychips.relignitemodeldefinitions.property.type.codec.ItemModelDefinition;
+import timmychips.relignitemodeldefinitions.property.type.codec.ItemModelRootDefinition;
 import timmychips.relignitemodeldefinitions.property.type.ItemModelTypes;
 
 import java.io.InputStream;
@@ -45,9 +45,6 @@ public class ClientInitializer implements ClientModInitializer {
                 boolean oversizedInGui = root.has(OVERSIZED_IN_GUI) && root.get(OVERSIZED_IN_GUI).getAsBoolean();
                 float swapAnimationScale = root.has(SWAP_ANIMATION_SCALE) ? root.get(SWAP_ANIMATION_SCALE).getAsFloat() : 1F; // 1.0 if not specified
 
-                LOGGER.info("[Pommel] Parsed extra fields for {}: hand_animation_on_swap={}, oversized_in_gui={}, swap_animation_scale={}",
-                        id, handAnimationOnSwap, oversizedInGui, swapAnimationScale);
-
                 JsonElement modelElement = root.get("model");
 
                 if (modelElement != null && modelElement.isJsonObject()) {
@@ -63,14 +60,14 @@ public class ClientInitializer implements ClientModInitializer {
 
 //                                ItemModelRegistry.put(itemId, pair.getFirst()); // don’t forget to store it!
                                 ItemModelRegistry.putRoot(itemId, rootDef);
-                                LOGGER.info("[Pommel] Successfully decoded item model definition for: {}", itemId);
+                                LOGGER.info("[Relignite] Successfully decoded item model definition for: {}", itemId);
                             });
                 } else {
-                    LOGGER.warn("[Pommel] No 'model' field found in item JSON for {}", id);
+                    LOGGER.warn("[Relignite] No 'model' field found in item JSON for {}", id);
                 }
 
             } catch (Exception e) {
-                LOGGER.warn("[Pommel] Failed to parse item definition for {}", id, e);
+                LOGGER.warn("[Relignite] Failed to parse item definition for {}", id, e);
             }
         }
     }
@@ -98,10 +95,11 @@ public class ClientInitializer implements ClientModInitializer {
 			registerResources("items", manager);
             registerResources("pommel_items_override", manager); // The resource folder where you should use modded properties
 
+            LOGGER.info("Relignite: ModelLoadingPlugin loading models");
 			modelIds = ItemModelRegistry.getAllModelDependencies();
 //			modelIds.forEach(id -> LOGGER.info("[Pommel] Registering model dependency: {}", id));
 
-			LOGGER.info("Pommel: ModelLoadingPlugin loading models");
+            LOGGER.info("modelIds: {}", modelIds);
 			pluginContext.addModels(modelIds);
 		});
 	}

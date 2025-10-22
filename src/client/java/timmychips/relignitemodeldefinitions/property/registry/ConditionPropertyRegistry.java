@@ -7,7 +7,7 @@ import timmychips.relignitemodeldefinitions.property.handler.ConditionPropertyHa
 import timmychips.relignitemodeldefinitions.property.resolver.condition.*;
 import timmychips.relignitemodeldefinitions.property.resolver.condition.custom.HoveredItemBool;
 import timmychips.relignitemodeldefinitions.property.resolver.condition.custom.SubmergedBool;
-import timmychips.relignitemodeldefinitions.property.type.ConditionDefinition;
+import timmychips.relignitemodeldefinitions.property.type.codec.ConditionDefinition;
 
 import java.util.HashMap;
 import java.util.Map;

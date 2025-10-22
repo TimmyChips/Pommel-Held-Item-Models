@@ -1,4 +1,4 @@
-package timmychips.relignitemodeldefinitions.property.type;
+package timmychips.relignitemodeldefinitions.property.type.codec;
 
 public record ItemModelRootDefinition(
         ItemModelDefinition model,

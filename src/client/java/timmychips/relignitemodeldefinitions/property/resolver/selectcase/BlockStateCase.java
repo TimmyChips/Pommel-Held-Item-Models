@@ -6,7 +6,7 @@ import net.minecraft.component.type.BlockStateComponent;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import timmychips.relignitemodeldefinitions.property.handler.SelectPropertyHandler;
-import timmychips.relignitemodeldefinitions.property.type.SelectDefinition;
+import timmychips.relignitemodeldefinitions.property.type.codec.SelectDefinition;
 
 // Returns Block State String specified
 public class BlockStateCase implements SelectPropertyHandler {

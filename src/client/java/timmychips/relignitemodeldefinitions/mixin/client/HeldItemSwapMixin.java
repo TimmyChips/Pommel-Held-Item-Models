@@ -13,7 +13,8 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import timmychips.relignitemodeldefinitions.ItemModelRegistry;
-import timmychips.relignitemodeldefinitions.property.type.ItemModelRootDefinition;
+import timmychips.relignitemodeldefinitions.property.type.ItemModelTypes;
+import timmychips.relignitemodeldefinitions.property.type.codec.ItemModelRootDefinition;
 
 /**
  * Lets the JSON boolean, "hand_animation_on_swap" disable the equipment animation when swapping items
@@ -29,7 +30,7 @@ public abstract class HeldItemSwapMixin {
         if (clientPlayer != null) {
             ItemStack heldItem = !clientPlayer.getMainHandStack().isEmpty() ? clientPlayer.getMainHandStack() : clientPlayer.getOffHandStack();
             Identifier heldId = Registries.ITEM.getId(heldItem.getItem());
-            ItemModelRootDefinition def = ItemModelRegistry.getRoot(heldId); // Get items model definition for item model
+            ItemModelRootDefinition def = ItemModelTypes.Registry.getRoot(heldId); // Get items model definition for item model
 
             if (def != null && !def.handAnimationSwap()) return 0F; // Disable hand animation swap if current held item model has hand swap set to false
         }
@@ -43,7 +44,7 @@ public abstract class HeldItemSwapMixin {
         if (clientPlayer != null) {
             ItemStack offhandItem = clientPlayer.getOffHandStack();
             Identifier offhandId = Registries.ITEM.getId(offhandItem.getItem());
-            ItemModelRootDefinition def = ItemModelRegistry.getRoot(offhandId); // Get items model definition for item model
+            ItemModelRootDefinition def = ItemModelTypes.Registry.getRoot(offhandId); // Get items model definition for item model
 
             if (def != null && !def.handAnimationSwap()) return 0F; // Disable offhand animation swap if current held item model has hand swap set to false
         }

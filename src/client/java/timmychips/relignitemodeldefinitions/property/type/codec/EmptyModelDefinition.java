@@ -1,4 +1,4 @@
-package timmychips.relignitemodeldefinitions.property.type;
+package timmychips.relignitemodeldefinitions.property.type.codec;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -12,5 +12,10 @@ public record EmptyModelDefinition(Identifier type) implements ItemModelDefiniti
     @Override
     public MapCodec<? extends ItemModelDefinition> getCodec() {
         return CODEC;
+    }
+
+    @Override
+    public Identifier getType() {
+        return Identifier.of("minecraft:empty");
     }
 }

@@ -3,7 +3,7 @@ package timmychips.relignitemodeldefinitions.property.resolver.rangeentry;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import timmychips.relignitemodeldefinitions.property.handler.RangePropertyHandler;
-import timmychips.relignitemodeldefinitions.property.type.RangeDispatchDefinition;
+import timmychips.relignitemodeldefinitions.property.type.codec.RangeDispatchDefinition;
 
 public class UseDurationFloat implements RangePropertyHandler {
     @Override

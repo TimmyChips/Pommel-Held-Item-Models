@@ -6,7 +6,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.trim.ArmorTrim;
 import timmychips.relignitemodeldefinitions.property.handler.SelectPropertyHandler;
-import timmychips.relignitemodeldefinitions.property.type.SelectDefinition;
+import timmychips.relignitemodeldefinitions.property.type.codec.SelectDefinition;
 
 /**
  * Return the material id of the armor trim as string

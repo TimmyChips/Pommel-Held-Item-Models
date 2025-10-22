@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import timmychips.relignitemodeldefinitions.bakedmodels.CompositeItemModel;
 import timmychips.relignitemodeldefinitions.bakedmodels.EmptyItemModel;
-import timmychips.relignitemodeldefinitions.property.type.*;
+import timmychips.relignitemodeldefinitions.property.type.codec.*;
 
 import java.util.Optional;
 import java.util.Set;

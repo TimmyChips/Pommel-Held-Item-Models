@@ -2,7 +2,7 @@ package timmychips.relignitemodeldefinitions.property.handler;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
-import timmychips.relignitemodeldefinitions.property.type.ConditionDefinition;
+import timmychips.relignitemodeldefinitions.property.type.codec.ConditionDefinition;
 
 @FunctionalInterface
 public interface ConditionPropertyHandler {

@@ -6,7 +6,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
 import timmychips.relignitemodeldefinitions.property.handler.SelectPropertyHandler;
 import timmychips.relignitemodeldefinitions.property.resolver.selectcase.*;
-import timmychips.relignitemodeldefinitions.property.type.SelectDefinition;
+import timmychips.relignitemodeldefinitions.property.type.codec.SelectDefinition;
 
 import java.util.HashMap;
 import java.util.Map;

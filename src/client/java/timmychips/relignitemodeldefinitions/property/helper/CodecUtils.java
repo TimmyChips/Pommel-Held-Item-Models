@@ -1,4 +1,4 @@
-package timmychips.relignitemodeldefinitions.property.type;
+package timmychips.relignitemodeldefinitions.property.helper;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -37,7 +37,7 @@ public class CodecUtils {
 //                    return DataResult.success(str);
 //                }
                 // Possible to return both string and identifier as string (i.e. "arrow" and "minecraft:arrow") together?
-                ClientInitializer.LOGGER.info(str);
+//                ClientInitializer.LOGGER.info(str);
                 return DataResult.success(str); // only return String
             },
             DataResult::success

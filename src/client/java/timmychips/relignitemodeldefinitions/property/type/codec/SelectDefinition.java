@@ -1,12 +1,16 @@
-package timmychips.relignitemodeldefinitions.property.type;
+package timmychips.relignitemodeldefinitions.property.type.codec;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
+import timmychips.relignitemodeldefinitions.property.helper.CodecUtils;
+import timmychips.relignitemodeldefinitions.property.type.ItemModelTypes;
+
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 // Todo
 //  Will technically parse Identifiers into Strings, not alike Vanilla
@@ -76,6 +80,19 @@ public final class SelectDefinition {
         @Override
         public MapCodec<? extends ItemModelDefinition> getCodec() {
             return codec(ItemModelTypes.CODEC);
+        }
+
+        @Override
+        public Identifier getType() {
+            return Identifier.of("minecraft:select");
+        }
+
+        @Override
+        public List<ItemModelDefinition> children() {
+            return Stream.concat(
+                    cases.stream().map(Case::model),
+                    Stream.ofNullable(fallback())
+            ).toList();
         }
     }
 
