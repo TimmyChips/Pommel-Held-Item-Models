@@ -1,6 +1,6 @@
 {
   "required": true,
-  "package": "timmychips.relignitemodeldefinition.mixin.client",
+  "package": "timmychips.relignitemodeldefinitions.mixin.client",
   "compatibilityLevel": "JAVA_21",
   "client": [
     "HandleSlotAccessor",

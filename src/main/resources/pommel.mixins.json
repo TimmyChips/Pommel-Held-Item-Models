@@ -1,6 +1,6 @@
 {
 	"required": true,
-	"package": "timmychips.relignitemodeldefinition.mixin",
+	"package": "timmychips.relignitemodeldefinitions.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [
 	],
